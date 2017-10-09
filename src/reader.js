@@ -1,3 +1,4 @@
+var EPUBJS = EPUBJS || {};
 EPUBJS.reader = {};
 EPUBJS.reader.plugins = {}; //-- Attach extra Controllers as plugins (like search?)
 
@@ -63,11 +64,7 @@ EPUBJS.Reader = function(bookPath, _options) {
 		fontSize : "100%"
 	};
 
-	this.book = book = new EPUBJS.Book(this.settings);
-
-	if(this.settings.previousLocationCfi) {
-		book.gotoCfi(this.settings.previousLocationCfi);
-	}
+	this.book = book = new ePub(this.settings.bookPath, this.settings);
 
 	this.offline = false;
 	this.sidebarOpen = false;
@@ -83,7 +80,17 @@ EPUBJS.Reader = function(bookPath, _options) {
 		book.generatePagination($viewer.width(), $viewer.height());
 	}
 
-	book.renderTo("viewer");
+	this.rendition = book.renderTo("viewer", {
+		ignoreClass: "annotator-hl",
+		width: "100%",
+		height: "100%"
+	});
+
+	if(this.settings.previousLocationCfi) {
+		this.rendition.display(this.settings.previousLocationCfi);
+	} else {
+		this.rendition.display();
+	}
 
 	reader.ReaderController = EPUBJS.reader.ReaderController.call(reader, book);
 	reader.SettingsController = EPUBJS.reader.SettingsController.call(reader, book);
@@ -99,16 +106,16 @@ EPUBJS.Reader = function(bookPath, _options) {
 		}
 	}
 
-	book.ready.all.then(function() {
+	book.ready.then(function() {
 		reader.ReaderController.hideLoader();
 	});
 
-	book.getMetadata().then(function(meta) {
+	book.loaded.metadata.then(function(meta) {
 		reader.MetaController = EPUBJS.reader.MetaController.call(reader, meta);
 	});
 
-	book.getToc().then(function(toc) {
-		reader.TocController = EPUBJS.reader.TocController.call(reader, toc);
+	book.loaded.navigation.then(function(navigation) {
+		reader.TocController = EPUBJS.reader.TocController.call(reader, navigation);
 	});
 
 	window.addEventListener("beforeunload", this.unload.bind(this), false);
@@ -278,7 +285,7 @@ EPUBJS.Reader.prototype.applySavedSettings = function() {
 
 EPUBJS.Reader.prototype.saveSettings = function(){
 	if(this.book) {
-		this.settings.previousLocationCfi = this.book.getCurrentLocationCfi();
+		this.settings.previousLocationCfi = this.rendition.currentLocation().start.cfi;
 	}
 
 	if(!localStorage) {
@@ -297,11 +304,11 @@ EPUBJS.Reader.prototype.unload = function(){
 
 EPUBJS.Reader.prototype.hashChanged = function(){
 	var hash = window.location.hash.slice(1);
-	this.book.goto(hash);
+	this.rendition.display(hash);
 };
 
 EPUBJS.Reader.prototype.selectedRange = function(range){
-	var epubcfi = new EPUBJS.EpubCFI();
+	var epubcfi = new ePub.CFI();
 	var cfi = epubcfi.generateCfiFromRangeAnchor(range, this.book.renderer.currentChapter.cfiBase);
 	var cfiFragment = "#"+cfi;
 
