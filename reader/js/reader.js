@@ -3326,10 +3326,10 @@ EPUBJS.Reader = function(bookPath, _options) {
 
 	document.addEventListener('keydown', this.adjustFontSize.bind(this), false);
 
-	book.on("renderer:keydown", this.adjustFontSize.bind(this));
-	book.on("renderer:keydown", reader.ReaderController.arrowKeys.bind(this));
+	rendition.on("keydown", this.adjustFontSize.bind(this));
+	rendition.on("keydown", reader.ReaderController.arrowKeys.bind(this));
 
-	book.on("renderer:selected", this.selectedRange.bind(this));
+	rendition.on("selected", this.selectedRange.bind(this));
 
 	return this;
 };
@@ -3608,7 +3608,7 @@ EPUBJS.reader.ControlsController = function(book) {
 			$sidebar = $("#sidebar"),
 			$settings = $("#setting"),
 			$bookmark = $("#bookmark");
-
+	/*
 	var goOnline = function() {
 		reader.offline = false;
 		// $store.attr("src", $icon.data("save"));
@@ -3623,7 +3623,7 @@ EPUBJS.reader.ControlsController = function(book) {
 
 	book.on("book:online", goOnline);
 	book.on("book:offline", goOffline);
-
+	*/
 	$slider.on("click", function () {
 		if(reader.sidebarOpen) {
 			reader.SidebarController.hide();
@@ -3701,10 +3701,6 @@ EPUBJS.reader.ControlsController = function(book) {
 			// Add CFI fragment to the history
 			history.pushState({}, '', cfiFragment);
 		}
-	});
-
-	book.on('book:pageChanged', function(location){
-		// console.log("page", location.page, location.percentage)
 	});
 
 	return {
@@ -3805,7 +3801,7 @@ EPUBJS.reader.NotesController = function() {
 		$anchor.text("Attach");
 		$text.prop("disabled", false);
 
-		book.off("renderer:click", insertAtPoint);
+		rendition.off("click", insertAtPoint);
 
 	};
 
@@ -3888,8 +3884,8 @@ EPUBJS.reader.NotesController = function() {
 				popups[id].addEventListener("mouseout", offPop, false);
 
 				//-- Add hide on page change
-				renderer.on("renderer:locationChanged", hidePop, this);
-				renderer.on("renderer:locationChanged", offPop, this);
+				rendition.on("locationChanged", hidePop, this);
+				rendition.on("locationChanged", offPop, this);
 				// chapter.book.on("renderer:chapterDestroy", hidePop, this);
 			}
 
@@ -3985,7 +3981,7 @@ EPUBJS.reader.NotesController = function() {
 		$anchor.text("Cancel");
 		$text.prop("disabled", "true");
 		// listen for selection
-		book.on("renderer:click", insertAtPoint);
+		rendition.on("click", insertAtPoint);
 
 	});
 
@@ -4030,7 +4026,7 @@ EPUBJS.reader.ReaderController = function(book) {
 		if (reader.settings.sidebarReflow){
 			$main.removeClass('single');
 			$main.one("transitionend", function(){
-				rendition.display(currentPosition);
+				rendition.resize();
 			});
 		} else {
 			$main.removeClass("closed");
@@ -4046,7 +4042,7 @@ EPUBJS.reader.ReaderController = function(book) {
 		if (reader.settings.sidebarReflow){
 			$main.addClass('single');
 			$main.one("transitionend", function(){
-				rendition.display(currentPosition);
+				rendition.resize();
 			});
 		} else {
 			$main.addClass("closed");
@@ -4140,21 +4136,22 @@ EPUBJS.reader.ReaderController = function(book) {
 		e.preventDefault();
 	});
 
-	book.on("renderer:spreads", function(bool){
-		if(bool) {
+	rendition.on("layout", function(props){
+		if(props.spread === true) {
 			showDivider();
 		} else {
 			hideDivider();
 		}
 	});
 
-	// book.on("book:atStart", function(){
-	// 	$prev.addClass("disabled");
-	// });
-	//
-	// book.on("book:atEnd", function(){
-	// 	$next.addClass("disabled");
-	// });
+	rendition.on('relocated', function(location){
+		if (location.atStart) {
+			$prev.addClass("disabled");
+		}
+		if (location.atEnd) {
+			$next.addClass("disabled");
+		}
+	});
 
 	return {
 		"slideOut" : slideOut,

@@ -21,10 +21,6 @@
 
             document.onreadystatechange = function () {
               if (document.readyState == "complete") {
-                EPUBJS.filePath = "js/libs/";
-                EPUBJS.cssPath = window.location.href.replace(window.location.hash, '').replace('index.html', '') + "css/";
-                // fileStorage.filePath = EPUBJS.filePath;
-
                 window.reader = ePubReader("http://s3.amazonaws.com/moby-dick/");
               }
             };
@@ -39,9 +35,6 @@
 
         <!-- Render -->
         <script src="js/epub.js"></script>
-
-        <!-- Hooks -->
-        <!-- <script src="js/hooks.min.js"></script> -->
 
         <!-- Reader -->
         <script src="js/reader.js"></script>

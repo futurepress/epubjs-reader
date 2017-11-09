@@ -11,7 +11,7 @@ EPUBJS.reader.ControlsController = function(book) {
 			$sidebar = $("#sidebar"),
 			$settings = $("#setting"),
 			$bookmark = $("#bookmark");
-
+	/*
 	var goOnline = function() {
 		reader.offline = false;
 		// $store.attr("src", $icon.data("save"));
@@ -26,7 +26,7 @@ EPUBJS.reader.ControlsController = function(book) {
 
 	book.on("book:online", goOnline);
 	book.on("book:offline", goOffline);
-
+	*/
 	$slider.on("click", function () {
 		if(reader.sidebarOpen) {
 			reader.SidebarController.hide();
@@ -104,10 +104,6 @@ EPUBJS.reader.ControlsController = function(book) {
 			// Add CFI fragment to the history
 			history.pushState({}, '', cfiFragment);
 		}
-	});
-
-	book.on('book:pageChanged', function(location){
-		// console.log("page", location.page, location.percentage)
 	});
 
 	return {

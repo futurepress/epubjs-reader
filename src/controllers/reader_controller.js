@@ -12,7 +12,7 @@ EPUBJS.reader.ReaderController = function(book) {
 		if (reader.settings.sidebarReflow){
 			$main.removeClass('single');
 			$main.one("transitionend", function(){
-				rendition.display(currentPosition);
+				rendition.resize();
 			});
 		} else {
 			$main.removeClass("closed");
@@ -28,7 +28,7 @@ EPUBJS.reader.ReaderController = function(book) {
 		if (reader.settings.sidebarReflow){
 			$main.addClass('single');
 			$main.one("transitionend", function(){
-				rendition.display(currentPosition);
+				rendition.resize();
 			});
 		} else {
 			$main.addClass("closed");
@@ -122,21 +122,22 @@ EPUBJS.reader.ReaderController = function(book) {
 		e.preventDefault();
 	});
 
-	book.on("renderer:spreads", function(bool){
-		if(bool) {
+	rendition.on("layout", function(props){
+		if(props.spread === true) {
 			showDivider();
 		} else {
 			hideDivider();
 		}
 	});
 
-	// book.on("book:atStart", function(){
-	// 	$prev.addClass("disabled");
-	// });
-	//
-	// book.on("book:atEnd", function(){
-	// 	$next.addClass("disabled");
-	// });
+	rendition.on('relocated', function(location){
+		if (location.atStart) {
+			$prev.addClass("disabled");
+		}
+		if (location.atEnd) {
+			$next.addClass("disabled");
+		}
+	});
 
 	return {
 		"slideOut" : slideOut,

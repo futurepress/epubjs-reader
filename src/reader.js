@@ -124,10 +124,10 @@ EPUBJS.Reader = function(bookPath, _options) {
 
 	document.addEventListener('keydown', this.adjustFontSize.bind(this), false);
 
-	book.on("renderer:keydown", this.adjustFontSize.bind(this));
-	book.on("renderer:keydown", reader.ReaderController.arrowKeys.bind(this));
+	rendition.on("keydown", this.adjustFontSize.bind(this));
+	rendition.on("keydown", reader.ReaderController.arrowKeys.bind(this));
 
-	book.on("renderer:selected", this.selectedRange.bind(this));
+	rendition.on("selected", this.selectedRange.bind(this));
 
 	return this;
 };

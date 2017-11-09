@@ -76,7 +76,7 @@ EPUBJS.reader.NotesController = function() {
 		$anchor.text("Attach");
 		$text.prop("disabled", false);
 
-		book.off("renderer:click", insertAtPoint);
+		rendition.off("click", insertAtPoint);
 
 	};
 
@@ -159,8 +159,8 @@ EPUBJS.reader.NotesController = function() {
 				popups[id].addEventListener("mouseout", offPop, false);
 
 				//-- Add hide on page change
-				renderer.on("renderer:locationChanged", hidePop, this);
-				renderer.on("renderer:locationChanged", offPop, this);
+				rendition.on("locationChanged", hidePop, this);
+				rendition.on("locationChanged", offPop, this);
 				// chapter.book.on("renderer:chapterDestroy", hidePop, this);
 			}
 
@@ -256,7 +256,7 @@ EPUBJS.reader.NotesController = function() {
 		$anchor.text("Cancel");
 		$text.prop("disabled", "true");
 		// listen for selection
-		book.on("renderer:click", insertAtPoint);
+		rendition.on("click", insertAtPoint);
 
 	});
 
