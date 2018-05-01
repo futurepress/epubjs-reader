@@ -1,5 +1,6 @@
 EPUBJS.reader.TocController = function(toc) {
 	var book = this.book;
+	var rendition = this.rendition;
 
 	var $list = $("#tocView"),
 			docfrag = document.createDocumentFragment();
@@ -28,7 +29,7 @@ EPUBJS.reader.TocController = function(toc) {
 
 			listitem.appendChild(link);
 
-			if(chapter.subitems.length > 0) {
+			if(chapter.subitems && chapter.subitems.length > 0) {
 				level++;
 				subitems = generateTocItems(chapter.subitems, level);
 				toggle.classList.add('toc_toggle');
@@ -72,7 +73,7 @@ EPUBJS.reader.TocController = function(toc) {
 		}
 	};
 
-	book.on('renderer:chapterDisplayed', chapterChange);
+	rendition.on('renderered', chapterChange);
 
 	var tocitems = generateTocItems(toc);
 
@@ -86,7 +87,7 @@ EPUBJS.reader.TocController = function(toc) {
 
 			//-- Provide the Book with the url to show
 			//   The Url must be found in the books manifest
-			book.goto(url);
+			rendition.display(url);
 
 			$list.find(".currentChapter")
 					.addClass("openChapter")

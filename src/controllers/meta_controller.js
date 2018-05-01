@@ -1,5 +1,5 @@
 EPUBJS.reader.MetaController = function(meta) {
-	var title = meta.bookTitle,
+	var title = meta.title,
 			author = meta.creator;
 
 	var $title = $("#book-title"),

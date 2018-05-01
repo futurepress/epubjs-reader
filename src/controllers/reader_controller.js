@@ -6,12 +6,13 @@ EPUBJS.reader.ReaderController = function(book) {
 			$prev = $("#prev");
 	var reader = this;
 	var book = this.book;
+	var rendition = this.rendition;
 	var slideIn = function() {
-		var currentPosition = book.getCurrentLocationCfi();
+		var currentPosition = rendition.currentLocation().start.cfi;
 		if (reader.settings.sidebarReflow){
 			$main.removeClass('single');
 			$main.one("transitionend", function(){
-				book.gotoCfi(currentPosition);
+				rendition.resize();
 			});
 		} else {
 			$main.removeClass("closed");
@@ -19,11 +20,15 @@ EPUBJS.reader.ReaderController = function(book) {
 	};
 
 	var slideOut = function() {
-		var currentPosition = book.getCurrentLocationCfi();
+		var location = rendition.currentLocation();
+		if (!location) {
+			return;
+		}
+		var currentPosition = location.start.cfi;
 		if (reader.settings.sidebarReflow){
 			$main.addClass('single');
 			$main.one("transitionend", function(){
-				book.gotoCfi(currentPosition);
+				rendition.resize();
 			});
 		} else {
 			$main.addClass("closed");
@@ -37,7 +42,7 @@ EPUBJS.reader.ReaderController = function(book) {
 
 	var hideLoader = function() {
 		$loader.hide();
-		
+
 		//-- If the book is using spreads, show the divider
 		// if(book.settings.spreads) {
 		// 	showDivider();
@@ -54,13 +59,13 @@ EPUBJS.reader.ReaderController = function(book) {
 
 	var keylock = false;
 
-	var arrowKeys = function(e) {		
-		if(e.keyCode == 37) { 
-			
-			if(book.metadata.direction === "rtl") {
-				book.nextPage();
+	var arrowKeys = function(e) {
+		if(e.keyCode == 37) {
+
+			if(book.package.metadata.direction === "rtl") {
+				rendition.next();
 			} else {
-				book.prevPage();
+				rendition.prev();
 			}
 
 			$prev.addClass("active");
@@ -75,12 +80,12 @@ EPUBJS.reader.ReaderController = function(book) {
 		}
 		if(e.keyCode == 39) {
 
-			if(book.metadata.direction === "rtl") {
-				book.prevPage();
+			if(book.package.metadata.direction === "rtl") {
+				rendition.prev();
 			} else {
-				book.nextPage();
+				rendition.next();
 			}
-			
+
 			$next.addClass("active");
 
 			keylock = true;
@@ -96,42 +101,43 @@ EPUBJS.reader.ReaderController = function(book) {
 	document.addEventListener('keydown', arrowKeys, false);
 
 	$next.on("click", function(e){
-		
-		if(book.metadata.direction === "rtl") {
-			book.prevPage();
+
+		if(book.package.metadata.direction === "rtl") {
+			rendition.prev();
 		} else {
-			book.nextPage();
+			rendition.next();
 		}
 
 		e.preventDefault();
 	});
 
 	$prev.on("click", function(e){
-		
-		if(book.metadata.direction === "rtl") {
-			book.nextPage();
+
+		if(book.package.metadata.direction === "rtl") {
+			rendition.next();
 		} else {
-			book.prevPage();
+			rendition.prev();
 		}
 
 		e.preventDefault();
 	});
-	
-	book.on("renderer:spreads", function(bool){
-		if(bool) {
+
+	rendition.on("layout", function(props){
+		if(props.spread === true) {
 			showDivider();
 		} else {
 			hideDivider();
 		}
 	});
 
-	// book.on("book:atStart", function(){
-	// 	$prev.addClass("disabled");
-	// });
-	// 
-	// book.on("book:atEnd", function(){
-	// 	$next.addClass("disabled");	
-	// });
+	rendition.on('relocated', function(location){
+		if (location.atStart) {
+			$prev.addClass("disabled");
+		}
+		if (location.atEnd) {
+			$next.addClass("disabled");
+		}
+	});
 
 	return {
 		"slideOut" : slideOut,

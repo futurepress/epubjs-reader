@@ -27,11 +27,11 @@
     "portfinder": "~0.2.1"
   },
   "dependencies": {
+    "epubjs": "^0.3.57",
     "jquery": "^2.1.4",
     "jszip": "^2.5.0",
     "localforage": "^1.2.10",
     "rsvp": "^3.1.0",
-    "screenfull": "^2.0.0",
-    "epubjs": "0.2.20"
+    "screenfull": "^2.0.0"
   }
 }

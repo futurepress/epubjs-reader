@@ -1,5 +1,6 @@
 EPUBJS.reader.ControlsController = function(book) {
 	var reader = this;
+	var rendition = this.rendition;
 
 	var $store = $("#store"),
 			$fullscreen = $("#fullscreen"),
@@ -10,7 +11,7 @@ EPUBJS.reader.ControlsController = function(book) {
 			$sidebar = $("#sidebar"),
 			$settings = $("#setting"),
 			$bookmark = $("#bookmark");
-
+	/*
 	var goOnline = function() {
 		reader.offline = false;
 		// $store.attr("src", $icon.data("save"));
@@ -25,7 +26,7 @@ EPUBJS.reader.ControlsController = function(book) {
 
 	book.on("book:online", goOnline);
 	book.on("book:offline", goOffline);
-
+	*/
 	$slider.on("click", function () {
 		if(reader.sidebarOpen) {
 			reader.SidebarController.hide();
@@ -63,7 +64,7 @@ EPUBJS.reader.ControlsController = function(book) {
 	});
 
 	$bookmark.on("click", function() {
-		var cfi = reader.book.getCurrentLocationCfi();
+		var cfi = reader.rendition.currentLocation().start.cfi;
 		var bookmarked = reader.isBookmarked(cfi);
 
 		if(bookmarked === -1) { //-- Add bookmark
@@ -80,7 +81,8 @@ EPUBJS.reader.ControlsController = function(book) {
 
 	});
 
-	book.on('renderer:locationChanged', function(cfi){
+	rendition.on('relocated', function(location){
+		var cfi = location.start.cfi;
 		var cfiFragment = "#" + cfi;
 		//-- Check if bookmarked
 		var bookmarked = reader.isBookmarked(cfi);
@@ -102,10 +104,6 @@ EPUBJS.reader.ControlsController = function(book) {
 			// Add CFI fragment to the history
 			history.pushState({}, '', cfiFragment);
 		}
-	});
-
-	book.on('book:pageChanged', function(location){
-		// console.log("page", location.page, location.percentage)
 	});
 
 	return {

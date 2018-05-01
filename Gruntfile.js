@@ -13,7 +13,7 @@ module.exports = function(grunt) {
 					'sourceRoot': '../'
 				},
       	files: {
-					'reader/js/reader.js': ['<banner>', 'src/reader.js', 'src/controllers/*.js'],
+					'reader/js/reader.js': ['<banner>', 'node_modules/rsvp/dist/rsvp.js', 'src/core.js',  'src/reader.js', 'src/controllers/*.js'],
 				}
 			}
 		},
@@ -24,7 +24,7 @@ module.exports = function(grunt) {
 						sourceMap: false
 				},
 				files: {
-					'reader/js/reader.min.js': ['<banner>', 'src/reader.js', 'src/controllers/*.js'],
+					'reader/js/reader.min.js': ['<banner>', 'node_modules/rsvp/dist/rsvp.js', 'src/core.js', 'src/reader.js', 'src/controllers/*.js'],
 				}
 			}
 		},
@@ -38,8 +38,9 @@ module.exports = function(grunt) {
 					{src: 'src/plugins/search.js', dest: 'reader/js/plugins/search.js'},
 					{src: 'src/plugins/hypothesis.js', dest: 'reader/js/plugins/hypothesis.js'},
 					{src: 'hooks/extensions/highlight.js', dest: 'reader/js/hooks/extensions/highlight.js'},
-					{src: 'node_modules/epubjs/build/epub.min.js', dest: 'reader/js/epub.min.js'},
-					{src: 'node_modules/epubjs/build/hooks.min.js', dest: 'reader/js/hooks.min.js'}
+					{src: 'node_modules/epubjs/dist/epub.min.js', dest: 'reader/js/epub.min.js'},
+					{src: 'node_modules/epubjs/dist/epub.js', dest: 'reader/js/epub.js'},
+					// {src: 'node_modules/epubjs/build/hooks.min.js', dest: 'reader/js/hooks.min.js'}
 				]
 			},
 		},
