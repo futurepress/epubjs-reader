@@ -27,7 +27,7 @@
     "portfinder": "~0.2.1"
   },
   "dependencies": {
-    "epubjs": "^0.3.57",
+    "epubjs": "latest",
     "jquery": "^2.1.4",
     "jszip": "^2.5.0",
     "localforage": "^1.2.10",
