@@ -25,8 +25,15 @@ EPUBJS.reader.BookmarksController = function() {
 		listitem.id = "bookmark-"+counter;
 		listitem.classList.add('list_item');
 
-		//-- TODO: Parse Cfi
-		link.textContent = cfi;
+		var spineItem = book.spine.get(cfi);
+		var tocItem;
+		if (spineItem.index in book.navigation.toc) {
+			tocItem = book.navigation.toc[spineItem.index];
+			link.textContent = tocItem.label;
+		} else {
+			link.textContent = cfi;
+		}
+
 		link.href = cfi;
 
 		link.classList.add('bookmark_link');

@@ -1,6 +1,6 @@
 {
   "name": "epubjs-reader",
-  "version": "0.2.20",
+  "version": "0.3.0",
   "repository": "https://github.com/futurepress/epubjs-reader",
   "description": "ePub.js Reader",
   "main": "server.js",
