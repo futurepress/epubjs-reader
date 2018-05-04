@@ -3,12 +3,12 @@
   "version": "0.3.0",
   "repository": "https://github.com/futurepress/epubjs-reader",
   "description": "ePub.js Reader",
-  "main": "server.js",
+  "main": "reader/js/reader.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node tools/serve"
   },
   "author": "fchasen@gmail.com",
   "license": "BSD-2-Clause",
