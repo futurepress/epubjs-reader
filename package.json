@@ -13,25 +13,27 @@
   "author": "fchasen@gmail.com",
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "colors": "~0.6.2",
-    "connect": "~2.14.4",
-    "grunt": "~0.4.4",
+    "colors": "~1.2.5",
+    "connect": "~3.6.6",
+    "express": "^4.16.3",
+    "gh-pages": "^1.1.0",
+    "grunt": "~1.0.2",
     "grunt-concat-sourcemap": "~0.4.1",
-    "grunt-contrib-concat": "~0.4.0",
-    "grunt-contrib-connect": "~0.7.1",
-    "grunt-contrib-copy": "~0.5.0",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-uglify": "~0.4.0",
-    "grunt-contrib-watch": "^0.6.1",
+    "grunt-contrib-concat": "~1.0.1",
+    "grunt-contrib-connect": "~1.0.2",
+    "grunt-contrib-copy": "~1.0.0",
+    "grunt-contrib-jshint": "~1.1.0",
+    "grunt-contrib-uglify": "~3.3.0",
+    "grunt-contrib-watch": "^1.1.0",
     "optimist": "~0.6.1",
-    "portfinder": "~0.2.1"
+    "portfinder": "~1.0.13"
   },
   "dependencies": {
     "epubjs": "latest",
-    "jquery": "^2.1.4",
-    "jszip": "^2.5.0",
+    "jquery": "^3.3.1",
+    "jszip": "^3.1.5",
     "localforage": "^1.2.10",
-    "rsvp": "^3.1.0",
-    "screenfull": "^2.0.0"
+    "rsvp": "^4.8.2",
+    "screenfull": "^3.3.2"
   }
 }
