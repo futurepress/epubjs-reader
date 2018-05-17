@@ -8,7 +8,8 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "node tools/serve"
+    "start": "node tools/serve",
+    "deploy": "./node_modules/.bin/gh-pages -d reader"
   },
   "author": "fchasen@gmail.com",
   "license": "BSD-2-Clause",

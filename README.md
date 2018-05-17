@@ -3,7 +3,7 @@ Epub.js Reader
 
 ![Demo](http://fchasen.com/futurepress/epubjs-reader_moby-dick.png)
 
-[Try it while reading Moby Dick](http://futurepress.github.com/epubjs-reader/reader/)
+[Try it while reading Moby Dick](http://futurepress.github.com/epubjs-reader/)
 
 About the Reader
 -------------------------
@@ -14,7 +14,7 @@ About the Reader
 Getting Started
 -------------------------
 
-Open up [reader/index.html](http://futurepress.github.com/epubjs-reader/reader/index.html) in a browser.
+Open up [reader/index.html](http://futurepress.github.com/epubjs-reader/index.html) in a browser.
 
 You can change the ePub it opens by passing a link to bookPath in the url:
 
