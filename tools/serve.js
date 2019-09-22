@@ -50,7 +50,8 @@ function listen(port) {
 
   log('Starting up Server, serving '.yellow
     + __dirname.replace("tools", '').green
-    + ' on port: '.yellow
+    + ' on: '.yellow
+    + 'http://localhost:'.cyan
     + port.toString().cyan);
   log('Hit CTRL-C to stop the server');
 
