@@ -7,7 +7,7 @@
 		exports["ePub"] = factory(require("xmldom"), (function webpackLoadOptionalExternalModule() { try { return require("jszip"); } catch(e) {} }()));
 	else
 		root["ePub"] = factory(root["xmldom"], root["jszip"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_16__, __WEBPACK_EXTERNAL_MODULE_68__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_42__, __WEBPACK_EXTERNAL_MODULE_71__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -99,6 +99,7 @@ exports.locationOf = locationOf;
 exports.indexOfSorted = indexOfSorted;
 exports.bounds = bounds;
 exports.borders = borders;
+exports.nodeBounds = nodeBounds;
 exports.windowBounds = windowBounds;
 exports.indexOfNode = indexOfNode;
 exports.indexOfTextNode = indexOfTextNode;
@@ -170,6 +171,7 @@ function documentHeight() {
 
 /**
  * Checks if a node is an element
+ * @param {object} obj
  * @returns {boolean}
  * @memberof Core
  */
@@ -178,6 +180,7 @@ function isElement(obj) {
 }
 
 /**
+ * @param {any} n
  * @returns {boolean}
  * @memberof Core
  */
@@ -186,16 +189,27 @@ function isNumber(n) {
 }
 
 /**
+ * @param {any} n
  * @returns {boolean}
  * @memberof Core
  */
 function isFloat(n) {
 	var f = parseFloat(n);
-	return f === n && isNumber(n) && Math.floor(f) !== n;
+
+	if (isNumber(n) === false) {
+		return false;
+	}
+
+	if (typeof n === "string" && n.indexOf(".") > -1) {
+		return true;
+	}
+
+	return Math.floor(f) !== f;
 }
 
 /**
  * Get a prefixed css property
+ * @param {string} unprefixed
  * @returns {string}
  * @memberof Core
  */
@@ -408,6 +422,26 @@ function borders(el) {
 }
 
 /**
+ * Find the bounds of any node
+ * allows for getting bounds of text nodes by wrapping them in a range
+ * @param {node} node
+ * @returns {BoundingClientRect}
+ * @memberof Core
+ */
+function nodeBounds(node) {
+	var elPos = void 0;
+	var doc = node.ownerDocument;
+	if (node.nodeType == Node.TEXT_NODE) {
+		var elRange = doc.createRange();
+		elRange.selectNodeContents(node);
+		elPos = elRange.getBoundingClientRect();
+	} else {
+		elPos = node.getBoundingClientRect();
+	}
+	return elPos;
+}
+
+/**
  * Find the equivelent of getBoundingClientRect of a browser window
  * @returns {{ width: Number, height: Number, top: Number, left: Number, right: Number, bottom: Number }}
  * @memberof Core
@@ -429,7 +463,9 @@ function windowBounds() {
 
 /**
  * Gets the index of a node in its parent
- * @private
+ * @param {Node} node
+ * @param {string} typeId
+ * @return {number} index
  * @memberof Core
  */
 function indexOfNode(node, typeId) {
@@ -560,7 +596,7 @@ function parse(markup, mime, forceXMLDom) {
 	var Parser;
 
 	if (typeof DOMParser === "undefined" || forceXMLDom) {
-		Parser = __webpack_require__(16).DOMParser;
+		Parser = __webpack_require__(42).DOMParser;
 	} else {
 		Parser = DOMParser;
 	}
@@ -619,7 +655,7 @@ function qsa(el, sel) {
  * querySelector by property
  * @param {element} el
  * @param {string} sel selector string
- * @param {props[]} props
+ * @param {object[]} props
  * @returns {element[]} elements
  * @memberof Core
  */
@@ -669,6 +705,13 @@ function sprint(root, func) {
 	}
 }
 
+/**
+ * Create a treeWalker
+ * @memberof Core
+ * @param  {element} root element to start with
+ * @param  {function} func function to run on each element
+ * @param  {function | object} filter funtion or object to filter with
+ */
 function treeWalker(root, func, filter) {
 	var treeWalker = document.createTreeWalker(root, filter, null, false);
 	var node = void 0;
@@ -1066,12 +1109,12 @@ var EpubCFI = function () {
 			if (this.isCfiString(cfi)) {
 				return "string";
 				// Is a range object
-			} else if ((typeof cfi === "undefined" ? "undefined" : _typeof(cfi)) === "object" && ((0, _core.type)(cfi) === "Range" || typeof cfi.startContainer != "undefined")) {
+			} else if (cfi && (typeof cfi === "undefined" ? "undefined" : _typeof(cfi)) === "object" && ((0, _core.type)(cfi) === "Range" || typeof cfi.startContainer != "undefined")) {
 				return "range";
-			} else if ((typeof cfi === "undefined" ? "undefined" : _typeof(cfi)) === "object" && typeof cfi.nodeType != "undefined") {
+			} else if (cfi && (typeof cfi === "undefined" ? "undefined" : _typeof(cfi)) === "object" && typeof cfi.nodeType != "undefined") {
 				// || typeof cfi === "function"
 				return "node";
-			} else if ((typeof cfi === "undefined" ? "undefined" : _typeof(cfi)) === "object" && cfi instanceof EpubCFI) {
+			} else if (cfi && (typeof cfi === "undefined" ? "undefined" : _typeof(cfi)) === "object" && cfi instanceof EpubCFI) {
 				return "EpubCFI";
 			} else {
 				return false;
@@ -1330,7 +1373,7 @@ var EpubCFI = function () {
 
 		/**
    * Compare which of two CFIs is earlier in the text
-   * @returns {number} First is earlier = 1, Second is earlier = -1, They are equal = 0
+   * @returns {number} First is earlier = -1, Second is earlier = 1, They are equal = 0
    */
 
 	}, {
@@ -2063,6 +2106,74 @@ module.exports = exports["default"];
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var EPUBJS_VERSION = exports.EPUBJS_VERSION = "0.3";
+
+// Dom events to listen for
+var DOM_EVENTS = exports.DOM_EVENTS = ["keydown", "keyup", "keypressed", "mouseup", "mousedown", "click", "touchend", "touchstart"];
+
+var EVENTS = exports.EVENTS = {
+  BOOK: {
+    OPEN_FAILED: "openFailed"
+  },
+  CONTENTS: {
+    EXPAND: "expand",
+    RESIZE: "resize",
+    SELECTED: "selected",
+    SELECTED_RANGE: "selectedRange",
+    LINK_CLICKED: "linkClicked"
+  },
+  LOCATIONS: {
+    CHANGED: "changed"
+  },
+  MANAGERS: {
+    RESIZE: "resize",
+    RESIZED: "resized",
+    ORIENTATION_CHANGE: "orientationchange",
+    ADDED: "added",
+    SCROLL: "scroll",
+    SCROLLED: "scrolled",
+    REMOVED: "removed"
+  },
+  VIEWS: {
+    AXIS: "axis",
+    LOAD_ERROR: "loaderror",
+    RENDERED: "rendered",
+    RESIZED: "resized",
+    DISPLAYED: "displayed",
+    SHOWN: "shown",
+    HIDDEN: "hidden",
+    MARK_CLICKED: "markClicked"
+  },
+  RENDITION: {
+    STARTED: "started",
+    ATTACHED: "attached",
+    DISPLAYED: "displayed",
+    DISPLAY_ERROR: "displayerror",
+    RENDERED: "rendered",
+    REMOVED: "removed",
+    RESIZED: "resized",
+    ORIENTATION_CHANGE: "orientationchange",
+    LOCATION_CHANGED: "locationChanged",
+    RELOCATED: "relocated",
+    MARK_CLICKED: "markClicked",
+    SELECTED: "selected",
+    LAYOUT: "layout"
+  },
+  LAYOUT: {
+    UPDATED: "updated"
+  }
+};
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var d        = __webpack_require__(27)
   , callable = __webpack_require__(41)
 
@@ -2194,71 +2305,6 @@ module.exports = exports = function (o) {
 };
 exports.methods = methods;
 
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-// Dom events to listen for
-var DOM_EVENTS = exports.DOM_EVENTS = ["keydown", "keyup", "keypressed", "mouseup", "mousedown", "click", "touchend", "touchstart"];
-
-var EVENTS = exports.EVENTS = {
-  BOOK: {
-    OPEN_FAILED: "openFailed"
-  },
-  CONTENTS: {
-    EXPAND: "expand",
-    RESIZE: "resize",
-    SELECTED: "selected",
-    SELECTED_RANGE: "selectedRange",
-    LINK_CLICKED: "linkClicked"
-  },
-  LOCATIONS: {
-    CHANGED: "changed"
-  },
-  MANAGERS: {
-    RESIZE: "resize",
-    RESIZED: "resized",
-    ORIENTATION_CHANGE: "orientationchange",
-    ADDED: "added",
-    SCROLL: "scroll",
-    SCROLLED: "scrolled"
-  },
-  VIEWS: {
-    AXIS: "axis",
-    LOAD_ERROR: "loaderror",
-    RENDERED: "rendered",
-    RESIZED: "resized",
-    DISPLAYED: "displayed",
-    SHOWN: "shown",
-    HIDDEN: "hidden",
-    MARK_CLICKED: "markClicked"
-  },
-  RENDITION: {
-    STARTED: "started",
-    ATTACHED: "attached",
-    DISPLAYED: "displayed",
-    DISPLAY_ERROR: "displayerror",
-    RENDERED: "rendered",
-    REMOVED: "removed",
-    RESIZED: "resized",
-    ORIENTATION_CHANGE: "orientationchange",
-    LOCATION_CHANGED: "locationChanged",
-    RELOCATED: "relocated",
-    MARK_CLICKED: "markClicked",
-    SELECTED: "selected",
-    LAYOUT: "layout"
-  },
-  LAYOUT: {
-    UPDATED: "updated"
-  }
-};
 
 /***/ }),
 /* 4 */
@@ -2501,6 +2547,7 @@ var Url = function () {
 
 		/**
    * Resolves a relative path to a absolute url
+   * @param {string} what
    * @returns {string} url
    */
 
@@ -2520,6 +2567,7 @@ var Url = function () {
 
 		/**
    * Resolve a path relative to the url
+   * @param {string} what
    * @returns {string} path
    */
 
@@ -3492,7 +3540,7 @@ function request(url, type, withCredentials, headers) {
 				responseXML = this.responseXML;
 			}
 
-			if (this.status === 200 || responseXML) {
+			if (this.status === 200 || this.status === 0 || responseXML) {
 				//-- Firefox is reporting 0 for blob urls
 				var r;
 
@@ -3765,7 +3813,7 @@ var Queue = function () {
 
 		/**
    * Get the number of tasks in the queue
-   * @return {int} tasks
+   * @return {number} tasks
    */
 
 	}, {
@@ -3852,7 +3900,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -3868,14 +3916,16 @@ var _mapping2 = _interopRequireDefault(_mapping);
 
 var _replacements = __webpack_require__(7);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var isChrome = /Chrome/.test(navigator.userAgent);
-var isWebkit = !isChrome && /AppleWebKit/.test(navigator.userAgent);
+var hasNavigator = typeof navigator !== "undefined";
+
+var isChrome = hasNavigator && /Chrome/.test(navigator.userAgent);
+var isWebkit = hasNavigator && !isChrome && /AppleWebKit/.test(navigator.userAgent);
 
 var ELEMENT_NODE = 1;
 var TEXT_NODE = 3;
@@ -3909,7 +3959,7 @@ var Contents = function () {
 		this.sectionIndex = sectionIndex || 0;
 		this.cfiBase = cfiBase || "";
 
-		this.epubReadingSystem("epub.js", ePub.VERSION);
+		this.epubReadingSystem("epub.js", _constants.EPUBJS_VERSION);
 
 		this.listeners();
 	}
@@ -4022,6 +4072,7 @@ var Contents = function () {
 	}, {
 		key: "textWidth",
 		value: function textWidth() {
+			var rect = void 0;
 			var width = void 0;
 			var range = this.document.createRange();
 			var content = this.content || this.document.body;
@@ -4031,7 +4082,8 @@ var Contents = function () {
 			range.selectNodeContents(content);
 
 			// get the width of the text content
-			width = range.getBoundingClientRect().width;
+			rect = range.getBoundingClientRect();
+			width = rect.width;
 
 			if (border && border.width) {
 				width += border.width;
@@ -4048,6 +4100,7 @@ var Contents = function () {
 	}, {
 		key: "textHeight",
 		value: function textHeight() {
+			var rect = void 0;
 			var height = void 0;
 			var range = this.document.createRange();
 			var content = this.content || this.document.body;
@@ -4055,7 +4108,8 @@ var Contents = function () {
 
 			range.selectNodeContents(content);
 
-			height = range.getBoundingClientRect().height;
+			rect = range.getBoundingClientRect();
+			height = rect.height;
 
 			if (height && border.height) {
 				height += border.height;
@@ -4437,9 +4491,15 @@ var Contents = function () {
 			// pass in the target node, as well as the observer options
 			this.observer.observe(this.document, config);
 		}
+
+		/**
+   * Test if images are loaded or add listener for when they load
+   * @private
+   */
+
 	}, {
 		key: "imageLoadListeners",
-		value: function imageLoadListeners(target) {
+		value: function imageLoadListeners() {
 			var images = this.document.querySelectorAll("img");
 			var img;
 			for (var i = 0; i < images.length; i++) {
@@ -4458,7 +4518,7 @@ var Contents = function () {
 
 	}, {
 		key: "fontLoadListeners",
-		value: function fontLoadListeners(target) {
+		value: function fontLoadListeners() {
 			if (!this.document || !this.document.fonts) {
 				return;
 			}
@@ -4915,7 +4975,7 @@ var Contents = function () {
 			if (width >= 0) {
 				this.width(width);
 				viewport.width = width;
-				this.css("padding", "0 " + width / 12 + "px", true);
+				this.css("padding", "0 " + width / 12 + "px");
 			}
 
 			if (height >= 0) {
@@ -4969,9 +5029,15 @@ var Contents = function () {
 			this.css("margin", "0", true);
 
 			if (axis === "vertical") {
-				this.css("padding", gap / 2 + "px 20px", true);
+				this.css("padding-top", gap / 2 + "px", true);
+				this.css("padding-bottom", gap / 2 + "px", true);
+				this.css("padding-left", "20px");
+				this.css("padding-right", "20px");
 			} else {
-				this.css("padding", "20px " + gap / 2 + "px", true);
+				this.css("padding-top", "20px");
+				this.css("padding-bottom", "20px");
+				this.css("padding-left", gap / 2 + "px", true);
+				this.css("padding-right", gap / 2 + "px", true);
 			}
 
 			this.css("box-sizing", "border-box");
@@ -5179,7 +5245,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -5193,15 +5259,15 @@ var _queue = __webpack_require__(12);
 
 var _queue2 = _interopRequireDefault(_queue);
 
-var _stage = __webpack_require__(56);
+var _stage = __webpack_require__(59);
 
 var _stage2 = _interopRequireDefault(_stage);
 
-var _views = __webpack_require__(66);
+var _views = __webpack_require__(69);
 
 var _views2 = _interopRequireDefault(_views);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5212,6 +5278,7 @@ var DefaultViewManager = function () {
 		_classCallCheck(this, DefaultViewManager);
 
 		this.name = "default";
+		this.optsSettings = options.settings;
 		this.View = options.view;
 		this.request = options.request;
 		this.renditionQueue = options.queue;
@@ -5224,7 +5291,8 @@ var DefaultViewManager = function () {
 			height: undefined,
 			axis: undefined,
 			flow: "scrolled",
-			ignoreClass: ""
+			ignoreClass: "",
+			fullsize: undefined
 		});
 
 		(0, _core.extend)(this.settings, options.settings || {});
@@ -5248,11 +5316,11 @@ var DefaultViewManager = function () {
 		value: function render(element, size) {
 			var tag = element.tagName;
 
-			if (tag && (tag.toLowerCase() == "body" || tag.toLowerCase() == "html")) {
-				this.fullsize = true;
+			if (typeof this.settings.fullsize === "undefined" && tag && (tag.toLowerCase() == "body" || tag.toLowerCase() == "html")) {
+				this.settings.fullsize = true;
 			}
 
-			if (this.fullsize) {
+			if (this.settings.fullsize) {
 				this.settings.overflow = "visible";
 				this.overflow = this.settings.overflow;
 			}
@@ -5266,7 +5334,7 @@ var DefaultViewManager = function () {
 				overflow: this.overflow,
 				hidden: this.settings.hidden,
 				axis: this.settings.axis,
-				fullsize: this.fullsize,
+				fullsize: this.settings.fullsize,
 				direction: this.settings.direction
 			});
 
@@ -5312,7 +5380,7 @@ var DefaultViewManager = function () {
 				this.destroy();
 			}.bind(this));
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				scroller = this.container;
 			} else {
 				scroller = window;
@@ -5325,7 +5393,7 @@ var DefaultViewManager = function () {
 		value: function removeEventListeners() {
 			var scroller;
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				scroller = this.container;
 			} else {
 				scroller = window;
@@ -5364,7 +5432,9 @@ var DefaultViewManager = function () {
 			    orientation = _window.orientation;
 
 
-			this.resize();
+			if (this.optsSettings.resizeOnOrientationChange) {
+				this.resize();
+			}
 
 			// Per ampproject:
 			// In IOS 10.3, the measured size of an element is incorrect if the
@@ -5374,7 +5444,11 @@ var DefaultViewManager = function () {
 			clearTimeout(this.orientationTimeout);
 			this.orientationTimeout = setTimeout(function () {
 				this.orientationTimeout = undefined;
-				this.resize();
+
+				if (this.optsSettings.resizeOnOrientationChange) {
+					this.resize();
+				}
+
 				this.emit(_constants.EVENTS.MANAGERS.ORIENTATION_CHANGE, orientation);
 			}.bind(this), 500);
 		}
@@ -5781,7 +5855,7 @@ var DefaultViewManager = function () {
 			var offset = 0;
 			var used = 0;
 
-			if (this.fullsize) {
+			if (this.settings.fullsize) {
 				offset = window.scrollY;
 			}
 
@@ -5836,7 +5910,7 @@ var DefaultViewManager = function () {
 			var left = 0;
 			var used = 0;
 
-			if (this.fullsize) {
+			if (this.settings.fullsize) {
 				left = window.scrollX;
 			}
 
@@ -5942,7 +6016,7 @@ var DefaultViewManager = function () {
 				this.ignore = true;
 			}
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				if (x) this.container.scrollLeft += x * dir;
 				if (y) this.container.scrollTop += y;
 			} else {
@@ -5957,7 +6031,7 @@ var DefaultViewManager = function () {
 				this.ignore = true;
 			}
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				this.container.scrollLeft = x;
 				this.container.scrollTop = y;
 			} else {
@@ -5971,7 +6045,7 @@ var DefaultViewManager = function () {
 			var scrollTop = void 0;
 			var scrollLeft = void 0;
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				scrollTop = this.container.scrollTop;
 				scrollLeft = this.container.scrollLeft;
 			} else {
@@ -6201,7 +6275,1251 @@ module.exports = isObject;
 /* 16 */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_16__;
+/*
+ * DOM Level 2
+ * Object DOMException
+ * @see http://www.w3.org/TR/REC-DOM-Level-1/ecma-script-language-binding.html
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
+ */
+
+function copy(src,dest){
+	for(var p in src){
+		dest[p] = src[p];
+	}
+}
+/**
+^\w+\.prototype\.([_\w]+)\s*=\s*((?:.*\{\s*?[\r\n][\s\S]*?^})|\S.*?(?=[;\r\n]));?
+^\w+\.prototype\.([_\w]+)\s*=\s*(\S.*?(?=[;\r\n]));?
+ */
+function _extends(Class,Super){
+	var pt = Class.prototype;
+	if(Object.create){
+		var ppt = Object.create(Super.prototype)
+		pt.__proto__ = ppt;
+	}
+	if(!(pt instanceof Super)){
+		function t(){};
+		t.prototype = Super.prototype;
+		t = new t();
+		copy(pt,t);
+		Class.prototype = pt = t;
+	}
+	if(pt.constructor != Class){
+		if(typeof Class != 'function'){
+			console.error("unknow Class:"+Class)
+		}
+		pt.constructor = Class
+	}
+}
+var htmlns = 'http://www.w3.org/1999/xhtml' ;
+// Node Types
+var NodeType = {}
+var ELEMENT_NODE                = NodeType.ELEMENT_NODE                = 1;
+var ATTRIBUTE_NODE              = NodeType.ATTRIBUTE_NODE              = 2;
+var TEXT_NODE                   = NodeType.TEXT_NODE                   = 3;
+var CDATA_SECTION_NODE          = NodeType.CDATA_SECTION_NODE          = 4;
+var ENTITY_REFERENCE_NODE       = NodeType.ENTITY_REFERENCE_NODE       = 5;
+var ENTITY_NODE                 = NodeType.ENTITY_NODE                 = 6;
+var PROCESSING_INSTRUCTION_NODE = NodeType.PROCESSING_INSTRUCTION_NODE = 7;
+var COMMENT_NODE                = NodeType.COMMENT_NODE                = 8;
+var DOCUMENT_NODE               = NodeType.DOCUMENT_NODE               = 9;
+var DOCUMENT_TYPE_NODE          = NodeType.DOCUMENT_TYPE_NODE          = 10;
+var DOCUMENT_FRAGMENT_NODE      = NodeType.DOCUMENT_FRAGMENT_NODE      = 11;
+var NOTATION_NODE               = NodeType.NOTATION_NODE               = 12;
+
+// ExceptionCode
+var ExceptionCode = {}
+var ExceptionMessage = {};
+var INDEX_SIZE_ERR              = ExceptionCode.INDEX_SIZE_ERR              = ((ExceptionMessage[1]="Index size error"),1);
+var DOMSTRING_SIZE_ERR          = ExceptionCode.DOMSTRING_SIZE_ERR          = ((ExceptionMessage[2]="DOMString size error"),2);
+var HIERARCHY_REQUEST_ERR       = ExceptionCode.HIERARCHY_REQUEST_ERR       = ((ExceptionMessage[3]="Hierarchy request error"),3);
+var WRONG_DOCUMENT_ERR          = ExceptionCode.WRONG_DOCUMENT_ERR          = ((ExceptionMessage[4]="Wrong document"),4);
+var INVALID_CHARACTER_ERR       = ExceptionCode.INVALID_CHARACTER_ERR       = ((ExceptionMessage[5]="Invalid character"),5);
+var NO_DATA_ALLOWED_ERR         = ExceptionCode.NO_DATA_ALLOWED_ERR         = ((ExceptionMessage[6]="No data allowed"),6);
+var NO_MODIFICATION_ALLOWED_ERR = ExceptionCode.NO_MODIFICATION_ALLOWED_ERR = ((ExceptionMessage[7]="No modification allowed"),7);
+var NOT_FOUND_ERR               = ExceptionCode.NOT_FOUND_ERR               = ((ExceptionMessage[8]="Not found"),8);
+var NOT_SUPPORTED_ERR           = ExceptionCode.NOT_SUPPORTED_ERR           = ((ExceptionMessage[9]="Not supported"),9);
+var INUSE_ATTRIBUTE_ERR         = ExceptionCode.INUSE_ATTRIBUTE_ERR         = ((ExceptionMessage[10]="Attribute in use"),10);
+//level2
+var INVALID_STATE_ERR        	= ExceptionCode.INVALID_STATE_ERR        	= ((ExceptionMessage[11]="Invalid state"),11);
+var SYNTAX_ERR               	= ExceptionCode.SYNTAX_ERR               	= ((ExceptionMessage[12]="Syntax error"),12);
+var INVALID_MODIFICATION_ERR 	= ExceptionCode.INVALID_MODIFICATION_ERR 	= ((ExceptionMessage[13]="Invalid modification"),13);
+var NAMESPACE_ERR            	= ExceptionCode.NAMESPACE_ERR           	= ((ExceptionMessage[14]="Invalid namespace"),14);
+var INVALID_ACCESS_ERR       	= ExceptionCode.INVALID_ACCESS_ERR      	= ((ExceptionMessage[15]="Invalid access"),15);
+
+
+function DOMException(code, message) {
+	if(message instanceof Error){
+		var error = message;
+	}else{
+		error = this;
+		Error.call(this, ExceptionMessage[code]);
+		this.message = ExceptionMessage[code];
+		if(Error.captureStackTrace) Error.captureStackTrace(this, DOMException);
+	}
+	error.code = code;
+	if(message) this.message = this.message + ": " + message;
+	return error;
+};
+DOMException.prototype = Error.prototype;
+copy(ExceptionCode,DOMException)
+/**
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
+ * The NodeList interface provides the abstraction of an ordered collection of nodes, without defining or constraining how this collection is implemented. NodeList objects in the DOM are live.
+ * The items in the NodeList are accessible via an integral index, starting from 0.
+ */
+function NodeList() {
+};
+NodeList.prototype = {
+	/**
+	 * The number of nodes in the list. The range of valid child node indices is 0 to length-1 inclusive.
+	 * @standard level1
+	 */
+	length:0, 
+	/**
+	 * Returns the indexth item in the collection. If index is greater than or equal to the number of nodes in the list, this returns null.
+	 * @standard level1
+	 * @param index  unsigned long 
+	 *   Index into the collection.
+	 * @return Node
+	 * 	The node at the indexth position in the NodeList, or null if that is not a valid index. 
+	 */
+	item: function(index) {
+		return this[index] || null;
+	},
+	toString:function(isHTML,nodeFilter){
+		for(var buf = [], i = 0;i<this.length;i++){
+			serializeToString(this[i],buf,isHTML,nodeFilter);
+		}
+		return buf.join('');
+	}
+};
+function LiveNodeList(node,refresh){
+	this._node = node;
+	this._refresh = refresh
+	_updateLiveList(this);
+}
+function _updateLiveList(list){
+	var inc = list._node._inc || list._node.ownerDocument._inc;
+	if(list._inc != inc){
+		var ls = list._refresh(list._node);
+		//console.log(ls.length)
+		__set__(list,'length',ls.length);
+		copy(ls,list);
+		list._inc = inc;
+	}
+}
+LiveNodeList.prototype.item = function(i){
+	_updateLiveList(this);
+	return this[i];
+}
+
+_extends(LiveNodeList,NodeList);
+/**
+ * 
+ * Objects implementing the NamedNodeMap interface are used to represent collections of nodes that can be accessed by name. Note that NamedNodeMap does not inherit from NodeList; NamedNodeMaps are not maintained in any particular order. Objects contained in an object implementing NamedNodeMap may also be accessed by an ordinal index, but this is simply to allow convenient enumeration of the contents of a NamedNodeMap, and does not imply that the DOM specifies an order to these Nodes.
+ * NamedNodeMap objects in the DOM are live.
+ * used for attributes or DocumentType entities 
+ */
+function NamedNodeMap() {
+};
+
+function _findNodeIndex(list,node){
+	var i = list.length;
+	while(i--){
+		if(list[i] === node){return i}
+	}
+}
+
+function _addNamedNode(el,list,newAttr,oldAttr){
+	if(oldAttr){
+		list[_findNodeIndex(list,oldAttr)] = newAttr;
+	}else{
+		list[list.length++] = newAttr;
+	}
+	if(el){
+		newAttr.ownerElement = el;
+		var doc = el.ownerDocument;
+		if(doc){
+			oldAttr && _onRemoveAttribute(doc,el,oldAttr);
+			_onAddAttribute(doc,el,newAttr);
+		}
+	}
+}
+function _removeNamedNode(el,list,attr){
+	//console.log('remove attr:'+attr)
+	var i = _findNodeIndex(list,attr);
+	if(i>=0){
+		var lastIndex = list.length-1
+		while(i<lastIndex){
+			list[i] = list[++i]
+		}
+		list.length = lastIndex;
+		if(el){
+			var doc = el.ownerDocument;
+			if(doc){
+				_onRemoveAttribute(doc,el,attr);
+				attr.ownerElement = null;
+			}
+		}
+	}else{
+		throw DOMException(NOT_FOUND_ERR,new Error(el.tagName+'@'+attr))
+	}
+}
+NamedNodeMap.prototype = {
+	length:0,
+	item:NodeList.prototype.item,
+	getNamedItem: function(key) {
+//		if(key.indexOf(':')>0 || key == 'xmlns'){
+//			return null;
+//		}
+		//console.log()
+		var i = this.length;
+		while(i--){
+			var attr = this[i];
+			//console.log(attr.nodeName,key)
+			if(attr.nodeName == key){
+				return attr;
+			}
+		}
+	},
+	setNamedItem: function(attr) {
+		var el = attr.ownerElement;
+		if(el && el!=this._ownerElement){
+			throw new DOMException(INUSE_ATTRIBUTE_ERR);
+		}
+		var oldAttr = this.getNamedItem(attr.nodeName);
+		_addNamedNode(this._ownerElement,this,attr,oldAttr);
+		return oldAttr;
+	},
+	/* returns Node */
+	setNamedItemNS: function(attr) {// raises: WRONG_DOCUMENT_ERR,NO_MODIFICATION_ALLOWED_ERR,INUSE_ATTRIBUTE_ERR
+		var el = attr.ownerElement, oldAttr;
+		if(el && el!=this._ownerElement){
+			throw new DOMException(INUSE_ATTRIBUTE_ERR);
+		}
+		oldAttr = this.getNamedItemNS(attr.namespaceURI,attr.localName);
+		_addNamedNode(this._ownerElement,this,attr,oldAttr);
+		return oldAttr;
+	},
+
+	/* returns Node */
+	removeNamedItem: function(key) {
+		var attr = this.getNamedItem(key);
+		_removeNamedNode(this._ownerElement,this,attr);
+		return attr;
+		
+		
+	},// raises: NOT_FOUND_ERR,NO_MODIFICATION_ALLOWED_ERR
+	
+	//for level2
+	removeNamedItemNS:function(namespaceURI,localName){
+		var attr = this.getNamedItemNS(namespaceURI,localName);
+		_removeNamedNode(this._ownerElement,this,attr);
+		return attr;
+	},
+	getNamedItemNS: function(namespaceURI, localName) {
+		var i = this.length;
+		while(i--){
+			var node = this[i];
+			if(node.localName == localName && node.namespaceURI == namespaceURI){
+				return node;
+			}
+		}
+		return null;
+	}
+};
+/**
+ * @see http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-102161490
+ */
+function DOMImplementation(/* Object */ features) {
+	this._features = {};
+	if (features) {
+		for (var feature in features) {
+			 this._features = features[feature];
+		}
+	}
+};
+
+DOMImplementation.prototype = {
+	hasFeature: function(/* string */ feature, /* string */ version) {
+		var versions = this._features[feature.toLowerCase()];
+		if (versions && (!version || version in versions)) {
+			return true;
+		} else {
+			return false;
+		}
+	},
+	// Introduced in DOM Level 2:
+	createDocument:function(namespaceURI,  qualifiedName, doctype){// raises:INVALID_CHARACTER_ERR,NAMESPACE_ERR,WRONG_DOCUMENT_ERR
+		var doc = new Document();
+		doc.implementation = this;
+		doc.childNodes = new NodeList();
+		doc.doctype = doctype;
+		if(doctype){
+			doc.appendChild(doctype);
+		}
+		if(qualifiedName){
+			var root = doc.createElementNS(namespaceURI,qualifiedName);
+			doc.appendChild(root);
+		}
+		return doc;
+	},
+	// Introduced in DOM Level 2:
+	createDocumentType:function(qualifiedName, publicId, systemId){// raises:INVALID_CHARACTER_ERR,NAMESPACE_ERR
+		var node = new DocumentType();
+		node.name = qualifiedName;
+		node.nodeName = qualifiedName;
+		node.publicId = publicId;
+		node.systemId = systemId;
+		// Introduced in DOM Level 2:
+		//readonly attribute DOMString        internalSubset;
+		
+		//TODO:..
+		//  readonly attribute NamedNodeMap     entities;
+		//  readonly attribute NamedNodeMap     notations;
+		return node;
+	}
+};
+
+
+/**
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-1950641247
+ */
+
+function Node() {
+};
+
+Node.prototype = {
+	firstChild : null,
+	lastChild : null,
+	previousSibling : null,
+	nextSibling : null,
+	attributes : null,
+	parentNode : null,
+	childNodes : null,
+	ownerDocument : null,
+	nodeValue : null,
+	namespaceURI : null,
+	prefix : null,
+	localName : null,
+	// Modified in DOM Level 2:
+	insertBefore:function(newChild, refChild){//raises 
+		return _insertBefore(this,newChild,refChild);
+	},
+	replaceChild:function(newChild, oldChild){//raises 
+		this.insertBefore(newChild,oldChild);
+		if(oldChild){
+			this.removeChild(oldChild);
+		}
+	},
+	removeChild:function(oldChild){
+		return _removeChild(this,oldChild);
+	},
+	appendChild:function(newChild){
+		return this.insertBefore(newChild,null);
+	},
+	hasChildNodes:function(){
+		return this.firstChild != null;
+	},
+	cloneNode:function(deep){
+		return cloneNode(this.ownerDocument||this,this,deep);
+	},
+	// Modified in DOM Level 2:
+	normalize:function(){
+		var child = this.firstChild;
+		while(child){
+			var next = child.nextSibling;
+			if(next && next.nodeType == TEXT_NODE && child.nodeType == TEXT_NODE){
+				this.removeChild(next);
+				child.appendData(next.data);
+			}else{
+				child.normalize();
+				child = next;
+			}
+		}
+	},
+  	// Introduced in DOM Level 2:
+	isSupported:function(feature, version){
+		return this.ownerDocument.implementation.hasFeature(feature,version);
+	},
+    // Introduced in DOM Level 2:
+    hasAttributes:function(){
+    	return this.attributes.length>0;
+    },
+    lookupPrefix:function(namespaceURI){
+    	var el = this;
+    	while(el){
+    		var map = el._nsMap;
+    		//console.dir(map)
+    		if(map){
+    			for(var n in map){
+    				if(map[n] == namespaceURI){
+    					return n;
+    				}
+    			}
+    		}
+    		el = el.nodeType == ATTRIBUTE_NODE?el.ownerDocument : el.parentNode;
+    	}
+    	return null;
+    },
+    // Introduced in DOM Level 3:
+    lookupNamespaceURI:function(prefix){
+    	var el = this;
+    	while(el){
+    		var map = el._nsMap;
+    		//console.dir(map)
+    		if(map){
+    			if(prefix in map){
+    				return map[prefix] ;
+    			}
+    		}
+    		el = el.nodeType == ATTRIBUTE_NODE?el.ownerDocument : el.parentNode;
+    	}
+    	return null;
+    },
+    // Introduced in DOM Level 3:
+    isDefaultNamespace:function(namespaceURI){
+    	var prefix = this.lookupPrefix(namespaceURI);
+    	return prefix == null;
+    }
+};
+
+
+function _xmlEncoder(c){
+	return c == '<' && '&lt;' ||
+         c == '>' && '&gt;' ||
+         c == '&' && '&amp;' ||
+         c == '"' && '&quot;' ||
+         '&#'+c.charCodeAt()+';'
+}
+
+
+copy(NodeType,Node);
+copy(NodeType,Node.prototype);
+
+/**
+ * @param callback return true for continue,false for break
+ * @return boolean true: break visit;
+ */
+function _visitNode(node,callback){
+	if(callback(node)){
+		return true;
+	}
+	if(node = node.firstChild){
+		do{
+			if(_visitNode(node,callback)){return true}
+        }while(node=node.nextSibling)
+    }
+}
+
+
+
+function Document(){
+}
+function _onAddAttribute(doc,el,newAttr){
+	doc && doc._inc++;
+	var ns = newAttr.namespaceURI ;
+	if(ns == 'http://www.w3.org/2000/xmlns/'){
+		//update namespace
+		el._nsMap[newAttr.prefix?newAttr.localName:''] = newAttr.value
+	}
+}
+function _onRemoveAttribute(doc,el,newAttr,remove){
+	doc && doc._inc++;
+	var ns = newAttr.namespaceURI ;
+	if(ns == 'http://www.w3.org/2000/xmlns/'){
+		//update namespace
+		delete el._nsMap[newAttr.prefix?newAttr.localName:'']
+	}
+}
+function _onUpdateChild(doc,el,newChild){
+	if(doc && doc._inc){
+		doc._inc++;
+		//update childNodes
+		var cs = el.childNodes;
+		if(newChild){
+			cs[cs.length++] = newChild;
+		}else{
+			//console.log(1)
+			var child = el.firstChild;
+			var i = 0;
+			while(child){
+				cs[i++] = child;
+				child =child.nextSibling;
+			}
+			cs.length = i;
+		}
+	}
+}
+
+/**
+ * attributes;
+ * children;
+ * 
+ * writeable properties:
+ * nodeValue,Attr:value,CharacterData:data
+ * prefix
+ */
+function _removeChild(parentNode,child){
+	var previous = child.previousSibling;
+	var next = child.nextSibling;
+	if(previous){
+		previous.nextSibling = next;
+	}else{
+		parentNode.firstChild = next
+	}
+	if(next){
+		next.previousSibling = previous;
+	}else{
+		parentNode.lastChild = previous;
+	}
+	_onUpdateChild(parentNode.ownerDocument,parentNode);
+	return child;
+}
+/**
+ * preformance key(refChild == null)
+ */
+function _insertBefore(parentNode,newChild,nextChild){
+	var cp = newChild.parentNode;
+	if(cp){
+		cp.removeChild(newChild);//remove and update
+	}
+	if(newChild.nodeType === DOCUMENT_FRAGMENT_NODE){
+		var newFirst = newChild.firstChild;
+		if (newFirst == null) {
+			return newChild;
+		}
+		var newLast = newChild.lastChild;
+	}else{
+		newFirst = newLast = newChild;
+	}
+	var pre = nextChild ? nextChild.previousSibling : parentNode.lastChild;
+
+	newFirst.previousSibling = pre;
+	newLast.nextSibling = nextChild;
+	
+	
+	if(pre){
+		pre.nextSibling = newFirst;
+	}else{
+		parentNode.firstChild = newFirst;
+	}
+	if(nextChild == null){
+		parentNode.lastChild = newLast;
+	}else{
+		nextChild.previousSibling = newLast;
+	}
+	do{
+		newFirst.parentNode = parentNode;
+	}while(newFirst !== newLast && (newFirst= newFirst.nextSibling))
+	_onUpdateChild(parentNode.ownerDocument||parentNode,parentNode);
+	//console.log(parentNode.lastChild.nextSibling == null)
+	if (newChild.nodeType == DOCUMENT_FRAGMENT_NODE) {
+		newChild.firstChild = newChild.lastChild = null;
+	}
+	return newChild;
+}
+function _appendSingleChild(parentNode,newChild){
+	var cp = newChild.parentNode;
+	if(cp){
+		var pre = parentNode.lastChild;
+		cp.removeChild(newChild);//remove and update
+		var pre = parentNode.lastChild;
+	}
+	var pre = parentNode.lastChild;
+	newChild.parentNode = parentNode;
+	newChild.previousSibling = pre;
+	newChild.nextSibling = null;
+	if(pre){
+		pre.nextSibling = newChild;
+	}else{
+		parentNode.firstChild = newChild;
+	}
+	parentNode.lastChild = newChild;
+	_onUpdateChild(parentNode.ownerDocument,parentNode,newChild);
+	return newChild;
+	//console.log("__aa",parentNode.lastChild.nextSibling == null)
+}
+Document.prototype = {
+	//implementation : null,
+	nodeName :  '#document',
+	nodeType :  DOCUMENT_NODE,
+	doctype :  null,
+	documentElement :  null,
+	_inc : 1,
+	
+	insertBefore :  function(newChild, refChild){//raises 
+		if(newChild.nodeType == DOCUMENT_FRAGMENT_NODE){
+			var child = newChild.firstChild;
+			while(child){
+				var next = child.nextSibling;
+				this.insertBefore(child,refChild);
+				child = next;
+			}
+			return newChild;
+		}
+		if(this.documentElement == null && newChild.nodeType == ELEMENT_NODE){
+			this.documentElement = newChild;
+		}
+		
+		return _insertBefore(this,newChild,refChild),(newChild.ownerDocument = this),newChild;
+	},
+	removeChild :  function(oldChild){
+		if(this.documentElement == oldChild){
+			this.documentElement = null;
+		}
+		return _removeChild(this,oldChild);
+	},
+	// Introduced in DOM Level 2:
+	importNode : function(importedNode,deep){
+		return importNode(this,importedNode,deep);
+	},
+	// Introduced in DOM Level 2:
+	getElementById :	function(id){
+		var rtv = null;
+		_visitNode(this.documentElement,function(node){
+			if(node.nodeType == ELEMENT_NODE){
+				if(node.getAttribute('id') == id){
+					rtv = node;
+					return true;
+				}
+			}
+		})
+		return rtv;
+	},
+	
+	//document factory method:
+	createElement :	function(tagName){
+		var node = new Element();
+		node.ownerDocument = this;
+		node.nodeName = tagName;
+		node.tagName = tagName;
+		node.childNodes = new NodeList();
+		var attrs	= node.attributes = new NamedNodeMap();
+		attrs._ownerElement = node;
+		return node;
+	},
+	createDocumentFragment :	function(){
+		var node = new DocumentFragment();
+		node.ownerDocument = this;
+		node.childNodes = new NodeList();
+		return node;
+	},
+	createTextNode :	function(data){
+		var node = new Text();
+		node.ownerDocument = this;
+		node.appendData(data)
+		return node;
+	},
+	createComment :	function(data){
+		var node = new Comment();
+		node.ownerDocument = this;
+		node.appendData(data)
+		return node;
+	},
+	createCDATASection :	function(data){
+		var node = new CDATASection();
+		node.ownerDocument = this;
+		node.appendData(data)
+		return node;
+	},
+	createProcessingInstruction :	function(target,data){
+		var node = new ProcessingInstruction();
+		node.ownerDocument = this;
+		node.tagName = node.target = target;
+		node.nodeValue= node.data = data;
+		return node;
+	},
+	createAttribute :	function(name){
+		var node = new Attr();
+		node.ownerDocument	= this;
+		node.name = name;
+		node.nodeName	= name;
+		node.localName = name;
+		node.specified = true;
+		return node;
+	},
+	createEntityReference :	function(name){
+		var node = new EntityReference();
+		node.ownerDocument	= this;
+		node.nodeName	= name;
+		return node;
+	},
+	// Introduced in DOM Level 2:
+	createElementNS :	function(namespaceURI,qualifiedName){
+		var node = new Element();
+		var pl = qualifiedName.split(':');
+		var attrs	= node.attributes = new NamedNodeMap();
+		node.childNodes = new NodeList();
+		node.ownerDocument = this;
+		node.nodeName = qualifiedName;
+		node.tagName = qualifiedName;
+		node.namespaceURI = namespaceURI;
+		if(pl.length == 2){
+			node.prefix = pl[0];
+			node.localName = pl[1];
+		}else{
+			//el.prefix = null;
+			node.localName = qualifiedName;
+		}
+		attrs._ownerElement = node;
+		return node;
+	},
+	// Introduced in DOM Level 2:
+	createAttributeNS :	function(namespaceURI,qualifiedName){
+		var node = new Attr();
+		var pl = qualifiedName.split(':');
+		node.ownerDocument = this;
+		node.nodeName = qualifiedName;
+		node.name = qualifiedName;
+		node.namespaceURI = namespaceURI;
+		node.specified = true;
+		if(pl.length == 2){
+			node.prefix = pl[0];
+			node.localName = pl[1];
+		}else{
+			//el.prefix = null;
+			node.localName = qualifiedName;
+		}
+		return node;
+	}
+};
+_extends(Document,Node);
+
+
+function Element() {
+	this._nsMap = {};
+};
+Element.prototype = {
+	nodeType : ELEMENT_NODE,
+	hasAttribute : function(name){
+		return this.getAttributeNode(name)!=null;
+	},
+	getAttribute : function(name){
+		var attr = this.getAttributeNode(name);
+		return attr && attr.value || '';
+	},
+	getAttributeNode : function(name){
+		return this.attributes.getNamedItem(name);
+	},
+	setAttribute : function(name, value){
+		var attr = this.ownerDocument.createAttribute(name);
+		attr.value = attr.nodeValue = "" + value;
+		this.setAttributeNode(attr)
+	},
+	removeAttribute : function(name){
+		var attr = this.getAttributeNode(name)
+		attr && this.removeAttributeNode(attr);
+	},
+	
+	//four real opeartion method
+	appendChild:function(newChild){
+		if(newChild.nodeType === DOCUMENT_FRAGMENT_NODE){
+			return this.insertBefore(newChild,null);
+		}else{
+			return _appendSingleChild(this,newChild);
+		}
+	},
+	setAttributeNode : function(newAttr){
+		return this.attributes.setNamedItem(newAttr);
+	},
+	setAttributeNodeNS : function(newAttr){
+		return this.attributes.setNamedItemNS(newAttr);
+	},
+	removeAttributeNode : function(oldAttr){
+		//console.log(this == oldAttr.ownerElement)
+		return this.attributes.removeNamedItem(oldAttr.nodeName);
+	},
+	//get real attribute name,and remove it by removeAttributeNode
+	removeAttributeNS : function(namespaceURI, localName){
+		var old = this.getAttributeNodeNS(namespaceURI, localName);
+		old && this.removeAttributeNode(old);
+	},
+	
+	hasAttributeNS : function(namespaceURI, localName){
+		return this.getAttributeNodeNS(namespaceURI, localName)!=null;
+	},
+	getAttributeNS : function(namespaceURI, localName){
+		var attr = this.getAttributeNodeNS(namespaceURI, localName);
+		return attr && attr.value || '';
+	},
+	setAttributeNS : function(namespaceURI, qualifiedName, value){
+		var attr = this.ownerDocument.createAttributeNS(namespaceURI, qualifiedName);
+		attr.value = attr.nodeValue = "" + value;
+		this.setAttributeNode(attr)
+	},
+	getAttributeNodeNS : function(namespaceURI, localName){
+		return this.attributes.getNamedItemNS(namespaceURI, localName);
+	},
+	
+	getElementsByTagName : function(tagName){
+		return new LiveNodeList(this,function(base){
+			var ls = [];
+			_visitNode(base,function(node){
+				if(node !== base && node.nodeType == ELEMENT_NODE && (tagName === '*' || node.tagName == tagName)){
+					ls.push(node);
+				}
+			});
+			return ls;
+		});
+	},
+	getElementsByTagNameNS : function(namespaceURI, localName){
+		return new LiveNodeList(this,function(base){
+			var ls = [];
+			_visitNode(base,function(node){
+				if(node !== base && node.nodeType === ELEMENT_NODE && (namespaceURI === '*' || node.namespaceURI === namespaceURI) && (localName === '*' || node.localName == localName)){
+					ls.push(node);
+				}
+			});
+			return ls;
+			
+		});
+	}
+};
+Document.prototype.getElementsByTagName = Element.prototype.getElementsByTagName;
+Document.prototype.getElementsByTagNameNS = Element.prototype.getElementsByTagNameNS;
+
+
+_extends(Element,Node);
+function Attr() {
+};
+Attr.prototype.nodeType = ATTRIBUTE_NODE;
+_extends(Attr,Node);
+
+
+function CharacterData() {
+};
+CharacterData.prototype = {
+	data : '',
+	substringData : function(offset, count) {
+		return this.data.substring(offset, offset+count);
+	},
+	appendData: function(text) {
+		text = this.data+text;
+		this.nodeValue = this.data = text;
+		this.length = text.length;
+	},
+	insertData: function(offset,text) {
+		this.replaceData(offset,0,text);
+	
+	},
+	appendChild:function(newChild){
+		throw new Error(ExceptionMessage[HIERARCHY_REQUEST_ERR])
+	},
+	deleteData: function(offset, count) {
+		this.replaceData(offset,count,"");
+	},
+	replaceData: function(offset, count, text) {
+		var start = this.data.substring(0,offset);
+		var end = this.data.substring(offset+count);
+		text = start + text + end;
+		this.nodeValue = this.data = text;
+		this.length = text.length;
+	}
+}
+_extends(CharacterData,Node);
+function Text() {
+};
+Text.prototype = {
+	nodeName : "#text",
+	nodeType : TEXT_NODE,
+	splitText : function(offset) {
+		var text = this.data;
+		var newText = text.substring(offset);
+		text = text.substring(0, offset);
+		this.data = this.nodeValue = text;
+		this.length = text.length;
+		var newNode = this.ownerDocument.createTextNode(newText);
+		if(this.parentNode){
+			this.parentNode.insertBefore(newNode, this.nextSibling);
+		}
+		return newNode;
+	}
+}
+_extends(Text,CharacterData);
+function Comment() {
+};
+Comment.prototype = {
+	nodeName : "#comment",
+	nodeType : COMMENT_NODE
+}
+_extends(Comment,CharacterData);
+
+function CDATASection() {
+};
+CDATASection.prototype = {
+	nodeName : "#cdata-section",
+	nodeType : CDATA_SECTION_NODE
+}
+_extends(CDATASection,CharacterData);
+
+
+function DocumentType() {
+};
+DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
+_extends(DocumentType,Node);
+
+function Notation() {
+};
+Notation.prototype.nodeType = NOTATION_NODE;
+_extends(Notation,Node);
+
+function Entity() {
+};
+Entity.prototype.nodeType = ENTITY_NODE;
+_extends(Entity,Node);
+
+function EntityReference() {
+};
+EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
+_extends(EntityReference,Node);
+
+function DocumentFragment() {
+};
+DocumentFragment.prototype.nodeName =	"#document-fragment";
+DocumentFragment.prototype.nodeType =	DOCUMENT_FRAGMENT_NODE;
+_extends(DocumentFragment,Node);
+
+
+function ProcessingInstruction() {
+}
+ProcessingInstruction.prototype.nodeType = PROCESSING_INSTRUCTION_NODE;
+_extends(ProcessingInstruction,Node);
+function XMLSerializer(){}
+XMLSerializer.prototype.serializeToString = function(node,isHtml,nodeFilter){
+	return nodeSerializeToString.call(node,isHtml,nodeFilter);
+}
+Node.prototype.toString = nodeSerializeToString;
+function nodeSerializeToString(isHtml,nodeFilter){
+	var buf = [];
+	var refNode = this.nodeType == 9?this.documentElement:this;
+	var prefix = refNode.prefix;
+	var uri = refNode.namespaceURI;
+	
+	if(uri && prefix == null){
+		//console.log(prefix)
+		var prefix = refNode.lookupPrefix(uri);
+		if(prefix == null){
+			//isHTML = true;
+			var visibleNamespaces=[
+			{namespace:uri,prefix:null}
+			//{namespace:uri,prefix:''}
+			]
+		}
+	}
+	serializeToString(this,buf,isHtml,nodeFilter,visibleNamespaces);
+	//console.log('###',this.nodeType,uri,prefix,buf.join(''))
+	return buf.join('');
+}
+function needNamespaceDefine(node,isHTML, visibleNamespaces) {
+	var prefix = node.prefix||'';
+	var uri = node.namespaceURI;
+	if (!prefix && !uri){
+		return false;
+	}
+	if (prefix === "xml" && uri === "http://www.w3.org/XML/1998/namespace" 
+		|| uri == 'http://www.w3.org/2000/xmlns/'){
+		return false;
+	}
+	
+	var i = visibleNamespaces.length 
+	//console.log('@@@@',node.tagName,prefix,uri,visibleNamespaces)
+	while (i--) {
+		var ns = visibleNamespaces[i];
+		// get namespace prefix
+		//console.log(node.nodeType,node.tagName,ns.prefix,prefix)
+		if (ns.prefix == prefix){
+			return ns.namespace != uri;
+		}
+	}
+	//console.log(isHTML,uri,prefix=='')
+	//if(isHTML && prefix ==null && uri == 'http://www.w3.org/1999/xhtml'){
+	//	return false;
+	//}
+	//node.flag = '11111'
+	//console.error(3,true,node.flag,node.prefix,node.namespaceURI)
+	return true;
+}
+function serializeToString(node,buf,isHTML,nodeFilter,visibleNamespaces){
+	if(nodeFilter){
+		node = nodeFilter(node);
+		if(node){
+			if(typeof node == 'string'){
+				buf.push(node);
+				return;
+			}
+		}else{
+			return;
+		}
+		//buf.sort.apply(attrs, attributeSorter);
+	}
+	switch(node.nodeType){
+	case ELEMENT_NODE:
+		if (!visibleNamespaces) visibleNamespaces = [];
+		var startVisibleNamespaces = visibleNamespaces.length;
+		var attrs = node.attributes;
+		var len = attrs.length;
+		var child = node.firstChild;
+		var nodeName = node.tagName;
+		
+		isHTML =  (htmlns === node.namespaceURI) ||isHTML 
+		buf.push('<',nodeName);
+		
+		
+		
+		for(var i=0;i<len;i++){
+			// add namespaces for attributes
+			var attr = attrs.item(i);
+			if (attr.prefix == 'xmlns') {
+				visibleNamespaces.push({ prefix: attr.localName, namespace: attr.value });
+			}else if(attr.nodeName == 'xmlns'){
+				visibleNamespaces.push({ prefix: '', namespace: attr.value });
+			}
+		}
+		for(var i=0;i<len;i++){
+			var attr = attrs.item(i);
+			if (needNamespaceDefine(attr,isHTML, visibleNamespaces)) {
+				var prefix = attr.prefix||'';
+				var uri = attr.namespaceURI;
+				var ns = prefix ? ' xmlns:' + prefix : " xmlns";
+				buf.push(ns, '="' , uri , '"');
+				visibleNamespaces.push({ prefix: prefix, namespace:uri });
+			}
+			serializeToString(attr,buf,isHTML,nodeFilter,visibleNamespaces);
+		}
+		// add namespace for current node		
+		if (needNamespaceDefine(node,isHTML, visibleNamespaces)) {
+			var prefix = node.prefix||'';
+			var uri = node.namespaceURI;
+			var ns = prefix ? ' xmlns:' + prefix : " xmlns";
+			buf.push(ns, '="' , uri , '"');
+			visibleNamespaces.push({ prefix: prefix, namespace:uri });
+		}
+		
+		if(child || isHTML && !/^(?:meta|link|img|br|hr|input)$/i.test(nodeName)){
+			buf.push('>');
+			//if is cdata child node
+			if(isHTML && /^script$/i.test(nodeName)){
+				while(child){
+					if(child.data){
+						buf.push(child.data);
+					}else{
+						serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+					}
+					child = child.nextSibling;
+				}
+			}else
+			{
+				while(child){
+					serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+					child = child.nextSibling;
+				}
+			}
+			buf.push('</',nodeName,'>');
+		}else{
+			buf.push('/>');
+		}
+		// remove added visible namespaces
+		//visibleNamespaces.length = startVisibleNamespaces;
+		return;
+	case DOCUMENT_NODE:
+	case DOCUMENT_FRAGMENT_NODE:
+		var child = node.firstChild;
+		while(child){
+			serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+			child = child.nextSibling;
+		}
+		return;
+	case ATTRIBUTE_NODE:
+		return buf.push(' ',node.name,'="',node.value.replace(/[<&"]/g,_xmlEncoder),'"');
+	case TEXT_NODE:
+		return buf.push(node.data.replace(/[<&]/g,_xmlEncoder));
+	case CDATA_SECTION_NODE:
+		return buf.push( '<![CDATA[',node.data,']]>');
+	case COMMENT_NODE:
+		return buf.push( "<!--",node.data,"-->");
+	case DOCUMENT_TYPE_NODE:
+		var pubid = node.publicId;
+		var sysid = node.systemId;
+		buf.push('<!DOCTYPE ',node.name);
+		if(pubid){
+			buf.push(' PUBLIC "',pubid);
+			if (sysid && sysid!='.') {
+				buf.push( '" "',sysid);
+			}
+			buf.push('">');
+		}else if(sysid && sysid!='.'){
+			buf.push(' SYSTEM "',sysid,'">');
+		}else{
+			var sub = node.internalSubset;
+			if(sub){
+				buf.push(" [",sub,"]");
+			}
+			buf.push(">");
+		}
+		return;
+	case PROCESSING_INSTRUCTION_NODE:
+		return buf.push( "<?",node.target," ",node.data,"?>");
+	case ENTITY_REFERENCE_NODE:
+		return buf.push( '&',node.nodeName,';');
+	//case ENTITY_NODE:
+	//case NOTATION_NODE:
+	default:
+		buf.push('??',node.nodeName);
+	}
+}
+function importNode(doc,node,deep){
+	var node2;
+	switch (node.nodeType) {
+	case ELEMENT_NODE:
+		node2 = node.cloneNode(false);
+		node2.ownerDocument = doc;
+		//var attrs = node2.attributes;
+		//var len = attrs.length;
+		//for(var i=0;i<len;i++){
+			//node2.setAttributeNodeNS(importNode(doc,attrs.item(i),deep));
+		//}
+	case DOCUMENT_FRAGMENT_NODE:
+		break;
+	case ATTRIBUTE_NODE:
+		deep = true;
+		break;
+	//case ENTITY_REFERENCE_NODE:
+	//case PROCESSING_INSTRUCTION_NODE:
+	////case TEXT_NODE:
+	//case CDATA_SECTION_NODE:
+	//case COMMENT_NODE:
+	//	deep = false;
+	//	break;
+	//case DOCUMENT_NODE:
+	//case DOCUMENT_TYPE_NODE:
+	//cannot be imported.
+	//case ENTITY_NODE:
+	//case NOTATION_NODE：
+	//can not hit in level3
+	//default:throw e;
+	}
+	if(!node2){
+		node2 = node.cloneNode(false);//false
+	}
+	node2.ownerDocument = doc;
+	node2.parentNode = null;
+	if(deep){
+		var child = node.firstChild;
+		while(child){
+			node2.appendChild(importNode(doc,child,deep));
+			child = child.nextSibling;
+		}
+	}
+	return node2;
+}
+//
+//var _relationMap = {firstChild:1,lastChild:1,previousSibling:1,nextSibling:1,
+//					attributes:1,childNodes:1,parentNode:1,documentElement:1,doctype,};
+function cloneNode(doc,node,deep){
+	var node2 = new node.constructor();
+	for(var n in node){
+		var v = node[n];
+		if(typeof v != 'object' ){
+			if(v != node2[n]){
+				node2[n] = v;
+			}
+		}
+	}
+	if(node.childNodes){
+		node2.childNodes = new NodeList();
+	}
+	node2.ownerDocument = doc;
+	switch (node2.nodeType) {
+	case ELEMENT_NODE:
+		var attrs	= node.attributes;
+		var attrs2	= node2.attributes = new NamedNodeMap();
+		var len = attrs.length
+		attrs2._ownerElement = node2;
+		for(var i=0;i<len;i++){
+			node2.setAttributeNode(cloneNode(doc,attrs.item(i),true));
+		}
+		break;;
+	case ATTRIBUTE_NODE:
+		deep = true;
+	}
+	if(deep){
+		var child = node.firstChild;
+		while(child){
+			node2.appendChild(cloneNode(doc,child,deep));
+			child = child.nextSibling;
+		}
+	}
+	return node2;
+}
+
+function __set__(object,key,value){
+	object[key] = value
+}
+//do dynamic
+try{
+	if(Object.defineProperty){
+		Object.defineProperty(LiveNodeList.prototype,'length',{
+			get:function(){
+				_updateLiveList(this);
+				return this.$$length;
+			}
+		});
+		Object.defineProperty(Node.prototype,'textContent',{
+			get:function(){
+				return getTextContent(this);
+			},
+			set:function(data){
+				switch(this.nodeType){
+				case ELEMENT_NODE:
+				case DOCUMENT_FRAGMENT_NODE:
+					while(this.firstChild){
+						this.removeChild(this.firstChild);
+					}
+					if(data || String(data)){
+						this.appendChild(this.ownerDocument.createTextNode(data));
+					}
+					break;
+				default:
+					//TODO:
+					this.data = data;
+					this.value = data;
+					this.nodeValue = data;
+				}
+			}
+		})
+		
+		function getTextContent(node){
+			switch(node.nodeType){
+			case ELEMENT_NODE:
+			case DOCUMENT_FRAGMENT_NODE:
+				var buf = [];
+				node = node.firstChild;
+				while(node){
+					if(node.nodeType!==7 && node.nodeType !==8){
+						buf.push(getTextContent(node));
+					}
+					node = node.nextSibling;
+				}
+				return buf.join('');
+			default:
+				return node.nodeValue;
+			}
+		}
+		__set__ = function(object,key,value){
+			//console.log(value)
+			object['$$'+key] = value
+		}
+	}
+}catch(e){//ie8
+}
+
+//if(typeof require == 'function'){
+	exports.DOMImplementation = DOMImplementation;
+	exports.XMLSerializer = XMLSerializer;
+//}
+
 
 /***/ }),
 /* 17 */
@@ -6409,7 +7727,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 // Default View Managers
 
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -6427,11 +7745,11 @@ var _queue = __webpack_require__(12);
 
 var _queue2 = _interopRequireDefault(_queue);
 
-var _layout = __webpack_require__(50);
+var _layout = __webpack_require__(53);
 
 var _layout2 = _interopRequireDefault(_layout);
 
-var _themes = __webpack_require__(51);
+var _themes = __webpack_require__(54);
 
 var _themes2 = _interopRequireDefault(_themes);
 
@@ -6439,11 +7757,11 @@ var _contents = __webpack_require__(13);
 
 var _contents2 = _interopRequireDefault(_contents);
 
-var _annotations = __webpack_require__(52);
+var _annotations = __webpack_require__(55);
 
 var _annotations2 = _interopRequireDefault(_annotations);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 var _iframe = __webpack_require__(20);
 
@@ -6477,6 +7795,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @param {string} [options.spread] force spread value
  * @param {number} [options.minSpreadWidth] overridden by spread: none (never) / both (always)
  * @param {string} [options.stylesheet] url of stylesheet to be injected
+ * @param {boolean} [options.resizeOnOrientationChange] false to disable orientation events
  * @param {string} [options.script] url of script to be injected
  */
 var Rendition = function () {
@@ -6494,6 +7813,7 @@ var Rendition = function () {
 			spread: null,
 			minSpreadWidth: 800,
 			stylesheet: null,
+			resizeOnOrientationChange: true,
 			script: null
 		});
 
@@ -6773,10 +8093,9 @@ var Rendition = function () {
 			this.displaying = displaying;
 
 			// Check if this is a book percentage
-			if (this.book.locations.length() && ((0, _core.isFloat)(target) || target === "1.0") // Handle 1.0
-			) {
-					target = this.book.locations.cfiFromPercentage(parseFloat(target));
-				}
+			if (this.book.locations.length() && (0, _core.isFloat)(target)) {
+				target = this.book.locations.cfiFromPercentage(parseFloat(target));
+			}
 
 			section = this.book.spine.get(target);
 
@@ -7351,7 +8670,7 @@ var Rendition = function () {
 		/**
    * Pass the events from a view's Contents
    * @private
-   * @param  {View} view
+   * @param  {Contents} view contents
    */
 
 	}, {
@@ -7460,17 +8779,22 @@ var Rendition = function () {
 				});
 			}
 
+			var computed = contents.window.getComputedStyle(contents.content, null);
+			var height = contents.content.offsetHeight - (parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom));
+
 			contents.addStylesheetRules({
 				"img": {
 					"max-width": (this._layout.columnWidth ? this._layout.columnWidth + "px" : "100%") + "!important",
-					"max-height": (this._layout.height ? this._layout.height * 0.6 + "px" : "60%") + "!important",
+					"max-height": height + "px" + "!important",
 					"object-fit": "contain",
-					"page-break-inside": "avoid"
+					"page-break-inside": "avoid",
+					"break-inside": "avoid"
 				},
 				"svg": {
 					"max-width": (this._layout.columnWidth ? this._layout.columnWidth + "px" : "100%") + "!important",
-					"max-height": (this._layout.height ? this._layout.height * 0.6 + "px" : "60%") + "!important",
-					"page-break-inside": "avoid"
+					"max-height": height + "px" + "!important",
+					"page-break-inside": "avoid",
+					"break-inside": "avoid"
 				}
 			});
 
@@ -7609,6 +8933,8 @@ var _epubcfi = __webpack_require__(1);
 
 var _epubcfi2 = _interopRequireDefault(_epubcfi);
 
+var _core = __webpack_require__(0);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7616,6 +8942,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 /**
  * Map text locations to CFI ranges
  * @class
+ * @param {Layout} layout Layout to apply
+ * @param {string} [direction="ltr"] Text direction
+ * @param {string} [axis="horizontal"] vertical or horizontal axis
+ * @param {boolean} [dev] toggle developer highlighting
  */
 var Mapping = function () {
 	function Mapping(layout, direction, axis, dev) {
@@ -7643,6 +8973,10 @@ var Mapping = function () {
 
 		/**
    * Find CFI pairs for a page
+   * @param {Contents} contents Contents from view
+   * @param {string} cfiBase string of the base for a cfi
+   * @param {number} start position to start at
+   * @param {number} end position to end at
    */
 
 	}, {
@@ -7675,6 +9009,15 @@ var Mapping = function () {
 
 			return result;
 		}
+
+		/**
+   * Walk a node, preforming a function on each node it finds
+   * @private
+   * @param {Node} root Node to walkToNode
+   * @param {function} func walk function
+   * @return {*} returns the result of the walk function
+   */
+
 	}, {
 		key: "walk",
 		value: function walk(root, func) {
@@ -7730,6 +9073,16 @@ var Mapping = function () {
 
 			return columns;
 		}
+
+		/**
+   * Find Start Range
+   * @private
+   * @param {Node} root root node
+   * @param {number} start position to start at
+   * @param {number} end position to end at
+   * @return {Range}
+   */
+
 	}, {
 		key: "findStart",
 		value: function findStart(root, start, end) {
@@ -7749,7 +9102,7 @@ var Mapping = function () {
 					var elPos;
 					var elRange;
 
-					elPos = _this.getBounds(node);
+					elPos = (0, _core.nodeBounds)(node);
 
 					if (_this.horizontal && _this.direction === "ltr") {
 
@@ -7801,6 +9154,16 @@ var Mapping = function () {
 			// Return last element
 			return this.findTextStartRange($prev, start, end);
 		}
+
+		/**
+   * Find End Range
+   * @private
+   * @param {Node} root root node
+   * @param {number} start position to start at
+   * @param {number} end position to end at
+   * @return {Range}
+   */
+
 	}, {
 		key: "findEnd",
 		value: function findEnd(root, start, end) {
@@ -7821,7 +9184,7 @@ var Mapping = function () {
 					var elPos;
 					var elRange;
 
-					elPos = _this2.getBounds(node);
+					elPos = (0, _core.nodeBounds)(node);
 
 					if (_this2.horizontal && _this2.direction === "ltr") {
 
@@ -7873,6 +9236,16 @@ var Mapping = function () {
 			// end of chapter
 			return this.findTextEndRange($prev, start, end);
 		}
+
+		/**
+   * Find Text Start Range
+   * @private
+   * @param {Node} root root node
+   * @param {number} start position to start at
+   * @param {number} end position to end at
+   * @return {Range}
+   */
+
 	}, {
 		key: "findTextStartRange",
 		value: function findTextStartRange(node, start, end) {
@@ -7911,6 +9284,16 @@ var Mapping = function () {
 
 			return ranges[0];
 		}
+
+		/**
+   * Find Text End Range
+   * @private
+   * @param {Node} root root node
+   * @param {number} start position to start at
+   * @param {number} end position to end at
+   * @return {Range}
+   */
+
 	}, {
 		key: "findTextEndRange",
 		value: function findTextEndRange(node, start, end) {
@@ -7963,6 +9346,15 @@ var Mapping = function () {
 			// Ends before limit
 			return ranges[ranges.length - 1];
 		}
+
+		/**
+   * Split up a text node into ranges for each word
+   * @private
+   * @param {Node} root root node
+   * @param {string} [_splitter] what to split on
+   * @return {Range[]}
+   */
+
 	}, {
 		key: "splitTextNodeIntoRanges",
 		value: function splitTextNodeIntoRanges(node, _splitter) {
@@ -8009,6 +9401,15 @@ var Mapping = function () {
 
 			return ranges;
 		}
+
+		/**
+   * Turn a pair of ranges into a pair of CFIs
+   * @private
+   * @param {string} cfiBase base string for an EpubCFI
+   * @param {object} rangePair { start: Range, end: Range }
+   * @return {object} { start: "epubcfi(...)", end: "epubcfi(...)" }
+   */
+
 	}, {
 		key: "rangePairToCfiPair",
 		value: function rangePairToCfiPair(cfiBase, rangePair) {
@@ -8041,19 +9442,13 @@ var Mapping = function () {
 
 			return map;
 		}
-	}, {
-		key: "getBounds",
-		value: function getBounds(node) {
-			var elPos = void 0;
-			if (node.nodeType == Node.TEXT_NODE) {
-				var elRange = document.createRange();
-				elRange.selectNodeContents(node);
-				elPos = elRange.getBoundingClientRect();
-			} else {
-				elPos = node.getBoundingClientRect();
-			}
-			return elPos;
-		}
+
+		/**
+   * Set the axis for mapping
+   * @param {string} axis horizontal | vertical
+   * @return {boolean} is it horizontal?
+   */
+
 	}, {
 		key: "axis",
 		value: function axis(_axis) {
@@ -8083,7 +9478,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -8097,9 +9492,9 @@ var _contents = __webpack_require__(13);
 
 var _contents2 = _interopRequireDefault(_contents);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
-var _marksPane = __webpack_require__(53);
+var _marksPane = __webpack_require__(56);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -8382,10 +9777,10 @@ var IframeView = function () {
 					}
 
 					if (this.settings.forceEvenPages) {
-						columns = width / this.layout.delta;
+						columns = width / this.layout.pageWidth;
 						if (this.layout.divisor > 1 && this.layout.name === "reflowable" && columns % 2 > 0) {
 							// add a blank page
-							width += this.layout.gap + this.layout.columnWidth;
+							width += this.layout.pageWidth;
 						}
 					}
 				} // Expand Vertically
@@ -8404,6 +9799,8 @@ var IframeView = function () {
 	}, {
 		key: "reframe",
 		value: function reframe(width, height) {
+			var _this2 = this;
+
 			var size;
 
 			if ((0, _core.isNumber)(width)) {
@@ -8429,6 +9826,16 @@ var IframeView = function () {
 			};
 
 			this.pane && this.pane.render();
+
+			requestAnimationFrame(function () {
+				var mark = void 0;
+				for (var m in _this2.marks) {
+					if (_this2.marks.hasOwnProperty(m)) {
+						mark = _this2.marks[m];
+						_this2.placeMark(mark.element, mark.range);
+					}
+				}
+			});
 
 			this.onResize(this, size);
 
@@ -8478,7 +9885,7 @@ var IframeView = function () {
 	}, {
 		key: "onLoad",
 		value: function onLoad(event, promise) {
-			var _this2 = this;
+			var _this3 = this;
 
 			this.window = this.iframe.contentWindow;
 			this.document = this.iframe.contentDocument;
@@ -8498,19 +9905,19 @@ var IframeView = function () {
 			}
 
 			this.contents.on(_constants.EVENTS.CONTENTS.EXPAND, function () {
-				if (_this2.displayed && _this2.iframe) {
-					_this2.expand();
-					if (_this2.contents) {
-						_this2.layout.format(_this2.contents);
+				if (_this3.displayed && _this3.iframe) {
+					_this3.expand();
+					if (_this3.contents) {
+						_this3.layout.format(_this3.contents);
 					}
 				}
 			});
 
 			this.contents.on(_constants.EVENTS.CONTENTS.RESIZE, function (e) {
-				if (_this2.displayed && _this2.iframe) {
-					_this2.expand();
-					if (_this2.contents) {
-						_this2.layout.format(_this2.contents);
+				if (_this3.displayed && _this3.iframe) {
+					_this3.expand();
+					if (_this3.contents) {
+						_this3.layout.format(_this3.contents);
 					}
 				}
 			});
@@ -8587,6 +9994,11 @@ var IframeView = function () {
 
 			if (this.iframe) {
 				this.iframe.style.visibility = "visible";
+
+				// Remind Safari to redraw the iframe
+				this.iframe.style.transform = "translateZ(0)";
+				this.iframe.offsetWidth;
+				this.iframe.style.transform = null;
 			}
 
 			this.emit(_constants.EVENTS.VIEWS.SHOWN, this);
@@ -8657,18 +10069,22 @@ var IframeView = function () {
 	}, {
 		key: "highlight",
 		value: function highlight(cfiRange) {
-			var _this3 = this;
-
 			var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 			var cb = arguments[2];
+
+			var _this4 = this;
+
+			var className = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "epubjs-hl";
+			var styles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 
 			if (!this.contents) {
 				return;
 			}
+			var attributes = Object.assign({ "fill": "yellow", "fill-opacity": "0.3", "mix-blend-mode": "multiply" }, styles);
 			var range = this.contents.range(cfiRange);
 
 			var emitter = function emitter() {
-				_this3.emit(_constants.EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
+				_this4.emit(_constants.EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
 			};
 
 			data["epubcfi"] = cfiRange;
@@ -8677,12 +10093,12 @@ var IframeView = function () {
 				this.pane = new _marksPane.Pane(this.iframe, this.element);
 			}
 
-			var m = new _marksPane.Highlight(range, "epubjs-hl", data, { 'fill': 'yellow', 'fill-opacity': '0.3', 'mix-blend-mode': 'multiply' });
+			var m = new _marksPane.Highlight(range, className, data, attributes);
 			var h = this.pane.addMark(m);
 
 			this.highlights[cfiRange] = { "mark": h, "element": h.element, "listeners": [emitter, cb] };
 
-			h.element.setAttribute("ref", "epubjs-hl");
+			h.element.setAttribute("ref", className);
 			h.element.addEventListener("click", emitter);
 			h.element.addEventListener("touchstart", emitter);
 
@@ -8695,17 +10111,21 @@ var IframeView = function () {
 	}, {
 		key: "underline",
 		value: function underline(cfiRange) {
-			var _this4 = this;
-
 			var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 			var cb = arguments[2];
+
+			var _this5 = this;
+
+			var className = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "epubjs-ul";
+			var styles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 
 			if (!this.contents) {
 				return;
 			}
+			var attributes = Object.assign({ "stroke": "black", "stroke-opacity": "0.3", "mix-blend-mode": "multiply" }, styles);
 			var range = this.contents.range(cfiRange);
 			var emitter = function emitter() {
-				_this4.emit(_constants.EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
+				_this5.emit(_constants.EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
 			};
 
 			data["epubcfi"] = cfiRange;
@@ -8714,12 +10134,12 @@ var IframeView = function () {
 				this.pane = new _marksPane.Pane(this.iframe, this.element);
 			}
 
-			var m = new _marksPane.Underline(range, "epubjs-ul", data, { 'stroke': 'black', 'stroke-opacity': '0.3', 'mix-blend-mode': 'multiply' });
+			var m = new _marksPane.Underline(range, className, data, attributes);
 			var h = this.pane.addMark(m);
 
 			this.underlines[cfiRange] = { "mark": h, "element": h.element, "listeners": [emitter, cb] };
 
-			h.element.setAttribute("ref", "epubjs-ul");
+			h.element.setAttribute("ref", className);
 			h.element.addEventListener("click", emitter);
 			h.element.addEventListener("touchstart", emitter);
 
@@ -8732,7 +10152,7 @@ var IframeView = function () {
 	}, {
 		key: "mark",
 		value: function mark(cfiRange) {
-			var _this5 = this;
+			var _this6 = this;
 
 			var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 			var cb = arguments[2];
@@ -8755,7 +10175,7 @@ var IframeView = function () {
 			var parent = container.nodeType === 1 ? container : container.parentNode;
 
 			var emitter = function emitter(e) {
-				_this5.emit(_constants.EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
+				_this6.emit(_constants.EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
 			};
 
 			if (range.collapsed && container.nodeType === 1) {
@@ -8767,33 +10187,9 @@ var IframeView = function () {
 				range.selectNodeContents(parent);
 			}
 
-			var top = void 0,
-			    right = void 0,
-			    left = void 0;
-
-			if (this.layout.name === "pre-paginated" || this.settings.axis !== "horizontal") {
-				var pos = range.getBoundingClientRect();
-				top = pos.top;
-				right = pos.right;
-			} else {
-				// Element might break columns, so find the left most element
-				var rects = range.getClientRects();
-				var rect = void 0;
-				for (var i = 0; i != rects.length; i++) {
-					rect = rects[i];
-					if (!left || rect.left < left) {
-						left = rect.left;
-						right = left + this.layout.columnWidth - this.layout.gap;
-						top = rect.top;
-					}
-				}
-			}
-
-			var mark = this.document.createElement('a');
+			var mark = this.document.createElement("a");
 			mark.setAttribute("ref", "epubjs-mk");
 			mark.style.position = "absolute";
-			mark.style.top = top + "px";
-			mark.style.left = right + "px";
 
 			mark.dataset["epubcfi"] = cfiRange;
 
@@ -8811,11 +10207,42 @@ var IframeView = function () {
 			mark.addEventListener("click", emitter);
 			mark.addEventListener("touchstart", emitter);
 
+			this.placeMark(mark, range);
+
 			this.element.appendChild(mark);
 
-			this.marks[cfiRange] = { "element": mark, "listeners": [emitter, cb] };
+			this.marks[cfiRange] = { "element": mark, "range": range, "listeners": [emitter, cb] };
 
 			return parent;
+		}
+	}, {
+		key: "placeMark",
+		value: function placeMark(element, range) {
+			var top = void 0,
+			    right = void 0,
+			    left = void 0;
+
+			if (this.layout.name === "pre-paginated" || this.settings.axis !== "horizontal") {
+				var pos = range.getBoundingClientRect();
+				top = pos.top;
+				right = pos.right;
+			} else {
+				// Element might break columns, so find the left most element
+				var rects = range.getClientRects();
+
+				var rect = void 0;
+				for (var i = 0; i != rects.length; i++) {
+					rect = rects[i];
+					if (!left || rect.left < left) {
+						left = rect.left;
+						right = left + this.layout.columnWidth - this.layout.gap;
+						top = rect.top;
+					}
+				}
+			}
+
+			element.style.top = top + "px";
+			element.style.left = right + "px";
 		}
 	}, {
 		key: "unhighlight",
@@ -8891,13 +10318,15 @@ var IframeView = function () {
 				this.stopExpanding = true;
 				this.element.removeChild(this.iframe);
 
-				this.iframe = null;
+				this.iframe = undefined;
+				this.contents = undefined;
 
 				this._textWidth = null;
 				this._textHeight = null;
 				this._width = null;
 				this._height = null;
 			}
+
 			// this.element.style.height = "0px";
 			// this.element.style.width = "0px";
 		}
@@ -8916,8 +10345,8 @@ module.exports = exports["default"];
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(15),
-    now = __webpack_require__(58),
-    toNumber = __webpack_require__(60);
+    now = __webpack_require__(61),
+    toNumber = __webpack_require__(63);
 
 /** Error message constants. */
 var FUNC_ERROR_TEXT = 'Expected a function';
@@ -9109,7 +10538,7 @@ module.exports = debounce;
 /* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var freeGlobal = __webpack_require__(59);
+var freeGlobal = __webpack_require__(62);
 
 /** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
@@ -9151,7 +10580,7 @@ var _default = __webpack_require__(14);
 
 var _default2 = _interopRequireDefault(_default);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 var _debounce = __webpack_require__(21);
 
@@ -9427,7 +10856,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 			var dir = horizontal && rtl ? -1 : 1; //RTL reverses scrollTop
 
 			var offset = horizontal ? this.scrollLeft : this.scrollTop * dir;
-			var visibleLength = horizontal ? bounds.width : bounds.height;
+			var visibleLength = horizontal ? Math.floor(bounds.width) : bounds.height;
 			var contentLength = horizontal ? this.container.scrollWidth : this.container.scrollHeight;
 
 			var prepend = function prepend() {
@@ -9520,7 +10949,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 			var prevTop;
 			var prevLeft;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				prevTop = this.container.scrollTop;
 				prevLeft = this.container.scrollLeft;
 			} else {
@@ -9536,7 +10965,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 				if (this.settings.axis === "vertical") {
 					this.scrollTo(0, prevTop - bounds.height, true);
 				} else {
-					this.scrollTo(prevLeft - bounds.width, 0, true);
+					this.scrollTo(prevLeft - Math.floor(bounds.width), 0, true);
 				}
 			}
 		}
@@ -9559,7 +10988,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 
 			this.tick = _core.requestAnimationFrame;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				this.prevScrollTop = this.container.scrollTop;
 				this.prevScrollLeft = this.container.scrollLeft;
 			} else {
@@ -9570,7 +10999,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 			this.scrollDeltaVert = 0;
 			this.scrollDeltaHorz = 0;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				scroller = this.container;
 				this.scrollTop = this.container.scrollTop;
 				this.scrollLeft = this.container.scrollLeft;
@@ -9591,7 +11020,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 		value: function removeEventListeners() {
 			var scroller;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				scroller = this.container;
 			} else {
 				scroller = window;
@@ -9606,7 +11035,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 			var scrollLeft = void 0;
 			var dir = this.settings.direction === "rtl" ? -1 : 1;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				scrollTop = this.container.scrollTop;
 				scrollLeft = this.container.scrollLeft;
 			} else {
@@ -9775,7 +11204,9 @@ var _core = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_core);
 
-__webpack_require__(69);
+var _constants = __webpack_require__(2);
+
+__webpack_require__(72);
 
 var _iframe = __webpack_require__(20);
 
@@ -9804,10 +11235,10 @@ function ePub(url, options) {
   return new _book2.default(url, options);
 }
 
-ePub.VERSION = "0.3";
+ePub.VERSION = _constants.EPUBJS_VERSION;
 
 if (typeof global !== "undefined") {
-  global.EPUBJS_VERSION = ePub.VERSION;
+  global.EPUBJS_VERSION = _constants.EPUBJS_VERSION;
 }
 
 ePub.Book = _book2.default;
@@ -9831,11 +11262,9 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -9849,31 +11278,31 @@ var _path = __webpack_require__(4);
 
 var _path2 = _interopRequireDefault(_path);
 
-var _spine = __webpack_require__(42);
+var _spine = __webpack_require__(43);
 
 var _spine2 = _interopRequireDefault(_spine);
 
-var _locations = __webpack_require__(44);
+var _locations = __webpack_require__(47);
 
 var _locations2 = _interopRequireDefault(_locations);
 
-var _container = __webpack_require__(45);
+var _container = __webpack_require__(48);
 
 var _container2 = _interopRequireDefault(_container);
 
-var _packaging = __webpack_require__(46);
+var _packaging = __webpack_require__(49);
 
 var _packaging2 = _interopRequireDefault(_packaging);
 
-var _navigation = __webpack_require__(47);
+var _navigation = __webpack_require__(50);
 
 var _navigation2 = _interopRequireDefault(_navigation);
 
-var _resources = __webpack_require__(48);
+var _resources = __webpack_require__(51);
 
 var _resources2 = _interopRequireDefault(_resources);
 
-var _pagelist = __webpack_require__(49);
+var _pagelist = __webpack_require__(52);
 
 var _pagelist2 = _interopRequireDefault(_pagelist);
 
@@ -9881,7 +11310,7 @@ var _rendition = __webpack_require__(18);
 
 var _rendition2 = _interopRequireDefault(_rendition);
 
-var _archive = __webpack_require__(67);
+var _archive = __webpack_require__(70);
 
 var _archive2 = _interopRequireDefault(_archive);
 
@@ -9893,14 +11322,13 @@ var _epubcfi = __webpack_require__(1);
 
 var _epubcfi2 = _interopRequireDefault(_epubcfi);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var CONTAINER_PATH = "META-INF/container.xml";
-var EPUBJS_VERSION = "0.3";
 
 var INPUT_TYPE = {
 	BINARY: "binary",
@@ -9923,6 +11351,7 @@ var INPUT_TYPE = {
  * @param {string} [options.encoding=binary] optional to pass 'binary' or base64' for archived Epubs
  * @param {string} [options.replacements=none] use base64, blobUrl, or none for replacing assets in archived Epubs
  * @param {method} [options.canonical] optional function to determine canonical urls for a path
+ * @param {string} [options.openAs] optional string to determine the input type
  * @returns {Book}
  * @example new Book("/path/to/book.epub", {})
  * @example new Book({ replacements: "blobUrl" })
@@ -9935,7 +11364,7 @@ var Book = function () {
 		_classCallCheck(this, Book);
 
 		// Allow passing just options to the Book
-		if (typeof options === "undefined" && (typeof url === "undefined" ? "undefined" : _typeof(url)) === "object") {
+		if (typeof options === "undefined" && typeof url !== "string" && url instanceof Blob === false) {
 			options = url;
 			url = undefined;
 		}
@@ -9946,7 +11375,8 @@ var Book = function () {
 			requestHeaders: undefined,
 			encoding: undefined,
 			replacements: undefined,
-			canonical: undefined
+			canonical: undefined,
+			openAs: undefined
 		});
 
 		(0, _core.extend)(this.settings, options);
@@ -10081,7 +11511,7 @@ var Book = function () {
 		// this.toc = undefined;
 
 		if (url) {
-			this.open(url).catch(function (error) {
+			this.open(url, this.settings.openAs).catch(function (error) {
 				var err = new Error("Cannot load book at " + url);
 				_this.emit(_constants.EVENTS.BOOK.OPEN_FAILED, err);
 			});
@@ -10114,7 +11544,7 @@ var Book = function () {
 			} else if (type === INPUT_TYPE.EPUB) {
 				this.archived = true;
 				this.url = new _url2.default("/", "");
-				opening = this.request(input, "binary").then(this.openEpub.bind(this));
+				opening = this.request(input, "binary", this.settings.requestCredentials).then(this.openEpub.bind(this));
 			} else if (type == INPUT_TYPE.OPF) {
 				this.url = new _url2.default(input);
 				opening = this.openPackaging(this.url.Path.toString());
@@ -10560,7 +11990,7 @@ var Book = function () {
 		key: "key",
 		value: function key(identifier) {
 			var ident = identifier || this.package.metadata.identifier || this.url.filename;
-			return "epubjs:" + EPUBJS_VERSION + ":" + ident;
+			return "epubjs:" + _constants.EPUBJS_VERSION + ":" + ident;
 		}
 
 		/**
@@ -10910,6 +12340,12 @@ module.exports = function (fn) {
 
 /***/ }),
 /* 42 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_42__;
+
+/***/ }),
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10929,7 +12365,7 @@ var _hook = __webpack_require__(10);
 
 var _hook2 = _interopRequireDefault(_hook);
 
-var _section = __webpack_require__(43);
+var _section = __webpack_require__(44);
 
 var _section2 = _interopRequireDefault(_section);
 
@@ -10972,8 +12408,9 @@ var Spine = function () {
 
 	/**
   * Unpack items from a opf into spine items
-  * @param  {Package} _package
+  * @param  {Packaging} _package
   * @param  {method} resolver URL resolver
+  * @param  {method} canonical Resolve canonical url
   */
 
 
@@ -11052,7 +12489,7 @@ var Spine = function () {
 
 		/**
    * Get an item from the spine
-   * @param  {string|int} [target]
+   * @param  {string|number} [target]
    * @return {Section} section
    * @example spine.get();
    * @example spine.get(1);
@@ -11168,6 +12605,12 @@ var Spine = function () {
 		value: function each() {
 			return this.spineItems.forEach.apply(this.spineItems, arguments);
 		}
+
+		/**
+   * Find the first Section in the Spine
+   * @return {Section} first section
+   */
+
 	}, {
 		key: "first",
 		value: function first() {
@@ -11182,6 +12625,12 @@ var Spine = function () {
 				index += 1;
 			} while (index < this.spineItems.length);
 		}
+
+		/**
+   * Find the last Section in the Spine
+   * @return {Section} last section
+   */
+
 	}, {
 		key: "last",
 		value: function last() {
@@ -11229,7 +12678,7 @@ exports.default = Spine;
 module.exports = exports["default"];
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11295,7 +12744,7 @@ var Section = function () {
 
 	/**
   * Load the section from its url
-  * @param  {method} _request a request method to use for loading
+  * @param  {method} [_request] a request method to use for loading
   * @return {document} a promise with the xml document
   */
 
@@ -11340,7 +12789,7 @@ var Section = function () {
 
 		/**
    * Render the contents of a section
-   * @param  {method} _request a request method to use for loading
+   * @param  {method} [_request] a request method to use for loading
    * @return {string} output a serialized XML Document
    */
 
@@ -11356,7 +12805,7 @@ var Section = function () {
 				var isIE = userAgent.indexOf('Trident') >= 0;
 				var Serializer;
 				if (typeof XMLSerializer === "undefined" || isIE) {
-					Serializer = __webpack_require__(16).XMLSerializer;
+					Serializer = __webpack_require__(45).XMLSerializer;
 				} else {
 					Serializer = XMLSerializer;
 				}
@@ -11439,15 +12888,15 @@ var Section = function () {
 		/**
   * Reconciles the current chapters layout properies with
   * the global layout properities.
-  * @param {object} global  The globa layout settings object, chapter properties string
+  * @param {object} globalLayout  The global layout settings object, chapter properties string
   * @return {object} layoutProperties Object with layout properties
   */
-		value: function reconcileLayoutSettings(global) {
+		value: function reconcileLayoutSettings(globalLayout) {
 			//-- Get the global defaults
 			var settings = {
-				layout: global.layout,
-				spread: global.spread,
-				orientation: global.orientation
+				layout: globalLayout.layout,
+				spread: globalLayout.spread,
+				orientation: globalLayout.orientation
 			};
 
 			//-- Get the chapter's display type
@@ -11529,7 +12978,903 @@ exports.default = Section;
 module.exports = exports["default"];
 
 /***/ }),
-/* 44 */
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+function DOMParser(options){
+	this.options = options ||{locator:{}};
+	
+}
+DOMParser.prototype.parseFromString = function(source,mimeType){
+	var options = this.options;
+	var sax =  new XMLReader();
+	var domBuilder = options.domBuilder || new DOMHandler();//contentHandler and LexicalHandler
+	var errorHandler = options.errorHandler;
+	var locator = options.locator;
+	var defaultNSMap = options.xmlns||{};
+	var entityMap = {'lt':'<','gt':'>','amp':'&','quot':'"','apos':"'"}
+	if(locator){
+		domBuilder.setDocumentLocator(locator)
+	}
+	
+	sax.errorHandler = buildErrorHandler(errorHandler,domBuilder,locator);
+	sax.domBuilder = options.domBuilder || domBuilder;
+	if(/\/x?html?$/.test(mimeType)){
+		entityMap.nbsp = '\xa0';
+		entityMap.copy = '\xa9';
+		defaultNSMap['']= 'http://www.w3.org/1999/xhtml';
+	}
+	defaultNSMap.xml = defaultNSMap.xml || 'http://www.w3.org/XML/1998/namespace';
+	if(source){
+		sax.parse(source,defaultNSMap,entityMap);
+	}else{
+		sax.errorHandler.error("invalid doc source");
+	}
+	return domBuilder.doc;
+}
+function buildErrorHandler(errorImpl,domBuilder,locator){
+	if(!errorImpl){
+		if(domBuilder instanceof DOMHandler){
+			return domBuilder;
+		}
+		errorImpl = domBuilder ;
+	}
+	var errorHandler = {}
+	var isCallback = errorImpl instanceof Function;
+	locator = locator||{}
+	function build(key){
+		var fn = errorImpl[key];
+		if(!fn && isCallback){
+			fn = errorImpl.length == 2?function(msg){errorImpl(key,msg)}:errorImpl;
+		}
+		errorHandler[key] = fn && function(msg){
+			fn('[xmldom '+key+']\t'+msg+_locator(locator));
+		}||function(){};
+	}
+	build('warning');
+	build('error');
+	build('fatalError');
+	return errorHandler;
+}
+
+//console.log('#\n\n\n\n\n\n\n####')
+/**
+ * +ContentHandler+ErrorHandler
+ * +LexicalHandler+EntityResolver2
+ * -DeclHandler-DTDHandler 
+ * 
+ * DefaultHandler:EntityResolver, DTDHandler, ContentHandler, ErrorHandler
+ * DefaultHandler2:DefaultHandler,LexicalHandler, DeclHandler, EntityResolver2
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/helpers/DefaultHandler.html
+ */
+function DOMHandler() {
+    this.cdata = false;
+}
+function position(locator,node){
+	node.lineNumber = locator.lineNumber;
+	node.columnNumber = locator.columnNumber;
+}
+/**
+ * @see org.xml.sax.ContentHandler#startDocument
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ContentHandler.html
+ */ 
+DOMHandler.prototype = {
+	startDocument : function() {
+    	this.doc = new DOMImplementation().createDocument(null, null, null);
+    	if (this.locator) {
+        	this.doc.documentURI = this.locator.systemId;
+    	}
+	},
+	startElement:function(namespaceURI, localName, qName, attrs) {
+		var doc = this.doc;
+	    var el = doc.createElementNS(namespaceURI, qName||localName);
+	    var len = attrs.length;
+	    appendElement(this, el);
+	    this.currentElement = el;
+	    
+		this.locator && position(this.locator,el)
+	    for (var i = 0 ; i < len; i++) {
+	        var namespaceURI = attrs.getURI(i);
+	        var value = attrs.getValue(i);
+	        var qName = attrs.getQName(i);
+			var attr = doc.createAttributeNS(namespaceURI, qName);
+			this.locator &&position(attrs.getLocator(i),attr);
+			attr.value = attr.nodeValue = value;
+			el.setAttributeNode(attr)
+	    }
+	},
+	endElement:function(namespaceURI, localName, qName) {
+		var current = this.currentElement
+		var tagName = current.tagName;
+		this.currentElement = current.parentNode;
+	},
+	startPrefixMapping:function(prefix, uri) {
+	},
+	endPrefixMapping:function(prefix) {
+	},
+	processingInstruction:function(target, data) {
+	    var ins = this.doc.createProcessingInstruction(target, data);
+	    this.locator && position(this.locator,ins)
+	    appendElement(this, ins);
+	},
+	ignorableWhitespace:function(ch, start, length) {
+	},
+	characters:function(chars, start, length) {
+		chars = _toString.apply(this,arguments)
+		//console.log(chars)
+		if(chars){
+			if (this.cdata) {
+				var charNode = this.doc.createCDATASection(chars);
+			} else {
+				var charNode = this.doc.createTextNode(chars);
+			}
+			if(this.currentElement){
+				this.currentElement.appendChild(charNode);
+			}else if(/^\s*$/.test(chars)){
+				this.doc.appendChild(charNode);
+				//process xml
+			}
+			this.locator && position(this.locator,charNode)
+		}
+	},
+	skippedEntity:function(name) {
+	},
+	endDocument:function() {
+		this.doc.normalize();
+	},
+	setDocumentLocator:function (locator) {
+	    if(this.locator = locator){// && !('lineNumber' in locator)){
+	    	locator.lineNumber = 0;
+	    }
+	},
+	//LexicalHandler
+	comment:function(chars, start, length) {
+		chars = _toString.apply(this,arguments)
+	    var comm = this.doc.createComment(chars);
+	    this.locator && position(this.locator,comm)
+	    appendElement(this, comm);
+	},
+	
+	startCDATA:function() {
+	    //used in characters() methods
+	    this.cdata = true;
+	},
+	endCDATA:function() {
+	    this.cdata = false;
+	},
+	
+	startDTD:function(name, publicId, systemId) {
+		var impl = this.doc.implementation;
+	    if (impl && impl.createDocumentType) {
+	        var dt = impl.createDocumentType(name, publicId, systemId);
+	        this.locator && position(this.locator,dt)
+	        appendElement(this, dt);
+	    }
+	},
+	/**
+	 * @see org.xml.sax.ErrorHandler
+	 * @link http://www.saxproject.org/apidoc/org/xml/sax/ErrorHandler.html
+	 */
+	warning:function(error) {
+		console.warn('[xmldom warning]\t'+error,_locator(this.locator));
+	},
+	error:function(error) {
+		console.error('[xmldom error]\t'+error,_locator(this.locator));
+	},
+	fatalError:function(error) {
+		console.error('[xmldom fatalError]\t'+error,_locator(this.locator));
+	    throw error;
+	}
+}
+function _locator(l){
+	if(l){
+		return '\n@'+(l.systemId ||'')+'#[line:'+l.lineNumber+',col:'+l.columnNumber+']'
+	}
+}
+function _toString(chars,start,length){
+	if(typeof chars == 'string'){
+		return chars.substr(start,length)
+	}else{//java sax connect width xmldom on rhino(what about: "? && !(chars instanceof String)")
+		if(chars.length >= start+length || start){
+			return new java.lang.String(chars,start,length)+'';
+		}
+		return chars;
+	}
+}
+
+/*
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/LexicalHandler.html
+ * used method of org.xml.sax.ext.LexicalHandler:
+ *  #comment(chars, start, length)
+ *  #startCDATA()
+ *  #endCDATA()
+ *  #startDTD(name, publicId, systemId)
+ *
+ *
+ * IGNORED method of org.xml.sax.ext.LexicalHandler:
+ *  #endDTD()
+ *  #startEntity(name)
+ *  #endEntity(name)
+ *
+ *
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/DeclHandler.html
+ * IGNORED method of org.xml.sax.ext.DeclHandler
+ * 	#attributeDecl(eName, aName, type, mode, value)
+ *  #elementDecl(name, model)
+ *  #externalEntityDecl(name, publicId, systemId)
+ *  #internalEntityDecl(name, value)
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/EntityResolver2.html
+ * IGNORED method of org.xml.sax.EntityResolver2
+ *  #resolveEntity(String name,String publicId,String baseURI,String systemId)
+ *  #resolveEntity(publicId, systemId)
+ *  #getExternalSubset(name, baseURI)
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/DTDHandler.html
+ * IGNORED method of org.xml.sax.DTDHandler
+ *  #notationDecl(name, publicId, systemId) {};
+ *  #unparsedEntityDecl(name, publicId, systemId, notationName) {};
+ */
+"endDTD,startEntity,endEntity,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,resolveEntity,getExternalSubset,notationDecl,unparsedEntityDecl".replace(/\w+/g,function(key){
+	DOMHandler.prototype[key] = function(){return null}
+})
+
+/* Private static helpers treated below as private instance methods, so don't need to add these to the public API; we might use a Relator to also get rid of non-standard public properties */
+function appendElement (hander,node) {
+    if (!hander.currentElement) {
+        hander.doc.appendChild(node);
+    } else {
+        hander.currentElement.appendChild(node);
+    }
+}//appendChild and setAttributeNS are preformance key
+
+//if(typeof require == 'function'){
+	var XMLReader = __webpack_require__(46).XMLReader;
+	var DOMImplementation = exports.DOMImplementation = __webpack_require__(16).DOMImplementation;
+	exports.XMLSerializer = __webpack_require__(16).XMLSerializer ;
+	exports.DOMParser = DOMParser;
+//}
+
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports) {
+
+//[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+//[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
+//[5]   	Name	   ::=   	NameStartChar (NameChar)*
+var nameStartChar = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]///\u10000-\uEFFFF
+var nameChar = new RegExp("[\\-\\.0-9"+nameStartChar.source.slice(1,-1)+"\\u00B7\\u0300-\\u036F\\u203F-\\u2040]");
+var tagNamePattern = new RegExp('^'+nameStartChar.source+nameChar.source+'*(?:\:'+nameStartChar.source+nameChar.source+'*)?$');
+//var tagNamePattern = /^[a-zA-Z_][\w\-\.]*(?:\:[a-zA-Z_][\w\-\.]*)?$/
+//var handlers = 'resolveEntity,getExternalSubset,characters,endDocument,endElement,endPrefixMapping,ignorableWhitespace,processingInstruction,setDocumentLocator,skippedEntity,startDocument,startElement,startPrefixMapping,notationDecl,unparsedEntityDecl,error,fatalError,warning,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,comment,endCDATA,endDTD,endEntity,startCDATA,startDTD,startEntity'.split(',')
+
+//S_TAG,	S_ATTR,	S_EQ,	S_ATTR_NOQUOT_VALUE
+//S_ATTR_SPACE,	S_ATTR_END,	S_TAG_SPACE, S_TAG_CLOSE
+var S_TAG = 0;//tag name offerring
+var S_ATTR = 1;//attr name offerring 
+var S_ATTR_SPACE=2;//attr name end and space offer
+var S_EQ = 3;//=space?
+var S_ATTR_NOQUOT_VALUE = 4;//attr value(no quot value only)
+var S_ATTR_END = 5;//attr value end and no space(quot end)
+var S_TAG_SPACE = 6;//(attr value end || tag end ) && (space offer)
+var S_TAG_CLOSE = 7;//closed el<el />
+
+function XMLReader(){
+	
+}
+
+XMLReader.prototype = {
+	parse:function(source,defaultNSMap,entityMap){
+		var domBuilder = this.domBuilder;
+		domBuilder.startDocument();
+		_copy(defaultNSMap ,defaultNSMap = {})
+		parse(source,defaultNSMap,entityMap,
+				domBuilder,this.errorHandler);
+		domBuilder.endDocument();
+	}
+}
+function parse(source,defaultNSMapCopy,entityMap,domBuilder,errorHandler){
+	function fixedFromCharCode(code) {
+		// String.prototype.fromCharCode does not supports
+		// > 2 bytes unicode chars directly
+		if (code > 0xffff) {
+			code -= 0x10000;
+			var surrogate1 = 0xd800 + (code >> 10)
+				, surrogate2 = 0xdc00 + (code & 0x3ff);
+
+			return String.fromCharCode(surrogate1, surrogate2);
+		} else {
+			return String.fromCharCode(code);
+		}
+	}
+	function entityReplacer(a){
+		var k = a.slice(1,-1);
+		if(k in entityMap){
+			return entityMap[k]; 
+		}else if(k.charAt(0) === '#'){
+			return fixedFromCharCode(parseInt(k.substr(1).replace('x','0x')))
+		}else{
+			errorHandler.error('entity not found:'+a);
+			return a;
+		}
+	}
+	function appendText(end){//has some bugs
+		if(end>start){
+			var xt = source.substring(start,end).replace(/&#?\w+;/g,entityReplacer);
+			locator&&position(start);
+			domBuilder.characters(xt,0,end-start);
+			start = end
+		}
+	}
+	function position(p,m){
+		while(p>=lineEnd && (m = linePattern.exec(source))){
+			lineStart = m.index;
+			lineEnd = lineStart + m[0].length;
+			locator.lineNumber++;
+			//console.log('line++:',locator,startPos,endPos)
+		}
+		locator.columnNumber = p-lineStart+1;
+	}
+	var lineStart = 0;
+	var lineEnd = 0;
+	var linePattern = /.*(?:\r\n?|\n)|.*$/g
+	var locator = domBuilder.locator;
+	
+	var parseStack = [{currentNSMap:defaultNSMapCopy}]
+	var closeMap = {};
+	var start = 0;
+	while(true){
+		try{
+			var tagStart = source.indexOf('<',start);
+			if(tagStart<0){
+				if(!source.substr(start).match(/^\s*$/)){
+					var doc = domBuilder.doc;
+	    			var text = doc.createTextNode(source.substr(start));
+	    			doc.appendChild(text);
+	    			domBuilder.currentElement = text;
+				}
+				return;
+			}
+			if(tagStart>start){
+				appendText(tagStart);
+			}
+			switch(source.charAt(tagStart+1)){
+			case '/':
+				var end = source.indexOf('>',tagStart+3);
+				var tagName = source.substring(tagStart+2,end);
+				var config = parseStack.pop();
+				if(end<0){
+					
+	        		tagName = source.substring(tagStart+2).replace(/[\s<].*/,'');
+	        		//console.error('#@@@@@@'+tagName)
+	        		errorHandler.error("end tag name: "+tagName+' is not complete:'+config.tagName);
+	        		end = tagStart+1+tagName.length;
+	        	}else if(tagName.match(/\s</)){
+	        		tagName = tagName.replace(/[\s<].*/,'');
+	        		errorHandler.error("end tag name: "+tagName+' maybe not complete');
+	        		end = tagStart+1+tagName.length;
+				}
+				//console.error(parseStack.length,parseStack)
+				//console.error(config);
+				var localNSMap = config.localNSMap;
+				var endMatch = config.tagName == tagName;
+				var endIgnoreCaseMach = endMatch || config.tagName&&config.tagName.toLowerCase() == tagName.toLowerCase()
+		        if(endIgnoreCaseMach){
+		        	domBuilder.endElement(config.uri,config.localName,tagName);
+					if(localNSMap){
+						for(var prefix in localNSMap){
+							domBuilder.endPrefixMapping(prefix) ;
+						}
+					}
+					if(!endMatch){
+		            	errorHandler.fatalError("end tag name: "+tagName+' is not match the current start tagName:'+config.tagName );
+					}
+		        }else{
+		        	parseStack.push(config)
+		        }
+				
+				end++;
+				break;
+				// end elment
+			case '?':// <?...?>
+				locator&&position(tagStart);
+				end = parseInstruction(source,tagStart,domBuilder);
+				break;
+			case '!':// <!doctype,<![CDATA,<!--
+				locator&&position(tagStart);
+				end = parseDCC(source,tagStart,domBuilder,errorHandler);
+				break;
+			default:
+				locator&&position(tagStart);
+				var el = new ElementAttributes();
+				var currentNSMap = parseStack[parseStack.length-1].currentNSMap;
+				//elStartEnd
+				var end = parseElementStartPart(source,tagStart,el,currentNSMap,entityReplacer,errorHandler);
+				var len = el.length;
+				
+				
+				if(!el.closed && fixSelfClosed(source,end,el.tagName,closeMap)){
+					el.closed = true;
+					if(!entityMap.nbsp){
+						errorHandler.warning('unclosed xml attribute');
+					}
+				}
+				if(locator && len){
+					var locator2 = copyLocator(locator,{});
+					//try{//attribute position fixed
+					for(var i = 0;i<len;i++){
+						var a = el[i];
+						position(a.offset);
+						a.locator = copyLocator(locator,{});
+					}
+					//}catch(e){console.error('@@@@@'+e)}
+					domBuilder.locator = locator2
+					if(appendElement(el,domBuilder,currentNSMap)){
+						parseStack.push(el)
+					}
+					domBuilder.locator = locator;
+				}else{
+					if(appendElement(el,domBuilder,currentNSMap)){
+						parseStack.push(el)
+					}
+				}
+				
+				
+				
+				if(el.uri === 'http://www.w3.org/1999/xhtml' && !el.closed){
+					end = parseHtmlSpecialContent(source,end,el.tagName,entityReplacer,domBuilder)
+				}else{
+					end++;
+				}
+			}
+		}catch(e){
+			errorHandler.error('element parse error: '+e)
+			//errorHandler.error('element parse error: '+e);
+			end = -1;
+			//throw e;
+		}
+		if(end>start){
+			start = end;
+		}else{
+			//TODO: 这里有可能sax回退，有位置错误风险
+			appendText(Math.max(tagStart,start)+1);
+		}
+	}
+}
+function copyLocator(f,t){
+	t.lineNumber = f.lineNumber;
+	t.columnNumber = f.columnNumber;
+	return t;
+}
+
+/**
+ * @see #appendElement(source,elStartEnd,el,selfClosed,entityReplacer,domBuilder,parseStack);
+ * @return end of the elementStartPart(end of elementEndPart for selfClosed el)
+ */
+function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,errorHandler){
+	var attrName;
+	var value;
+	var p = ++start;
+	var s = S_TAG;//status
+	while(true){
+		var c = source.charAt(p);
+		switch(c){
+		case '=':
+			if(s === S_ATTR){//attrName
+				attrName = source.slice(start,p);
+				s = S_EQ;
+			}else if(s === S_ATTR_SPACE){
+				s = S_EQ;
+			}else{
+				//fatalError: equal must after attrName or space after attrName
+				throw new Error('attribute equal must after attrName');
+			}
+			break;
+		case '\'':
+		case '"':
+			if(s === S_EQ || s === S_ATTR //|| s == S_ATTR_SPACE
+				){//equal
+				if(s === S_ATTR){
+					errorHandler.warning('attribute value must after "="')
+					attrName = source.slice(start,p)
+				}
+				start = p+1;
+				p = source.indexOf(c,start)
+				if(p>0){
+					value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+					el.add(attrName,value,start-1);
+					s = S_ATTR_END;
+				}else{
+					//fatalError: no end quot match
+					throw new Error('attribute value no end \''+c+'\' match');
+				}
+			}else if(s == S_ATTR_NOQUOT_VALUE){
+				value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+				//console.log(attrName,value,start,p)
+				el.add(attrName,value,start);
+				//console.dir(el)
+				errorHandler.warning('attribute "'+attrName+'" missed start quot('+c+')!!');
+				start = p+1;
+				s = S_ATTR_END
+			}else{
+				//fatalError: no equal before
+				throw new Error('attribute value must after "="');
+			}
+			break;
+		case '/':
+			switch(s){
+			case S_TAG:
+				el.setTagName(source.slice(start,p));
+			case S_ATTR_END:
+			case S_TAG_SPACE:
+			case S_TAG_CLOSE:
+				s =S_TAG_CLOSE;
+				el.closed = true;
+			case S_ATTR_NOQUOT_VALUE:
+			case S_ATTR:
+			case S_ATTR_SPACE:
+				break;
+			//case S_EQ:
+			default:
+				throw new Error("attribute invalid close char('/')")
+			}
+			break;
+		case ''://end document
+			//throw new Error('unexpected end of input')
+			errorHandler.error('unexpected end of input');
+			if(s == S_TAG){
+				el.setTagName(source.slice(start,p));
+			}
+			return p;
+		case '>':
+			switch(s){
+			case S_TAG:
+				el.setTagName(source.slice(start,p));
+			case S_ATTR_END:
+			case S_TAG_SPACE:
+			case S_TAG_CLOSE:
+				break;//normal
+			case S_ATTR_NOQUOT_VALUE://Compatible state
+			case S_ATTR:
+				value = source.slice(start,p);
+				if(value.slice(-1) === '/'){
+					el.closed  = true;
+					value = value.slice(0,-1)
+				}
+			case S_ATTR_SPACE:
+				if(s === S_ATTR_SPACE){
+					value = attrName;
+				}
+				if(s == S_ATTR_NOQUOT_VALUE){
+					errorHandler.warning('attribute "'+value+'" missed quot(")!!');
+					el.add(attrName,value.replace(/&#?\w+;/g,entityReplacer),start)
+				}else{
+					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !value.match(/^(?:disabled|checked|selected)$/i)){
+						errorHandler.warning('attribute "'+value+'" missed value!! "'+value+'" instead!!')
+					}
+					el.add(value,value,start)
+				}
+				break;
+			case S_EQ:
+				throw new Error('attribute value missed!!');
+			}
+//			console.log(tagName,tagNamePattern,tagNamePattern.test(tagName))
+			return p;
+		/*xml space '\x20' | #x9 | #xD | #xA; */
+		case '\u0080':
+			c = ' ';
+		default:
+			if(c<= ' '){//space
+				switch(s){
+				case S_TAG:
+					el.setTagName(source.slice(start,p));//tagName
+					s = S_TAG_SPACE;
+					break;
+				case S_ATTR:
+					attrName = source.slice(start,p)
+					s = S_ATTR_SPACE;
+					break;
+				case S_ATTR_NOQUOT_VALUE:
+					var value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+					errorHandler.warning('attribute "'+value+'" missed quot(")!!');
+					el.add(attrName,value,start)
+				case S_ATTR_END:
+					s = S_TAG_SPACE;
+					break;
+				//case S_TAG_SPACE:
+				//case S_EQ:
+				//case S_ATTR_SPACE:
+				//	void();break;
+				//case S_TAG_CLOSE:
+					//ignore warning
+				}
+			}else{//not space
+//S_TAG,	S_ATTR,	S_EQ,	S_ATTR_NOQUOT_VALUE
+//S_ATTR_SPACE,	S_ATTR_END,	S_TAG_SPACE, S_TAG_CLOSE
+				switch(s){
+				//case S_TAG:void();break;
+				//case S_ATTR:void();break;
+				//case S_ATTR_NOQUOT_VALUE:void();break;
+				case S_ATTR_SPACE:
+					var tagName =  el.tagName;
+					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !attrName.match(/^(?:disabled|checked|selected)$/i)){
+						errorHandler.warning('attribute "'+attrName+'" missed value!! "'+attrName+'" instead2!!')
+					}
+					el.add(attrName,attrName,start);
+					start = p;
+					s = S_ATTR;
+					break;
+				case S_ATTR_END:
+					errorHandler.warning('attribute space is required"'+attrName+'"!!')
+				case S_TAG_SPACE:
+					s = S_ATTR;
+					start = p;
+					break;
+				case S_EQ:
+					s = S_ATTR_NOQUOT_VALUE;
+					start = p;
+					break;
+				case S_TAG_CLOSE:
+					throw new Error("elements closed character '/' and '>' must be connected to");
+				}
+			}
+		}//end outer switch
+		//console.log('p++',p)
+		p++;
+	}
+}
+/**
+ * @return true if has new namespace define
+ */
+function appendElement(el,domBuilder,currentNSMap){
+	var tagName = el.tagName;
+	var localNSMap = null;
+	//var currentNSMap = parseStack[parseStack.length-1].currentNSMap;
+	var i = el.length;
+	while(i--){
+		var a = el[i];
+		var qName = a.qName;
+		var value = a.value;
+		var nsp = qName.indexOf(':');
+		if(nsp>0){
+			var prefix = a.prefix = qName.slice(0,nsp);
+			var localName = qName.slice(nsp+1);
+			var nsPrefix = prefix === 'xmlns' && localName
+		}else{
+			localName = qName;
+			prefix = null
+			nsPrefix = qName === 'xmlns' && ''
+		}
+		//can not set prefix,because prefix !== ''
+		a.localName = localName ;
+		//prefix == null for no ns prefix attribute 
+		if(nsPrefix !== false){//hack!!
+			if(localNSMap == null){
+				localNSMap = {}
+				//console.log(currentNSMap,0)
+				_copy(currentNSMap,currentNSMap={})
+				//console.log(currentNSMap,1)
+			}
+			currentNSMap[nsPrefix] = localNSMap[nsPrefix] = value;
+			a.uri = 'http://www.w3.org/2000/xmlns/'
+			domBuilder.startPrefixMapping(nsPrefix, value) 
+		}
+	}
+	var i = el.length;
+	while(i--){
+		a = el[i];
+		var prefix = a.prefix;
+		if(prefix){//no prefix attribute has no namespace
+			if(prefix === 'xml'){
+				a.uri = 'http://www.w3.org/XML/1998/namespace';
+			}if(prefix !== 'xmlns'){
+				a.uri = currentNSMap[prefix || '']
+				
+				//{console.log('###'+a.qName,domBuilder.locator.systemId+'',currentNSMap,a.uri)}
+			}
+		}
+	}
+	var nsp = tagName.indexOf(':');
+	if(nsp>0){
+		prefix = el.prefix = tagName.slice(0,nsp);
+		localName = el.localName = tagName.slice(nsp+1);
+	}else{
+		prefix = null;//important!!
+		localName = el.localName = tagName;
+	}
+	//no prefix element has default namespace
+	var ns = el.uri = currentNSMap[prefix || ''];
+	domBuilder.startElement(ns,localName,tagName,el);
+	//endPrefixMapping and startPrefixMapping have not any help for dom builder
+	//localNSMap = null
+	if(el.closed){
+		domBuilder.endElement(ns,localName,tagName);
+		if(localNSMap){
+			for(prefix in localNSMap){
+				domBuilder.endPrefixMapping(prefix) 
+			}
+		}
+	}else{
+		el.currentNSMap = currentNSMap;
+		el.localNSMap = localNSMap;
+		//parseStack.push(el);
+		return true;
+	}
+}
+function parseHtmlSpecialContent(source,elStartEnd,tagName,entityReplacer,domBuilder){
+	if(/^(?:script|textarea)$/i.test(tagName)){
+		var elEndStart =  source.indexOf('</'+tagName+'>',elStartEnd);
+		var text = source.substring(elStartEnd+1,elEndStart);
+		if(/[&<]/.test(text)){
+			if(/^script$/i.test(tagName)){
+				//if(!/\]\]>/.test(text)){
+					//lexHandler.startCDATA();
+					domBuilder.characters(text,0,text.length);
+					//lexHandler.endCDATA();
+					return elEndStart;
+				//}
+			}//}else{//text area
+				text = text.replace(/&#?\w+;/g,entityReplacer);
+				domBuilder.characters(text,0,text.length);
+				return elEndStart;
+			//}
+			
+		}
+	}
+	return elStartEnd+1;
+}
+function fixSelfClosed(source,elStartEnd,tagName,closeMap){
+	//if(tagName in closeMap){
+	var pos = closeMap[tagName];
+	if(pos == null){
+		//console.log(tagName)
+		pos =  source.lastIndexOf('</'+tagName+'>')
+		if(pos<elStartEnd){//忘记闭合
+			pos = source.lastIndexOf('</'+tagName)
+		}
+		closeMap[tagName] =pos
+	}
+	return pos<elStartEnd;
+	//} 
+}
+function _copy(source,target){
+	for(var n in source){target[n] = source[n]}
+}
+function parseDCC(source,start,domBuilder,errorHandler){//sure start with '<!'
+	var next= source.charAt(start+2)
+	switch(next){
+	case '-':
+		if(source.charAt(start + 3) === '-'){
+			var end = source.indexOf('-->',start+4);
+			//append comment source.substring(4,end)//<!--
+			if(end>start){
+				domBuilder.comment(source,start+4,end-start-4);
+				return end+3;
+			}else{
+				errorHandler.error("Unclosed comment");
+				return -1;
+			}
+		}else{
+			//error
+			return -1;
+		}
+	default:
+		if(source.substr(start+3,6) == 'CDATA['){
+			var end = source.indexOf(']]>',start+9);
+			domBuilder.startCDATA();
+			domBuilder.characters(source,start+9,end-start-9);
+			domBuilder.endCDATA() 
+			return end+3;
+		}
+		//<!DOCTYPE
+		//startDTD(java.lang.String name, java.lang.String publicId, java.lang.String systemId) 
+		var matchs = split(source,start);
+		var len = matchs.length;
+		if(len>1 && /!doctype/i.test(matchs[0][0])){
+			var name = matchs[1][0];
+			var pubid = len>3 && /^public$/i.test(matchs[2][0]) && matchs[3][0]
+			var sysid = len>4 && matchs[4][0];
+			var lastMatch = matchs[len-1]
+			domBuilder.startDTD(name,pubid && pubid.replace(/^(['"])(.*?)\1$/,'$2'),
+					sysid && sysid.replace(/^(['"])(.*?)\1$/,'$2'));
+			domBuilder.endDTD();
+			
+			return lastMatch.index+lastMatch[0].length
+		}
+	}
+	return -1;
+}
+
+
+
+function parseInstruction(source,start,domBuilder){
+	var end = source.indexOf('?>',start);
+	if(end){
+		var match = source.substring(start,end).match(/^<\?(\S*)\s*([\s\S]*?)\s*$/);
+		if(match){
+			var len = match[0].length;
+			domBuilder.processingInstruction(match[1], match[2]) ;
+			return end+2;
+		}else{//error
+			return -1;
+		}
+	}
+	return -1;
+}
+
+/**
+ * @param source
+ */
+function ElementAttributes(source){
+	
+}
+ElementAttributes.prototype = {
+	setTagName:function(tagName){
+		if(!tagNamePattern.test(tagName)){
+			throw new Error('invalid tagName:'+tagName)
+		}
+		this.tagName = tagName
+	},
+	add:function(qName,value,offset){
+		if(!tagNamePattern.test(qName)){
+			throw new Error('invalid attribute:'+qName)
+		}
+		this[this.length++] = {qName:qName,value:value,offset:offset}
+	},
+	length:0,
+	getLocalName:function(i){return this[i].localName},
+	getLocator:function(i){return this[i].locator},
+	getQName:function(i){return this[i].qName},
+	getURI:function(i){return this[i].uri},
+	getValue:function(i){return this[i].value}
+//	,getIndex:function(uri, localName)){
+//		if(localName){
+//			
+//		}else{
+//			var qName = uri
+//		}
+//	},
+//	getValue:function(){return this.getValue(this.getIndex.apply(this,arguments))},
+//	getType:function(uri,localName){}
+//	getType:function(i){},
+}
+
+
+
+
+function _set_proto_(thiz,parent){
+	thiz.__proto__ = parent;
+	return thiz;
+}
+if(!(_set_proto_({},_set_proto_.prototype) instanceof _set_proto_)){
+	_set_proto_ = function(thiz,parent){
+		function p(){};
+		p.prototype = parent;
+		p = new p();
+		for(parent in thiz){
+			p[parent] = thiz[parent];
+		}
+		return p;
+	}
+}
+
+function split(source,start){
+	var match;
+	var buf = [];
+	var reg = /'[^']+'|"[^"]+"|[^\s<>\/=]+=?|(\/?\s*>|<)/g;
+	reg.lastIndex = start;
+	reg.exec(source);//skip <
+	while(match = reg.exec(source)){
+		buf.push(match);
+		if(match[1])return buf;
+	}
+}
+
+exports.XMLReader = XMLReader;
+
+
+
+/***/ }),
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11551,9 +13896,9 @@ var _epubcfi = __webpack_require__(1);
 
 var _epubcfi2 = _interopRequireDefault(_epubcfi);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -11565,6 +13910,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Find Locations for a Book
  * @param {Spine} spine
  * @param {request} request
+ * @param {number} [pause=100]
  */
 var Locations = function () {
 	function Locations(spine, request, pause) {
@@ -11963,7 +14309,7 @@ exports.default = Locations;
 module.exports = exports["default"];
 
 /***/ }),
-/* 45 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12045,7 +14391,7 @@ exports.default = Container;
 module.exports = exports["default"];
 
 /***/ }),
-/* 46 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12123,6 +14469,7 @@ var Packaging = function () {
 
 			this.spine = this.parseSpine(spineNode, this.manifest);
 
+			this.uniqueIdentifier = this.findUniqueIdentifier(packageDocument);
 			this.metadata = this.parseMetadata(metadataNode);
 
 			this.metadata.direction = spineNode.getAttribute("page-progression-direction");
@@ -12141,7 +14488,7 @@ var Packaging = function () {
 		/**
    * Parse Metadata
    * @private
-   * @param  {document} xml
+   * @param  {node} xml
    * @return {object} metadata
    */
 
@@ -12168,6 +14515,7 @@ var Packaging = function () {
 			metadata.orientation = this.getPropertyText(xml, "rendition:orientation");
 			metadata.flow = this.getPropertyText(xml, "rendition:flow");
 			metadata.viewport = this.getPropertyText(xml, "rendition:viewport");
+			metadata.media_active_class = this.getPropertyText(xml, "media:active-class");
 			// metadata.page_prog_dir = packageXml.querySelector("spine").getAttribute("page-progression-direction");
 
 			return metadata;
@@ -12176,7 +14524,7 @@ var Packaging = function () {
 		/**
    * Parse Manifest
    * @private
-   * @param  {document} manifestXml
+   * @param  {node} manifestXml
    * @return {object} manifest
    */
 
@@ -12195,12 +14543,14 @@ var Packaging = function () {
 				var id = item.getAttribute("id"),
 				    href = item.getAttribute("href") || "",
 				    type = item.getAttribute("media-type") || "",
+				    overlay = item.getAttribute("media-overlay") || "",
 				    properties = item.getAttribute("properties") || "";
 
 				manifest[id] = {
 					"href": href,
 					// "url" : href,
 					"type": type,
+					"overlay": overlay,
 					"properties": properties.length ? properties.split(" ") : []
 				};
 			});
@@ -12210,7 +14560,8 @@ var Packaging = function () {
 
 		/**
    * Parse Spine
-   * @param  {document} spineXml
+   * @private
+   * @param  {node} spineXml
    * @param  {Packaging.manifest} manifest
    * @return {object} spine
    */
@@ -12250,8 +14601,36 @@ var Packaging = function () {
 		}
 
 		/**
+   * Find Unique Identifier
+   * @private
+   * @param  {node} packageXml
+   * @return {string} Unique Identifier text
+   */
+
+	}, {
+		key: 'findUniqueIdentifier',
+		value: function findUniqueIdentifier(packageXml) {
+			var uniqueIdentifierId = packageXml.documentElement.getAttribute("unique-identifier");
+			if (!uniqueIdentifierId) {
+				return "";
+			}
+			var identifier = packageXml.getElementById(uniqueIdentifierId);
+			if (!identifier) {
+				return "";
+			}
+
+			if (identifier.localName === "identifier" && identifier.namespaceURI === "http://purl.org/dc/elements/1.1/") {
+				return identifier.childNodes[0].nodeValue.trim();
+			}
+
+			return "";
+		}
+
+		/**
    * Find TOC NAV
    * @private
+   * @param {element} manifestNode
+   * @return {string}
    */
 
 	}, {
@@ -12268,6 +14647,9 @@ var Packaging = function () {
    * Find TOC NCX
    * media-type="application/x-dtbncx+xml" href="toc.ncx"
    * @private
+   * @param {element} manifestNode
+   * @param {element} spineNode
+   * @return {string}
    */
 
 	}, {
@@ -12284,7 +14666,7 @@ var Packaging = function () {
 				tocId = spineNode.getAttribute("toc");
 				if (tocId) {
 					// node = manifestNode.querySelector("item[id='" + tocId + "']");
-					node = manifestNode.getElementById(tocId);
+					node = manifestNode.querySelector('#' + tocId);
 				}
 			}
 
@@ -12295,7 +14677,8 @@ var Packaging = function () {
    * Find the Cover Path
    * <item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml" />
    * Fallback for Epub 2.0
-   * @param  {document} packageXml
+   * @private
+   * @param  {node} packageXml
    * @return {string} href
    */
 
@@ -12325,7 +14708,7 @@ var Packaging = function () {
 		/**
    * Get text of a namespaced element
    * @private
-   * @param  {document} xml
+   * @param  {node} xml
    * @param  {string} tag
    * @return {string} text
    */
@@ -12350,7 +14733,7 @@ var Packaging = function () {
 		/**
    * Get text by property
    * @private
-   * @param  {document} xml
+   * @param  {node} xml
    * @param  {string} property
    * @return {string} text
    */
@@ -12380,7 +14763,8 @@ var Packaging = function () {
 
 			this.metadata = json.metadata;
 
-			this.spine = json.spine.map(function (item, index) {
+			var spine = json.readingOrder || json.spine;
+			this.spine = spine.map(function (item, index) {
 				item.index = index;
 				return item;
 			});
@@ -12431,7 +14815,7 @@ exports.default = Packaging;
 module.exports = exports['default'];
 
 /***/ }),
-/* 47 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12533,7 +14917,7 @@ var Navigation = function () {
 		/**
    * Get an item from the navigation
    * @param  {string} target
-   * @return {object} navItems
+   * @return {object} navItem
    */
 
 	}, {
@@ -12558,7 +14942,7 @@ var Navigation = function () {
    * Get a landmark by type
    * List of types: https://idpf.github.io/epub-vocabs/structure/
    * @param  {string} type
-   * @return {object} landmarkItems
+   * @return {object} landmarkItem
    */
 
 	}, {
@@ -12629,6 +15013,10 @@ var Navigation = function () {
 			}
 
 			var src = content.getAttribute("href") || "";
+
+			if (!id) {
+				id = src;
+			}
 			var text = content.textContent || "";
 			var subitems = [];
 			var parentItem = (0, _core.getParentByTagName)(item, "li");
@@ -12636,12 +15024,20 @@ var Navigation = function () {
 
 			if (parentItem) {
 				parent = parentItem.getAttribute("id");
+				if (!parent) {
+					var parentContent = (0, _core.filterChildren)(parentItem, "a", true);
+					parent = parentContent && parentContent.getAttribute("href");
+				}
 			}
 
 			while (!parent && parentItem) {
 				parentItem = (0, _core.getParentByTagName)(parentItem, "li");
 				if (parentItem) {
 					parent = parentItem.getAttribute("id");
+					if (!parent) {
+						var _parentContent = (0, _core.filterChildren)(parentItem, "a", true);
+						parent = _parentContent && _parentContent.getAttribute("href");
+					}
 				}
 			}
 
@@ -12779,6 +15175,7 @@ var Navigation = function () {
 		/**
    * Load Spine Items
    * @param  {object} json the items to be loaded
+   * @return {Array} navItems
    */
 
 	}, {
@@ -12788,9 +15185,7 @@ var Navigation = function () {
 
 			return json.map(function (item) {
 				item.label = item.title;
-				if (item.children) {
-					item.subitems = _this.load(item.children);
-				}
+				item.subitems = item.children ? _this.load(item.children) : [];
 				return item;
 			});
 		}
@@ -12815,7 +15210,7 @@ exports.default = Navigation;
 module.exports = exports["default"];
 
 /***/ }),
-/* 48 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12855,10 +15250,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Handle Package Resources
  * @class
  * @param {Manifest} manifest
- * @param {[object]} options
- * @param {[string="base64"]} options.replacements
- * @param {[Archive]} options.archive
- * @param {[method]} options.resolver
+ * @param {object} [options]
+ * @param {string} [options.replacements="base64"]
+ * @param {Archive} [options.archive]
+ * @param {method} [options.resolver]
  */
 var Resources = function () {
 	function Resources(manifest, options) {
@@ -12939,6 +15334,13 @@ var Resources = function () {
 				return item.href;
 			});
 		}
+
+		/**
+   * Create a url to a resource
+   * @param {string} url
+   * @return {Promise<string>} Promise resolves with url string
+   */
+
 	}, {
 		key: "createUrl",
 		value: function createUrl(url) {
@@ -13092,7 +15494,7 @@ var Resources = function () {
 		/**
    * Resolve all resources URLs relative to an absolute URL
    * @param  {string} absolute to be resolved to
-   * @param  {[resolver]} resolver
+   * @param  {resolver} [resolver]
    * @return {string[]} array with relative Urls
    */
 
@@ -13173,7 +15575,7 @@ exports.default = Resources;
 module.exports = exports["default"];
 
 /***/ }),
-/* 49 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13247,7 +15649,7 @@ var PageList = function () {
 		/**
    * Parse a Nav PageList
    * @private
-   * @param  {document} navHtml
+   * @param  {node} navHtml
    * @return {PageList.item[]} list
    */
 
@@ -13274,7 +15676,7 @@ var PageList = function () {
 		/**
    * Page List Item
    * @private
-   * @param  {object} item
+   * @param  {node} item
    * @return {object} pageListItem
    */
 
@@ -13331,7 +15733,7 @@ var PageList = function () {
 		/**
    * Get a PageList result from a EpubCFI
    * @param  {string} cfi EpubCFI String
-   * @return {string} page
+   * @return {number} page
    */
 
 	}, {
@@ -13370,7 +15772,7 @@ var PageList = function () {
 
 		/**
    * Get an EpubCFI from a Page List Item
-   * @param  {string} pg
+   * @param  {string | number} pg
    * @return {string} cfi
    */
 
@@ -13396,7 +15798,7 @@ var PageList = function () {
 		/**
    * Get a Page from Book percentage
    * @param  {number} percent
-   * @return {string} page
+   * @return {number} page
    */
 
 	}, {
@@ -13408,7 +15810,7 @@ var PageList = function () {
 
 		/**
    * Returns a value between 0 - 1 corresponding to the location of a page
-   * @param  {int} pg the page
+   * @param  {number} pg the page
    * @return {number} percentage
    */
 
@@ -13432,6 +15834,11 @@ var PageList = function () {
 			var percentage = this.percentageFromPage(pg);
 			return percentage;
 		}
+
+		/**
+   * Destroy
+   */
+
 	}, {
 		key: "destroy",
 		value: function destroy() {
@@ -13453,7 +15860,7 @@ exports.default = PageList;
 module.exports = exports["default"];
 
 /***/ }),
-/* 50 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13467,9 +15874,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _core = __webpack_require__(0);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -13483,7 +15890,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @param {object} settings
  * @param {string} [settings.layout='reflowable']
  * @param {string} [settings.spread]
- * @param {int} [settings.minSpreadWidth=800]
+ * @param {number} [settings.minSpreadWidth=800]
  * @param {boolean} [settings.evenSpreads=false]
  */
 var Layout = function () {
@@ -13528,6 +15935,7 @@ var Layout = function () {
 	/**
   * Switch the flow between paginated and scrolled
   * @param  {string} flow paginated | scrolled
+  * @return {string} simplified flow
   */
 
 
@@ -13549,8 +15957,9 @@ var Layout = function () {
 		/**
    * Switch between using spreads or not, and set the
    * width at which they switch to single.
-   * @param  {string} spread true | false
-   * @param  {boolean} min integer in pixels
+   * @param  {string} spread "none" | "always" | "auto"
+   * @param  {number} min integer in pixels
+   * @return {boolean} spread true | false
    */
 
 	}, {
@@ -13572,9 +15981,9 @@ var Layout = function () {
 
 		/**
    * Calculate the dimensions of the pagination
-   * @param  {number} _width  [description]
-   * @param  {number} _height [description]
-   * @param  {number} _gap    [description]
+   * @param  {number} _width  width of the rendering
+   * @param  {number} _height height of the rendering
+   * @param  {number} _gap    width of the gap between columns
    */
 
 	}, {
@@ -13718,6 +16127,13 @@ var Layout = function () {
 				pages: pages
 			};
 		}
+
+		/**
+   * Update props that have changed
+   * @private
+   * @param  {object} props
+   */
+
 	}, {
 		key: "update",
 		value: function update(props) {
@@ -13746,7 +16162,7 @@ exports.default = Layout;
 module.exports = exports["default"];
 
 /***/ }),
-/* 51 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13841,6 +16257,12 @@ var Themes = function () {
 				return this.registerRules("default", theme);
 			}
 		}
+
+		/**
+   * Register themes object
+   * @param {object} themes
+   */
+
 	}, {
 		key: "registerThemes",
 		value: function registerThemes(themes) {
@@ -13854,6 +16276,13 @@ var Themes = function () {
 				}
 			}
 		}
+
+		/**
+   * Register a url
+   * @param {string} name
+   * @param {string} input
+   */
+
 	}, {
 		key: "registerUrl",
 		value: function registerUrl(name, input) {
@@ -13863,6 +16292,13 @@ var Themes = function () {
 				this.update(name);
 			}
 		}
+
+		/**
+   * Register rule
+   * @param {string} name
+   * @param {object} rules
+   */
+
 	}, {
 		key: "registerRules",
 		value: function registerRules(name, rules) {
@@ -13872,6 +16308,12 @@ var Themes = function () {
 				this.update(name);
 			}
 		}
+
+		/**
+   * Select a theme
+   * @param {string} name
+   */
+
 	}, {
 		key: "select",
 		value: function select(name) {
@@ -13887,6 +16329,12 @@ var Themes = function () {
 				content.addClass(name);
 			});
 		}
+
+		/**
+   * Update a theme
+   * @param {string} name
+   */
+
 	}, {
 		key: "update",
 		value: function update(name) {
@@ -13897,6 +16345,12 @@ var Themes = function () {
 				_this.add(name, content);
 			});
 		}
+
+		/**
+   * Inject all themes into contents
+   * @param {Contents} contents
+   */
+
 	}, {
 		key: "inject",
 		value: function inject(contents) {
@@ -13918,6 +16372,13 @@ var Themes = function () {
 				contents.addClass(this._current);
 			}
 		}
+
+		/**
+   * Add Theme to contents
+   * @param {string} name
+   * @param {Contents} contents
+   */
+
 	}, {
 		key: "add",
 		value: function add(name, contents) {
@@ -13936,19 +16397,36 @@ var Themes = function () {
 				theme.injected = true;
 			}
 		}
+
+		/**
+   * Add override
+   * @param {string} name
+   * @param {string} value
+   * @param {boolean} priority
+   */
+
 	}, {
 		key: "override",
-		value: function override(name, value) {
+		value: function override(name, value, priority) {
 			var _this2 = this;
 
 			var contents = this.rendition.getContents();
 
-			this._overrides[name] = value;
+			this._overrides[name] = {
+				value: value,
+				priority: priority === true
+			};
 
 			contents.forEach(function (content) {
-				content.css(name, _this2._overrides[name]);
+				content.css(name, _this2._overrides[name].value, _this2._overrides[name].priority);
 			});
 		}
+
+		/**
+   * Add all overrides
+   * @param {Content} content
+   */
+
 	}, {
 		key: "overrides",
 		value: function overrides(contents) {
@@ -13956,7 +16434,7 @@ var Themes = function () {
 
 			for (var rule in overrides) {
 				if (overrides.hasOwnProperty(rule)) {
-					contents.css(rule, overrides[rule]);
+					contents.css(rule, overrides[rule].value, overrides[rule].priority);
 				}
 			}
 		}
@@ -13980,7 +16458,7 @@ var Themes = function () {
 	}, {
 		key: "font",
 		value: function font(f) {
-			this.override("font-family", f);
+			this.override("font-family", f, true);
 		}
 	}, {
 		key: "destroy",
@@ -14000,7 +16478,7 @@ exports.default = Themes;
 module.exports = exports["default"];
 
 /***/ }),
-/* 52 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14012,7 +16490,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -14050,13 +16528,15 @@ var Annotations = function () {
   * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
   * @param {object} data Data to assign to annotation
   * @param {function} [cb] Callback after annotation is added
+  * @param {string} className CSS class to assign to annotation
+  * @param {object} styles CSS styles to assign to annotation
   * @returns {Annotation} annotation
   */
 
 
 	_createClass(Annotations, [{
 		key: "add",
-		value: function add(type, cfiRange, data, cb) {
+		value: function add(type, cfiRange, data, cb, className, styles) {
 			var hash = encodeURI(cfiRange);
 			var cfi = new _epubcfi2.default(cfiRange);
 			var sectionIndex = cfi.spinePos;
@@ -14065,7 +16545,9 @@ var Annotations = function () {
 				cfiRange: cfiRange,
 				data: data,
 				sectionIndex: sectionIndex,
-				cb: cb
+				cb: cb,
+				className: className,
+				styles: styles
 			});
 
 			this._annotations[hash] = annotation;
@@ -14148,12 +16630,14 @@ var Annotations = function () {
    * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
    * @param {object} data Data to assign to annotation
    * @param {function} cb Callback after annotation is added
+   * @param {string} className CSS class to assign to annotation
+   * @param {object} styles CSS styles to assign to annotation
    */
 
 	}, {
 		key: "highlight",
-		value: function highlight(cfiRange, data, cb) {
-			this.add("highlight", cfiRange, data, cb);
+		value: function highlight(cfiRange, data, cb, className, styles) {
+			this.add("highlight", cfiRange, data, cb, className, styles);
 		}
 
 		/**
@@ -14161,12 +16645,14 @@ var Annotations = function () {
    * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
    * @param {object} data Data to assign to annotation
    * @param {function} cb Callback after annotation is added
+   * @param {string} className CSS class to assign to annotation
+   * @param {object} styles CSS styles to assign to annotation
    */
 
 	}, {
 		key: "underline",
-		value: function underline(cfiRange, data, cb) {
-			this.add("underline", cfiRange, data, cb);
+		value: function underline(cfiRange, data, cb, className, styles) {
+			this.add("underline", cfiRange, data, cb, className, styles);
 		}
 
 		/**
@@ -14265,6 +16751,8 @@ var Annotations = function () {
  * @param {object} options.data Data to assign to annotation
  * @param {int} options.sectionIndex Index in the Spine of the Section annotation belongs to
  * @param {function} [options.cb] Callback after annotation is added
+ * @param {string} className CSS class to assign to annotation
+ * @param {object} styles CSS styles to assign to annotation
  * @returns {Annotation} annotation
  */
 
@@ -14275,7 +16763,9 @@ var Annotation = function () {
 		    cfiRange = _ref.cfiRange,
 		    data = _ref.data,
 		    sectionIndex = _ref.sectionIndex,
-		    cb = _ref.cb;
+		    cb = _ref.cb,
+		    className = _ref.className,
+		    styles = _ref.styles;
 
 		_classCallCheck(this, Annotation);
 
@@ -14285,6 +16775,8 @@ var Annotation = function () {
 		this.sectionIndex = sectionIndex;
 		this.mark = undefined;
 		this.cb = cb;
+		this.className = className;
+		this.styles = styles;
 	}
 
 	/**
@@ -14311,14 +16803,16 @@ var Annotation = function () {
 			    data = this.data,
 			    type = this.type,
 			    mark = this.mark,
-			    cb = this.cb;
+			    cb = this.cb,
+			    className = this.className,
+			    styles = this.styles;
 
 			var result = void 0;
 
 			if (type === "highlight") {
-				result = view.highlight(cfiRange, data, cb);
+				result = view.highlight(cfiRange, data, cb, className, styles);
 			} else if (type === "underline") {
-				result = view.underline(cfiRange, data, cb);
+				result = view.underline(cfiRange, data, cb, className, styles);
 			} else if (type === "mark") {
 				result = view.mark(cfiRange, data, cb);
 			}
@@ -14375,7 +16869,7 @@ exports.default = Annotations;
 module.exports = exports["default"];
 
 /***/ }),
-/* 53 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14414,11 +16908,11 @@ var _createClass = function () {
     };
 }();
 
-var _svg = __webpack_require__(54);
+var _svg = __webpack_require__(57);
 
 var _svg2 = _interopRequireDefault(_svg);
 
-var _events = __webpack_require__(55);
+var _events = __webpack_require__(58);
 
 var _events2 = _interopRequireDefault(_events);
 
@@ -14738,7 +17232,7 @@ function contains(rect1, rect2) {
 }
 
 /***/ }),
-/* 54 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14757,7 +17251,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 55 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14891,7 +17385,7 @@ function contains(item, target, x, y) {
 }
 
 /***/ }),
-/* 56 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14905,7 +17399,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _core = __webpack_require__(0);
 
-var _throttle = __webpack_require__(57);
+var _throttle = __webpack_require__(60);
 
 var _throttle2 = _interopRequireDefault(_throttle);
 
@@ -15079,8 +17573,14 @@ var Stage = function () {
 				bounds = this.element.getBoundingClientRect();
 
 				if (bounds.width) {
-					width = bounds.width;
-					this.container.style.width = bounds.width + "px";
+					width = Math.floor(bounds.width);
+					this.container.style.width = width + "px";
+				}
+			} else {
+				if ((0, _core.isNumber)(width)) {
+					this.container.style.width = width + "px";
+				} else {
+					this.container.style.width = width;
 				}
 			}
 
@@ -15089,13 +17589,19 @@ var Stage = function () {
 
 				if (bounds.height) {
 					height = bounds.height;
-					this.container.style.height = bounds.height + "px";
+					this.container.style.height = height + "px";
+				}
+			} else {
+				if ((0, _core.isNumber)(height)) {
+					this.container.style.height = height + "px";
+				} else {
+					this.container.style.height = height;
 				}
 			}
 
 			if (!(0, _core.isNumber)(width)) {
 				bounds = this.container.getBoundingClientRect();
-				width = bounds.width;
+				width = Math.floor(bounds.width);
 				//height = bounds.height;
 			}
 
@@ -15116,11 +17622,19 @@ var Stage = function () {
 
 			// Bounds not set, get them from window
 			var _windowBounds = (0, _core.windowBounds)();
+			var bodyStyles = window.getComputedStyle(document.body);
+			var bodyPadding = {
+				left: parseFloat(bodyStyles["padding-left"]) || 0,
+				right: parseFloat(bodyStyles["padding-right"]) || 0,
+				top: parseFloat(bodyStyles["padding-top"]) || 0,
+				bottom: parseFloat(bodyStyles["padding-bottom"]) || 0
+			};
+
 			if (!width) {
-				width = _windowBounds.width;
+				width = _windowBounds.width - bodyPadding.left - bodyPadding.right;
 			}
-			if (this.settings.fullsize || !height) {
-				height = _windowBounds.height;
+			if (this.settings.fullsize && !height || !height) {
+				height = _windowBounds.height - bodyPadding.top - bodyPadding.bottom;
 			}
 
 			return {
@@ -15238,7 +17752,7 @@ exports.default = Stage;
 module.exports = exports["default"];
 
 /***/ }),
-/* 57 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var debounce = __webpack_require__(21),
@@ -15313,7 +17827,7 @@ module.exports = throttle;
 
 
 /***/ }),
-/* 58 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var root = __webpack_require__(22);
@@ -15342,7 +17856,7 @@ module.exports = now;
 
 
 /***/ }),
-/* 59 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/** Detect free variable `global` from Node.js. */
@@ -15353,11 +17867,11 @@ module.exports = freeGlobal;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
-/* 60 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(15),
-    isSymbol = __webpack_require__(61);
+    isSymbol = __webpack_require__(64);
 
 /** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
@@ -15425,11 +17939,11 @@ module.exports = toNumber;
 
 
 /***/ }),
-/* 61 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var baseGetTag = __webpack_require__(62),
-    isObjectLike = __webpack_require__(65);
+var baseGetTag = __webpack_require__(65),
+    isObjectLike = __webpack_require__(68);
 
 /** `Object#toString` result references. */
 var symbolTag = '[object Symbol]';
@@ -15460,12 +17974,12 @@ module.exports = isSymbol;
 
 
 /***/ }),
-/* 62 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(23),
-    getRawTag = __webpack_require__(63),
-    objectToString = __webpack_require__(64);
+    getRawTag = __webpack_require__(66),
+    objectToString = __webpack_require__(67);
 
 /** `Object#toString` result references. */
 var nullTag = '[object Null]',
@@ -15494,7 +18008,7 @@ module.exports = baseGetTag;
 
 
 /***/ }),
-/* 63 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Symbol = __webpack_require__(23);
@@ -15546,7 +18060,7 @@ module.exports = getRawTag;
 
 
 /***/ }),
-/* 64 */
+/* 67 */
 /***/ (function(module, exports) {
 
 /** Used for built-in method references. */
@@ -15574,7 +18088,7 @@ module.exports = objectToString;
 
 
 /***/ }),
-/* 65 */
+/* 68 */
 /***/ (function(module, exports) {
 
 /**
@@ -15609,7 +18123,7 @@ module.exports = isObjectLike;
 
 
 /***/ }),
-/* 66 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15815,7 +18329,7 @@ exports.default = Views;
 module.exports = exports["default"];
 
 /***/ }),
-/* 67 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15871,7 +18385,7 @@ var Archive = function () {
 		value: function checkRequirements() {
 			try {
 				if (typeof JSZip === "undefined") {
-					var _JSZip = __webpack_require__(68);
+					var _JSZip = __webpack_require__(71);
 					this.zip = new _JSZip();
 				} else {
 					this.zip = new JSZip();
@@ -15884,7 +18398,7 @@ var Archive = function () {
 		/**
    * Open an archive
    * @param  {binary} input
-   * @param  {boolean} isBase64 tells JSZip if the input data is base64 encoded
+   * @param  {boolean} [isBase64] tells JSZip if the input data is base64 encoded
    * @return {Promise} zipfile
    */
 
@@ -15897,7 +18411,7 @@ var Archive = function () {
 		/**
    * Load and Open an archive
    * @param  {string} zipUrl
-   * @param  {boolean} isBase64 tells JSZip if the input data is base64 encoded
+   * @param  {boolean} [isBase64] tells JSZip if the input data is base64 encoded
    * @return {Promise} zipfile
    */
 
@@ -15913,7 +18427,7 @@ var Archive = function () {
    * Request a url from the archive
    * @param  {string} url  a url to request from the archive
    * @param  {string} [type] specify the type of the returned result
-   * @return {Promise}
+   * @return {Promise<Blob | string | JSON | Document | XMLDocument>}
    */
 
 	}, {
@@ -16124,14 +18638,14 @@ exports.default = Archive;
 module.exports = exports["default"];
 
 /***/ }),
-/* 68 */
+/* 71 */
 /***/ (function(module, exports) {
 
-if(typeof __WEBPACK_EXTERNAL_MODULE_68__ === 'undefined') {var e = new Error("Cannot find module \"jszip\""); e.code = 'MODULE_NOT_FOUND'; throw e;}
-module.exports = __WEBPACK_EXTERNAL_MODULE_68__;
+if(typeof __WEBPACK_EXTERNAL_MODULE_71__ === 'undefined') {var e = new Error("Cannot find module \"jszip\""); e.code = 'MODULE_NOT_FOUND'; throw e;}
+module.exports = __WEBPACK_EXTERNAL_MODULE_71__;
 
 /***/ }),
-/* 69 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16744,10 +19258,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
   return jURL;
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(70)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(73)(module)))
 
 /***/ }),
-/* 70 */
+/* 73 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
