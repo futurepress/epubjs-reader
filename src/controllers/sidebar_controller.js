@@ -1,50 +1,51 @@
-EPUBJS.reader.SidebarController = function(book) {
-	var reader = this;
+EPUBJS.reader.SidebarController = function (book) {
+    var reader = this;
 
-	var $sidebar = $("#sidebar"),
-			$panels = $("#panels");
+    var $sidebar = $("#sidebar"),
+        $panels = $("#panels");
 
-	var activePanel = "Toc";
+    var activePanel = "Toc";
 
-	var changePanelTo = function(viewName) {
-		var controllerName = viewName + "Controller";
-		
-		if(activePanel == viewName || typeof reader[controllerName] === 'undefined' ) return;
-		reader[activePanel+ "Controller"].hide();
-		reader[controllerName].show();
-		activePanel = viewName;
+    var changePanelTo = function (viewName) {
+        var controllerName = viewName + "Controller";
 
-		$panels.find('.active').removeClass("active");
-		$panels.find("#show-" + viewName ).addClass("active");
-	};
-	
-	var getActivePanel = function() {
-		return activePanel;
-	};
-	
-	var show = function() {
-		reader.sidebarOpen = true;
-		reader.ReaderController.slideOut();
-		$sidebar.addClass("open");
-	}
+        if (activePanel == viewName || typeof reader[controllerName] === 'undefined')
+            return;
+        reader[activePanel + "Controller"].hide();
+        reader[controllerName].show();
+        activePanel = viewName;
 
-	var hide = function() {
-		reader.sidebarOpen = false;
-		reader.ReaderController.slideIn();
-		$sidebar.removeClass("open");
-	}
+        $panels.find('.active').removeClass("active");
+        $panels.find("#show-" + viewName).addClass("active");
+    };
 
-	$panels.find(".show_view").on("click", function(event) {
-		var view = $(this).data("view");
+    var getActivePanel = function () {
+        return activePanel;
+    };
 
-		changePanelTo(view);
-		event.preventDefault();
-	});
+    var show = function () {
+        reader.sidebarOpen = true;
+        reader.ReaderController.slideOut();
+        $sidebar.addClass("open");
+    }
 
-	return {
-		'show' : show,
-		'hide' : hide,
-		'getActivePanel' : getActivePanel,
-		'changePanelTo' : changePanelTo
-	};
+    var hide = function () {
+        reader.sidebarOpen = false;
+        reader.ReaderController.slideIn();
+        $sidebar.removeClass("open");
+    }
+
+    $panels.find(".show_view").on("click", function (event) {
+        var view = $(this).data("view");
+
+        changePanelTo(view);
+        event.preventDefault();
+    });
+
+    return {
+        'show': show,
+        'hide': hide,
+        'getActivePanel': getActivePanel,
+        'changePanelTo': changePanelTo
+    };
 };

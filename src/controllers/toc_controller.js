@@ -1,116 +1,113 @@
-EPUBJS.reader.TocController = function(toc) {
-	var book = this.book;
-	var rendition = this.rendition;
+EPUBJS.reader.TocController = function (toc) {
+    var book = this.book;
+    var rendition = this.rendition;
 
-	var $list = $("#tocView"),
-			docfrag = document.createDocumentFragment();
+    var $list = $("#tocView").empty(),
+        docfrag = document.createDocumentFragment();
 
-	var currentChapter = false;
+    var currentChapter = false;
 
-	var generateTocItems = function(toc, level) {
-		var container = document.createElement("ul");
+    var generateTocItems = function (toc, level) {
+        var container = document.createElement("ul");
 
-		if(!level) level = 1;
+        if (!level) level = 1;
 
-		toc.forEach(function(chapter) {
-			var listitem = document.createElement("li"),
-					link = document.createElement("a");
-					toggle = document.createElement("a");
+        toc.forEach(function (chapter) {
+            var listitem = document.createElement("li"),
+                link = document.createElement("a");
+            toggle = document.createElement("a");
 
-			var subitems;
+            var subitems;
 
-			listitem.id = "toc-"+chapter.id;
-			listitem.classList.add('list_item');
+            listitem.id = "toc-" + chapter.id;
+            listitem.classList.add('list_item');
 
-			link.textContent = chapter.label;
-			link.href = chapter.href;
+            link.textContent = chapter.label;
+            link.href = chapter.href;
 
-			link.classList.add('toc_link');
+            link.classList.add('toc_link');
 
-			listitem.appendChild(link);
+            listitem.appendChild(link);
 
-			if(chapter.subitems && chapter.subitems.length > 0) {
-				level++;
-				subitems = generateTocItems(chapter.subitems, level);
-				toggle.classList.add('toc_toggle');
+            if (chapter.subitems && chapter.subitems.length > 0) {
+                level++;
+                subitems = generateTocItems(chapter.subitems, level);
+                toggle.classList.add('toc_toggle');
 
-				listitem.insertBefore(toggle, link);
-				listitem.appendChild(subitems);
-			}
+                listitem.insertBefore(toggle, link);
+                listitem.appendChild(subitems);
+            }
 
+            container.appendChild(listitem);
+        });
 
-			container.appendChild(listitem);
+        return container;
+    };
 
-		});
+    var onShow = function () {
+        $list.show();
+    };
 
-		return container;
-	};
+    var onHide = function () {
+        $list.hide();
+    };
 
-	var onShow = function() {
-		$list.show();
-	};
+    var chapterChange = function (e) {
+        var id = e.id,
+            $item = $list.find("#toc-" + id),
+            $current = $list.find(".currentChapter"),
+            $open = $list.find('.openChapter');
 
-	var onHide = function() {
-		$list.hide();
-	};
+        if ($item.length) {
 
-	var chapterChange = function(e) {
-		var id = e.id,
-				$item = $list.find("#toc-"+id),
-				$current = $list.find(".currentChapter"),
-				$open = $list.find('.openChapter');
+            if ($item != $current && $item.has(currentChapter).length > 0) {
+                $current.removeClass("currentChapter");
+            }
 
-		if($item.length){
+            $item.addClass("currentChapter");
 
-			if($item != $current && $item.has(currentChapter).length > 0) {
-				$current.removeClass("currentChapter");
-			}
+            // $open.removeClass("openChapter");
+            $item.parents('li').addClass("openChapter");
+        }
+    };
 
-			$item.addClass("currentChapter");
+    rendition.on('renderered', chapterChange);
 
-			// $open.removeClass("openChapter");
-			$item.parents('li').addClass("openChapter");
-		}
-	};
+    var tocitems = generateTocItems(toc);
 
-	rendition.on('renderered', chapterChange);
+    docfrag.appendChild(tocitems);
 
-	var tocitems = generateTocItems(toc);
+    $list.append(docfrag);
+    $list.find(".toc_link").on("click", function (event) {
+        var url = this.getAttribute('href');
 
-	docfrag.appendChild(tocitems);
+        event.preventDefault();
 
-	$list.append(docfrag);
-	$list.find(".toc_link").on("click", function(event){
-			var url = this.getAttribute('href');
+        //-- Provide the Book with the url to show
+        //   The Url must be found in the books manifest
+        rendition.display(url);
 
-			event.preventDefault();
+        $list.find(".currentChapter")
+            .addClass("openChapter")
+            .removeClass("currentChapter");
 
-			//-- Provide the Book with the url to show
-			//   The Url must be found in the books manifest
-			rendition.display(url);
+        $(this).parent('li').addClass("currentChapter");
+    });
 
-			$list.find(".currentChapter")
-					.addClass("openChapter")
-					.removeClass("currentChapter");
+    $list.find(".toc_toggle").on("click", function (event) {
+        var $el = $(this).parent('li'),
+            open = $el.hasClass("openChapter");
 
-			$(this).parent('li').addClass("currentChapter");
+        event.preventDefault();
+        if (open) {
+            $el.removeClass("openChapter");
+        } else {
+            $el.addClass("openChapter");
+        }
+    });
 
-	});
-
-	$list.find(".toc_toggle").on("click", function(event){
-			var $el = $(this).parent('li'),
-					open = $el.hasClass("openChapter");
-
-			event.preventDefault();
-			if(open){
-				$el.removeClass("openChapter");
-			} else {
-				$el.addClass("openChapter");
-			}
-	});
-
-	return {
-		"show" : onShow,
-		"hide" : onHide
-	};
+    return {
+        "show": onShow,
+        "hide": onHide
+    };
 };
