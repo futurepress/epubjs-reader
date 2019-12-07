@@ -34,7 +34,7 @@ npm install
 You can run the reader locally with the command
 
 ```javascript
-node start
+npm start
 ```
 
 Builds are concatenated and minified using [gruntjs](http://gruntjs.com/getting-started)
