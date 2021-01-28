@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2016 Yehuda Katz, Tom Dale, Stefan Penner and contributors
  * @license   Licensed under MIT license
  *            See https://raw.githubusercontent.com/tildeio/rsvp.js/master/LICENSE
- * @version   3.6.2
+ * @version   4.8.4+ff10049b
  */
 
 (function (global, factory) {

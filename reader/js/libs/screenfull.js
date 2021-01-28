@@ -1,6 +1,6 @@
 /*!
 * screenfull
-* v5.0.0 - 2019-09-09
+* v5.1.0 - 2020-12-24
 * (c) Sindre Sorhus; MIT License
 */
 (function () {
@@ -82,7 +82,7 @@
 	};
 
 	var screenfull = {
-		request: function (element) {
+		request: function (element, options) {
 			return new Promise(function (resolve, reject) {
 				var onFullScreenEntered = function () {
 					this.off('change', onFullScreenEntered);
@@ -93,7 +93,11 @@
 
 				element = element || document.documentElement;
 
-				Promise.resolve(element[fn.requestFullscreen]()).catch(reject);
+				var returnPromise = element[fn.requestFullscreen](options);
+
+				if (returnPromise instanceof Promise) {
+					returnPromise.then(onFullScreenEntered).catch(reject);
+				}
 			}.bind(this));
 		},
 		exit: function () {
@@ -110,11 +114,15 @@
 
 				this.on('change', onFullScreenExit);
 
-				Promise.resolve(document[fn.exitFullscreen]()).catch(reject);
+				var returnPromise = document[fn.exitFullscreen]();
+
+				if (returnPromise instanceof Promise) {
+					returnPromise.then(onFullScreenExit).catch(reject);
+				}
 			}.bind(this));
 		},
-		toggle: function (element) {
-			return this.isFullscreen ? this.exit() : this.request(element);
+		toggle: function (element, options) {
+			return this.isFullscreen ? this.exit() : this.request(element, options);
 		},
 		onchange: function (callback) {
 			this.on('change', callback);
