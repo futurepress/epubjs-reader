@@ -2556,10 +2556,6 @@
 
 
 
-
-
-
-
 //
 
 var EPUBJS = EPUBJS || {};
