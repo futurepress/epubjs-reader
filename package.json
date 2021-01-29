@@ -1,47 +1,47 @@
 {
-  "name": "epubjs-reader",
-  "version": "0.3.0",
-  "repository": "https://github.com/futurepress/epubjs-reader",
-  "description": "ePub.js Reader",
-  "main": "reader/js/reader.js",
-  "directories": {
+    "name": "epubjs-reader",
+    "version": "0.3.0",
+    "repository": "https://github.com/futurepress/epubjs-reader",
+    "description": "ePub.js Reader",
+    "main": "reader/js/reader.js",
+    "directories": {
     "test": "tests"
-  },
-  "scripts": {
+    },
+    "scripts": {
     "start": "node tools/serve",
     "deploy": "./node_modules/.bin/gh-pages -d reader"
-  },
-  "author": "fchasen@gmail.com",
-  "license": "BSD-2-Clause",
-  "devDependencies": {
-    "colors": "~1.4.0",
-    "connect": "~3.7.0",
-    "express": "^4.17.1",
-    "gh-pages": "^2.1.1",
-    "grunt": "~1.3.0",
-    "grunt-concat-sourcemap": "~0.4.3",
-    "grunt-contrib-concat": "~1.0.1",
-    "grunt-contrib-connect": "~2.1.0",
-    "grunt-contrib-copy": "~1.0.0",
-    "grunt-contrib-jshint": "~2.1.0",
-    "grunt-contrib-uglify": "~4.0.1",
-    "grunt-contrib-watch": "^1.1.0",
-    "optimist": "~0.6.1",
-    "portfinder": "~1.0.24"
-  },
-  "dependencies": {
-    "core-js": "^3.2.1",
-    "epubjs": "^0.3.88",
-    "immediate": "^3.3.0",
-    "jquery": "^3.5.1",
-    "jszip": "^3.5.0",
-    "lie": "^3.3.0",
-    "morgan": "^1.10.0",
-    "pako": "^1.0.11",
-    "readable-stream": "^3.6.0",
-    "rsvp": "^4.8.5",
-    "screenfull": "^5.1.0",
-    "serve-static": "^1.14.1",
-    "xmldom": "^0.1.31"
-  }
+    },
+    "author": "fchasen@gmail.com",
+    "license": "BSD-2-Clause",
+    "devDependencies": {
+        "colors": "~1.4.0",
+        "connect": "~3.7.0",
+        "express": "^4.17.1",
+        "gh-pages": "^2.1.1",
+        "grunt": "~1.3.0",
+        "grunt-concat-sourcemap": "~0.4.3",
+        "grunt-contrib-concat": "~1.0.1",
+        "grunt-contrib-connect": "~2.1.0",
+        "grunt-contrib-copy": "~1.0.0",
+        "grunt-contrib-jshint": "~2.1.0",
+        "grunt-contrib-uglify": "~4.0.1",
+        "grunt-contrib-watch": "^1.1.0",
+        "optimist": "~0.6.1",
+        "portfinder": "~1.0.24"
+    },
+    "dependencies": {
+        "core-js": "^3.2.1",
+        "epubjs": "^0.3.88",
+        "immediate": "^3.3.0",
+        "jquery": "^3.5.1",
+        "jszip": "^3.5.0",
+        "lie": "^3.3.0",
+        "morgan": "^1.10.0",
+        "pako": "^1.0.11",
+        "readable-stream": "^3.6.0",
+        "rsvp": "^4.8.5",
+        "screenfull": "^5.1.0",
+        "serve-static": "^1.14.1",
+        "xmldom": "^0.1.31"
+    }
 }

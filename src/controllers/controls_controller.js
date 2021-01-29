@@ -9,7 +9,7 @@ EPUBJS.reader.ControlsController = function (book) {
         $slider = $("#slider"),
         $main = $("#main"),
         $sidebar = $("#sidebar"),
-        $settings = $("#setting"),
+        $settings = $("#settings"),
         $bookmark = $("#bookmark");
 	/*
 	var goOnline = function() {

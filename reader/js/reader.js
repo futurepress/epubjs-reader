@@ -3627,7 +3627,7 @@ EPUBJS.reader.ControlsController = function (book) {
         $slider = $("#slider"),
         $main = $("#main"),
         $sidebar = $("#sidebar"),
-        $settings = $("#setting"),
+        $settings = $("#settings"),
         $bookmark = $("#bookmark");
 	/*
 	var goOnline = function() {
@@ -4386,14 +4386,9 @@ EPUBJS.reader.TocController = function (toc) {
 
 EPUBJS.reader.UploadController = function () {
     var reader = this;
-    var $upload = $("#upload");
+    var upload = document.getElementById('upload');
 
-    $("#upload-book").click(function (e) {
-        if (e.handleObj.guid === 1)
-            $upload.click();
-    });
-
-    $upload.change(function (e) {
+    upload.addEventListener('change', function (e) {
         if (e.target.files.length === 0)
             return;
 
@@ -4409,6 +4404,6 @@ EPUBJS.reader.UploadController = function () {
             alert("Your browser does not support the required features.\n" +
                 "Please use a modern browser such as Google Chrome, or Mozilla Firefox.");
         }
-    });
+    }, false);
 };
 //# sourceMappingURL=reader.js.map

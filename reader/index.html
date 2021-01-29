@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html class="no-js">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -17,7 +18,7 @@
     <script src="js/libs/zip.min.js"></script>
     <script>
         "use strict";
-        
+
         document.onreadystatechange = function () {
             if (document.readyState == "complete") {
                 window.reader = ePubReader("https://s3.amazonaws.com/moby-dick/", {
@@ -45,18 +46,17 @@
     <!-- <script src="js/hooks/extensions/highlight.js"></script> -->
 
 </head>
+
 <body>
     <div id="sidebar">
         <div id="panels">
-            <!-- <input id="searchBox" placeholder="search" type="search"> -->
-
-            <!-- <a id="show-Search" class="show_view icon-search" data-view="Search">Search</a> -->
-            <a id="show-Toc" class="show_view icon-list-1 active" data-view="Toc">TOC</a>
-            <a id="show-Bookmarks" class="show_view icon-bookmark" data-view="Bookmarks">Bookmarks</a>
-            <!-- <a id="show-Notes" class="show_view icon-edit" data-view="Notes">Notes</a> -->
+            <input type="button" id="show-Toc" class="show_view icon-toc-view active" title="TOC" data-view="Toc">
+            <input type="button" id="show-Bookmarks" class="show_view icon-bookmark-view" title="Bookmarks" data-view="Bookmarks">
+            <input type="button" id="show-Notes" class="show_view icon-edit" title="Notes" data-view="Notes">
+            <input type="search" id="searchBox" placeholder="search">
+            <input type="button" id="show-Search" class="show_view icon-search" title="Search" data-view="Search">
         </div>
-        <div id="tocView" class="view">
-        </div>
+        <div id="tocView" class="view"></div>
         <div id="searchView" class="view">
             <ul id="searchResults"></ul>
         </div>
@@ -72,10 +72,9 @@
         </div>
     </div>
     <div id="main">
-
         <div id="titlebar">
             <div id="opener">
-                <a id="slider" class="icon-menu">Menu</a>
+                <input type="button" id="slider" class="icon-menu" title="Menu">
             </div>
             <div id="metainfo">
                 <span id="book-title"></span>
@@ -83,32 +82,29 @@
                 <span id="chapter-title"></span>
             </div>
             <div id="title-controls">
-                <a id="upload-book" class="icon-upload">Upload book</a>
-                <a id="bookmark" class="icon-bookmark-empty">Bookmark</a>
-                <a id="setting" class="icon-cog">Settings</a>
-                <a id="fullscreen" class="icon-resize-full">Fullscreen</a>
+                <input type="file" id="upload" class="icon-upload" accept="application/epub+zip">
+                <input type="button" id="bookmark" class="icon-bookmark-empty" title="Bookmark">
+                <input type="button" id="settings" class="icon-settings" title="Settings">
+                <input type="button" id="fullscreen" class="icon-resize-full" title="Fullscreen">
             </div>
         </div>
-
         <div id="divider"></div>
         <div id="prev" class="arrow">‹</div>
         <div id="viewer"></div>
         <div id="next" class="arrow">›</div>
         <div id="loader" style="display:none"><img src="img/loader.gif"></div>
-
-        <input id="upload" type="file" accept="application/epub+zip" style="display:none">
     </div>
     <div class="modal md-effect-1" id="settings-modal">
         <div class="md-content">
             <h3>Settings</h3>
             <div>
-                <p>
-                    <input type="checkbox" id="sidebarReflow" name="sidebarReflow"> Reflow text when sidebars are open.
-                </p>
+                <input type="checkbox" id="sidebarReflow" name="sidebarReflow">
+                <label>Reflow text when sidebars are open.</label>
             </div>
             <div class="closer icon-cancel-circled"></div>
         </div>
     </div>
     <div class="overlay"></div>
 </body>
+
 </html>
