@@ -1,6 +1,8 @@
 @import url('icons.css');
 @import url('titlebar.css');
 @import url('sidebar.css');
+@import url('popup.css');
+@import url('normalize.css');
 
 @font-face {
     font-family: 'fontello';
