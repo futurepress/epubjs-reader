@@ -14,17 +14,6 @@
 
     <script src="js/libs/jquery.min.js"></script>
     <script src="js/libs/zip.min.js"></script>
-    <script>
-        "use strict";
-
-        document.onreadystatechange = function () {
-            if (document.readyState == "complete") {
-                window.reader = ePubReader("https://s3.amazonaws.com/moby-dick/", {
-                    restore: true
-                });
-            }
-        };
-    </script>
 
     <!-- File Storage -->
     <!-- <script src="js/libs/localforage.min.js"></script> -->
@@ -43,6 +32,7 @@
     <!-- <script src="js/libs/jquery.highlight.js"></script> -->
     <!-- <script src="js/hooks/extensions/highlight.js"></script> -->
 
+    <script src="main.js"></script>
 </head>
 
 <body>
