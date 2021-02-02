@@ -18,6 +18,7 @@ EPUBJS.reader.UploadController = function () {
 
 				storage.init(function () {
 
+					storage.clear();
 					storage.set(e.target.result);
 				});
 
