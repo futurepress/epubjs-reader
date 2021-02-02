@@ -32,7 +32,6 @@ module.exports = function (grunt) {
 		copy: {
 			main: {
 				files: [
-					{ src: 'node_modules/localforage/dist/localforage.min.js', dest: 'reader/js/libs/localforage.min.js' },
 					{ src: 'node_modules/jszip/dist/jszip.min.js', dest: 'reader/js/libs/jszip.min.js' },
 					{ src: 'node_modules/jquery/dist/jquery.min.js', dest: 'reader/js/libs/jquery.min.js' },
 					{ src: 'node_modules/screenfull/dist/screenfull.js', dest: 'reader/js/libs/screenfull.js' },
