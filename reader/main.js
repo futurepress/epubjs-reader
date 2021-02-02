@@ -18,7 +18,7 @@ document.onreadystatechange = function () {
 
 			} else {
 
-				ePubReader('https://s3.amazonaws.com/moby-dick/', {
+				reader = ePubReader('https://s3.amazonaws.com/moby-dick/', {
 
 					restore: true
 				});
