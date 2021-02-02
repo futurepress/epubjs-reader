@@ -38,6 +38,7 @@ module.exports = function (grunt) {
 					{ src: 'node_modules/epubjs/dist/epub.min.js', dest: 'reader/js/libs/epub.min.js' },
 					{ src: 'src/plugins/search.js', dest: 'reader/js/plugins/search.js' },
 					{ src: 'src/plugins/hypothesis.js', dest: 'reader/js/plugins/hypothesis.js' },
+					{ src: 'src/main.js', dest: 'reader/main.js' },
 					{ src: 'hooks/extensions/highlight.js', dest: 'reader/js/hooks/extensions/highlight.js' },
 					// {src: 'node_modules/epubjs/build/hooks.min.js', dest: 'reader/js/hooks.min.js'}
 				]
