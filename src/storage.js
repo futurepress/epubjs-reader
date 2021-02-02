@@ -1,7 +1,7 @@
 var EPUBJS = EPUBJS || {};
 
 EPUBJS.storage = function () {
-
+	
 	var indexedDB = window.indexedDB ||
 					window.webkitIndexedDB ||
 					window.mozIndexedDB ||

@@ -41,9 +41,7 @@ EPUBJS.Reader = function (bookPath, _options) {
         sidebarReflow: false,
         generatePagination: false,
         history: true
-	});
-
-    reader.UploadController = EPUBJS.reader.UploadController.call(reader);
+    });
 
     // Overide options with search parameters
     if (search) {
