@@ -14,9 +14,16 @@ module.exports = function (grunt) {
 					sourceMap: false
 				},
 				files: {
-                    'reader/js/reader.min.js': ['<banner>', 'src/core.js', 'src/reader.js', 'src/controllers/*.js'],
-                    'reader/js/storage.min.js': ['<banner>', 'src/storage.js'],
-                    'reader/js/libs/rsvp.min.js': ['node_modules/rsvp/dist/rsvp.js']
+                    'reader/js/reader.min.js': [
+                        '<banner>',
+                        'src/core.js',
+                        'src/reader.js',
+                        'src/storage.js',
+                        'src/controllers/*.js'
+                    ],
+                    'reader/js/libs/rsvp.min.js': [
+                        'node_modules/rsvp/dist/rsvp.js'
+                    ]
 				}
 			}
 		},
