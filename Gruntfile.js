@@ -7,16 +7,6 @@ module.exports = function (grunt) {
 			banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
 				'<%= grunt.template.today("yyyy-mm-dd") %> */'
 		},
-		concat_sourcemap: {
-			build: {
-				options: {
-					'sourceRoot': '../'
-				},
-				files: {
-					'reader/js/reader.js': ['<banner>', 'node_modules/rsvp/dist/rsvp.js', 'src/core.js', 'src/reader.js', 'src/controllers/*.js'],
-				}
-			}
-		},
 		uglify: {
 			reader: {
 				options: {
@@ -89,10 +79,9 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
-	grunt.loadNpmTasks('grunt-concat-sourcemap');
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
 	// Default task(s).
-	grunt.registerTask('default', ['concat_sourcemap', 'uglify', 'copy']);
+	grunt.registerTask('default', ['uglify', 'copy']);
 };
