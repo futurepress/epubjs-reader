@@ -1,655 +1,700 @@
 var EPUBJS = EPUBJS || {};
 EPUBJS.core = {};
 
-var ELEMENT_NODE = 1;
-var TEXT_NODE = 3;
-var COMMENT_NODE = 8;
+var TEXT_NODE     = 3;
+var ELEMENT_NODE  = 1;
+var COMMENT_NODE  = 8;
 var DOCUMENT_NODE = 9;
 
 //-- Get a element for an id
-EPUBJS.core.getEl = function(elem) {
-	return document.getElementById(elem);
+
+EPUBJS.core.getEl = function (elem) {
+
+    return document.getElementById(elem);
 };
 
 //-- Get all elements for a class
-EPUBJS.core.getEls = function(classes) {
-	return document.getElementsByClassName(classes);
+
+EPUBJS.core.getEls = function (classes) {
+
+    return document.getElementsByClassName(classes);
 };
 
-EPUBJS.core.request = function(url, type, withCredentials) {
-	var supportsURL = window.URL;
-	var BLOB_RESPONSE = supportsURL ? "blob" : "arraybuffer";
-	var deferred = new RSVP.defer();
-	var xhr = new XMLHttpRequest();
-	var uri;
+EPUBJS.core.request = function (url, type, withCredentials) {
 
-	//-- Check from PDF.js:
-	//   https://github.com/mozilla/pdf.js/blob/master/web/compatibility.js
-	var xhrPrototype = XMLHttpRequest.prototype;
+    var supportsURL = window.URL;
+    var BLOB_RESPONSE = supportsURL ? "blob" : "arraybuffer";
+    var deferred = new RSVP.defer();
+    var xhr = new XMLHttpRequest();
+    var uri;
 
-	var handler = function() {
-		var r;
+    //-- Check from PDF.js:
+    //   https://github.com/mozilla/pdf.js/blob/master/web/compatibility.js
+    var xhrPrototype = XMLHttpRequest.prototype;
 
-		if (this.readyState != this.DONE) return;
+    var handler = function () {
+        var r;
 
-		if ((this.status === 200 || this.status === 0) && this.response) { // Android & Firefox reporting 0 for local & blob urls
-			if (type == 'xml'){
+        if (this.readyState !== this.DONE)
+            return;
+
+        // Android & Firefox reporting 0 for local & blob urls
+        if ((this.status === 200 || this.status === 0) && this.response) {
+            if (type === 'xml') {
                 // If this.responseXML wasn't set, try to parse using a DOMParser from text
-                if(!this.responseXML) {
+                if (!this.responseXML) {
                     r = new DOMParser().parseFromString(this.response, "application/xml");
                 } else {
                     r = this.responseXML;
                 }
-			} else if (type == 'xhtml') {
-                if (!this.responseXML){
+            } else if (type === 'xhtml') {
+                if (!this.responseXML) {
                     r = new DOMParser().parseFromString(this.response, "application/xhtml+xml");
                 } else {
                     r = this.responseXML;
                 }
-			} else if (type == 'html') {
-				if (!this.responseXML){
+            } else if (type === 'html') {
+                if (!this.responseXML) {
                     r = new DOMParser().parseFromString(this.response, "text/html");
                 } else {
                     r = this.responseXML;
                 }
-			} else if (type == 'json') {
-				r = JSON.parse(this.response);
-			} else if (type == 'blob') {
-				if (supportsURL) {
-					r = this.response;
-				} else {
-					//-- Safari doesn't support responseType blob, so create a blob from arraybuffer
-					r = new Blob([this.response]);
-				}
-			} else {
-				r = this.response;
-			}
+            } else if (type === 'json') {
+                r = JSON.parse(this.response);
+            } else if (type === 'blob') {
+                if (supportsURL) {
+                    r = this.response;
+                } else {
+                    //-- Safari doesn't support responseType blob, so create a blob from arraybuffer
+                    r = new Blob([this.response]);
+                }
+            } else {
+                r = this.response;
+            }
 
-			deferred.resolve(r);
-		} else {
-			deferred.reject({
-				message : this.response,
-				stack : new Error().stack
-			});
-		}
-	};
+            deferred.resolve(r);
+        } else {
+            deferred.reject({
+                message: this.response,
+                stack: new Error().stack
+            });
+        }
+    };
 
-	if (!('overrideMimeType' in xhrPrototype)) {
-		// IE10 might have response, but not overrideMimeType
-		Object.defineProperty(xhrPrototype, 'overrideMimeType', {
-			value: function xmlHttpRequestOverrideMimeType(mimeType) {}
-		});
-	}
+    if (!('overrideMimeType' in xhrPrototype)) {
+        // IE10 might have response, but not overrideMimeType
+        Object.defineProperty(xhrPrototype, 'overrideMimeType', {
+            value: function xmlHttpRequestOverrideMimeType(mimeType) { }
+        });
+    }
 
-	xhr.onreadystatechange = handler;
-	xhr.open("GET", url, true);
+    xhr.onreadystatechange = handler;
+    xhr.open("GET", url, true);
 
-	if(withCredentials) {
-		xhr.withCredentials = true;
-	}
+    if (withCredentials) {
+        xhr.withCredentials = true;
+    }
 
-	// If type isn't set, determine it from the file extension
-	if(!type) {
-		uri = EPUBJS.core.uri(url);
-		type = uri.extension;
-		type = {
-			'htm': 'html'
-		}[type] || type;
-	}
+    // If type isn't set, determine it from the file extension
+    if (!type) {
+        uri = EPUBJS.core.uri(url);
+        type = uri.extension;
+        type = {
+            'htm': 'html'
+        }[type] || type;
+    }
 
-	if(type == 'blob'){
-		xhr.responseType = BLOB_RESPONSE;
-	}
+    if (type === 'blob') {
+        xhr.responseType = BLOB_RESPONSE;
+    }
 
-	if(type == "json") {
-		xhr.setRequestHeader("Accept", "application/json");
-	}
+    if (type === "json") {
+        xhr.setRequestHeader("Accept", "application/json");
+    }
 
-	if(type == 'xml') {
-		xhr.responseType = "document";
-		xhr.overrideMimeType('text/xml'); // for OPF parsing
-	}
+    if (type === 'xml') {
+        xhr.responseType = "document";
+        xhr.overrideMimeType('text/xml'); // for OPF parsing
+    }
 
-	if(type == 'xhtml') {
-		xhr.responseType = "document";
-	}
+    if (type === 'xhtml') {
+        xhr.responseType = "document";
+    }
 
-	if(type == 'html') {
-		xhr.responseType = "document";
- 	}
+    if (type === 'html') {
+        xhr.responseType = "document";
+    }
 
-	if(type == "binary") {
-		xhr.responseType = "arraybuffer";
-	}
+    if (type === "binary") {
+        xhr.responseType = "arraybuffer";
+    }
 
-	xhr.send();
+    xhr.send();
 
-	return deferred.promise;
+    return deferred.promise;
 };
 
-EPUBJS.core.toArray = function(obj) {
-	var arr = [];
+EPUBJS.core.toArray = function (obj) {
 
-	for (var member in obj) {
-		var newitm;
-		if ( obj.hasOwnProperty(member) ) {
-			newitm = obj[member];
-			newitm.ident = member;
-			arr.push(newitm);
-		}
-	}
+    var arr = [];
 
-	return arr;
+    for (var member in obj) {
+        var newitm;
+        if (Object.prototype.hasOwnProperty.call(obj, member)) {
+            newitm = obj[member];
+            newitm.ident = member;
+            arr.push(newitm);
+        }
+    }
+
+    return arr;
 };
 
 //-- Parse the different parts of a url, returning a object
-EPUBJS.core.uri = function(url){
-	var uri = {
-				protocol : '',
-				host : '',
-				path : '',
-				origin : '',
-				directory : '',
-				base : '',
-				filename : '',
-				extension : '',
-				fragment : '',
-				href : url
-			},
-			blob = url.indexOf('blob:'),
-			doubleSlash = url.indexOf('://'),
-			search = url.indexOf('?'),
-			fragment = url.indexOf("#"),
-			withoutProtocol,
-			dot,
-			firstSlash;
 
-	if(blob === 0) {
-		uri.protocol = "blob";
-		uri.base = url.indexOf(0, fragment);
-		return uri;
-	}
+EPUBJS.core.uri = function (url) {
 
-	if(fragment != -1) {
-		uri.fragment = url.slice(fragment + 1);
-		url = url.slice(0, fragment);
-	}
+    var uri = {
+        protocol: '',
+        host: '',
+        path: '',
+        origin: '',
+        directory: '',
+        base: '',
+        filename: '',
+        extension: '',
+        fragment: '',
+        href: url
+    },
+        blob = url.indexOf('blob:'),
+        doubleSlash = url.indexOf('://'),
+        search = url.indexOf('?'),
+        fragment = url.indexOf("#"),
+        withoutProtocol,
+        dot,
+        firstSlash;
 
-	if(search != -1) {
-		uri.search = url.slice(search + 1);
-		url = url.slice(0, search);
-		href = uri.href;
-	}
+    if (blob === 0) {
+        uri.protocol = "blob";
+        uri.base = url.indexOf(0, fragment);
+        return uri;
+    }
 
-	if(doubleSlash != -1) {
-		uri.protocol = url.slice(0, doubleSlash);
-		withoutProtocol = url.slice(doubleSlash+3);
-		firstSlash = withoutProtocol.indexOf('/');
+    if (fragment !== -1) {
+        uri.fragment = url.slice(fragment + 1);
+        url = url.slice(0, fragment);
+    }
 
-		if(firstSlash === -1) {
-			uri.host = uri.path;
-			uri.path = "";
-		} else {
-			uri.host = withoutProtocol.slice(0, firstSlash);
-			uri.path = withoutProtocol.slice(firstSlash);
-		}
+    if (search !== -1) {
+        uri.search = url.slice(search + 1);
+        url = url.slice(0, search);
+        href = uri.href;
+    }
+
+    if (doubleSlash !== -1) {
+        uri.protocol = url.slice(0, doubleSlash);
+        withoutProtocol = url.slice(doubleSlash + 3);
+        firstSlash = withoutProtocol.indexOf('/');
+
+        if (firstSlash === -1) {
+            uri.host = uri.path;
+            uri.path = "";
+        } else {
+            uri.host = withoutProtocol.slice(0, firstSlash);
+            uri.path = withoutProtocol.slice(firstSlash);
+        }
 
 
-		uri.origin = uri.protocol + "://" + uri.host;
+        uri.origin = uri.protocol + "://" + uri.host;
 
-		uri.directory = EPUBJS.core.folder(uri.path);
+        uri.directory = EPUBJS.core.folder(uri.path);
 
-		uri.base = uri.origin + uri.directory;
-		// return origin;
-	} else {
-		uri.path = url;
-		uri.directory = EPUBJS.core.folder(url);
-		uri.base = uri.directory;
-	}
+        uri.base = uri.origin + uri.directory;
+        // return origin;
+    } else {
+        uri.path = url;
+        uri.directory = EPUBJS.core.folder(url);
+        uri.base = uri.directory;
+    }
 
-	//-- Filename
-	uri.filename = url.replace(uri.base, '');
-	dot = uri.filename.lastIndexOf('.');
-	if(dot != -1) {
-		uri.extension = uri.filename.slice(dot+1);
-	}
-	return uri;
+    //-- Filename
+    uri.filename = url.replace(uri.base, '');
+    dot = uri.filename.lastIndexOf('.');
+    if (dot !== -1) {
+        uri.extension = uri.filename.slice(dot + 1);
+    }
+    return uri;
 };
 
 //-- Parse out the folder, will return everything before the last slash
 
-EPUBJS.core.folder = function(url){
+EPUBJS.core.folder = function (url) {
 
-	var lastSlash = url.lastIndexOf('/');
+    var folder;
+    var lastSlash = url.lastIndexOf('/');
 
-	if(lastSlash == -1) var folder = '';
+    if (lastSlash === -1)
+        folder = '';
 
-	folder = url.slice(0, lastSlash + 1);
+    folder = url.slice(0, lastSlash + 1);
 
-	return folder;
-
+    return folder;
 };
 
 //-- https://github.com/ebidel/filer.js/blob/master/src/filer.js#L128
-EPUBJS.core.dataURLToBlob = function(dataURL) {
-	var BASE64_MARKER = ';base64,',
-		parts, contentType, raw, rawLength, uInt8Array;
 
-	if (dataURL.indexOf(BASE64_MARKER) == -1) {
-		parts = dataURL.split(',');
-		contentType = parts[0].split(':')[1];
-		raw = parts[1];
+EPUBJS.core.dataURLToBlob = function (dataURL) {
 
-		return new Blob([raw], {type: contentType});
-	}
+    var BASE64_MARKER = ';base64,',
+        parts, contentType, raw, rawLength, uInt8Array;
 
-	parts = dataURL.split(BASE64_MARKER);
-	contentType = parts[0].split(':')[1];
-	raw = window.atob(parts[1]);
-	rawLength = raw.length;
+    if (dataURL.indexOf(BASE64_MARKER) === -1) {
+        parts = dataURL.split(',');
+        contentType = parts[0].split(':')[1];
+        raw = parts[1];
 
-	uInt8Array = new Uint8Array(rawLength);
+        return new Blob([raw], { type: contentType });
+    }
 
-	for (var i = 0; i < rawLength; ++i) {
-		uInt8Array[i] = raw.charCodeAt(i);
-	}
+    parts = dataURL.split(BASE64_MARKER);
+    contentType = parts[0].split(':')[1];
+    raw = window.atob(parts[1]);
+    rawLength = raw.length;
 
-	return new Blob([uInt8Array], {type: contentType});
+    uInt8Array = new Uint8Array(rawLength);
+
+    for (var i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], { type: contentType });
 };
 
 //-- Load scripts async: http://stackoverflow.com/questions/7718935/load-scripts-asynchronously
-EPUBJS.core.addScript = function(src, callback, target) {
-	var s, r;
-	r = false;
-	s = document.createElement('script');
-	s.type = 'text/javascript';
-	s.async = false;
-	s.src = src;
-	s.onload = s.onreadystatechange = function() {
-		if ( !r && (!this.readyState || this.readyState == 'complete') ) {
-			r = true;
-			if(callback) callback();
-		}
-	};
-	target = target || document.body;
-	target.appendChild(s);
+
+EPUBJS.core.addScript = function (src, callback, target) {
+
+    var s, r;
+    r = false;
+    s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = false;
+    s.src = src;
+    s.onload = s.onreadystatechange = function () {
+        if (!r && (!this.readyState || this.readyState === 'complete')) {
+            r = true;
+            if (callback) callback();
+        }
+    };
+    target = target || document.body;
+    target.appendChild(s);
 };
 
-EPUBJS.core.addScripts = function(srcArr, callback, target) {
-	var total = srcArr.length,
-		curr = 0,
-		cb = function(){
-			curr++;
-			if(total == curr){
-				if(callback) callback();
-			}else{
-				EPUBJS.core.addScript(srcArr[curr], cb, target);
-			}
-		};
+EPUBJS.core.addScripts = function (srcArr, callback, target) {
 
-	EPUBJS.core.addScript(srcArr[curr], cb, target);
+    var total = srcArr.length,
+        curr = 0,
+        cb = function () {
+            curr++;
+            if (total === curr) {
+                if (callback) callback();
+            } else {
+                EPUBJS.core.addScript(srcArr[curr], cb, target);
+            }
+        };
+
+    EPUBJS.core.addScript(srcArr[curr], cb, target);
 };
 
-EPUBJS.core.addCss = function(src, callback, target) {
-	var s, r;
-	r = false;
-	s = document.createElement('link');
-	s.type = 'text/css';
-	s.rel = "stylesheet";
-	s.href = src;
-	s.onload = s.onreadystatechange = function() {
-		if ( !r && (!this.readyState || this.readyState == 'complete') ) {
-			r = true;
-			if(callback) callback();
-		}
-	};
-	target = target || document.body;
-	target.appendChild(s);
+EPUBJS.core.addCss = function (src, callback, target) {
+
+    var s, r;
+    r = false;
+    s = document.createElement('link');
+    s.type = 'text/css';
+    s.rel = "stylesheet";
+    s.href = src;
+    s.onload = s.onreadystatechange = function () {
+        if (!r && (!this.readyState || this.readyState === 'complete')) {
+            r = true;
+            if (callback) callback();
+        }
+    };
+    target = target || document.body;
+    target.appendChild(s);
 };
 
-EPUBJS.core.prefixed = function(unprefixed) {
-	var vendors = ["Webkit", "Moz", "O", "ms" ],
-		prefixes = ['-Webkit-', '-moz-', '-o-', '-ms-'],
-		upper = unprefixed[0].toUpperCase() + unprefixed.slice(1),
-		length = vendors.length;
+EPUBJS.core.prefixed = function (unprefixed) {
 
-	if (typeof(document.documentElement.style[unprefixed]) != 'undefined') {
-		return unprefixed;
-	}
+    var vendors = ["Webkit", "Moz", "O", "ms"],
+        prefixes = ['-Webkit-', '-moz-', '-o-', '-ms-'],
+        upper = unprefixed[0].toUpperCase() + unprefixed.slice(1),
+        length = vendors.length;
 
-	for ( var i=0; i < length; i++ ) {
-		if (typeof(document.documentElement.style[vendors[i] + upper]) != 'undefined') {
-			return vendors[i] + upper;
-		}
-	}
+    if (typeof (document.documentElement.style[unprefixed]) !== 'undefined') {
+        return unprefixed;
+    }
 
-	return unprefixed;
+    for (var i = 0; i < length; i++) {
+        if (typeof (document.documentElement.style[vendors[i] + upper]) !== 'undefined') {
+            return vendors[i] + upper;
+        }
+    }
+
+    return unprefixed;
 };
 
-EPUBJS.core.resolveUrl = function(base, path) {
-	var url,
-		segments = [],
-		uri = EPUBJS.core.uri(path),
-		folders = base.split("/"),
-		paths;
+EPUBJS.core.resolveUrl = function (base, path) {
 
-	if(uri.host) {
-		return path;
-	}
+    var url,
+        segments = [],
+        uri = EPUBJS.core.uri(path),
+        folders = base.split("/"),
+        paths;
 
-	folders.pop();
+    if (uri.host) {
+        return path;
+    }
 
-	paths = path.split("/");
-	paths.forEach(function(p){
-		if(p === ".."){
-			folders.pop();
-		}else{
-			segments.push(p);
-		}
-	});
+    folders.pop();
 
-	url = folders.concat(segments);
+    paths = path.split("/");
+    paths.forEach(function (p) {
+        if (p === "..") {
+            folders.pop();
+        } else {
+            segments.push(p);
+        }
+    });
 
-	return url.join("/");
+    url = folders.concat(segments);
+
+    return url.join("/");
 };
 
 // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
-EPUBJS.core.uuid = function() {
-	var d = new Date().getTime();
-	var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-			var r = (d + Math.random()*16)%16 | 0;
-			d = Math.floor(d/16);
-			return (c=='x' ? r : (r&0x7|0x8)).toString(16);
-	});
-	return uuid;
+
+EPUBJS.core.uuid = function () {
+
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === 'x' ? r : (r & 0x7 | 0x8)).toString(16);
+    });
+    return uuid;
 };
 
 // Fast quicksort insert for sorted array -- based on:
 // http://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
-EPUBJS.core.insert = function(item, array, compareFunction) {
-	var location = EPUBJS.core.locationOf(item, array, compareFunction);
-	array.splice(location, 0, item);
 
-	return location;
+EPUBJS.core.insert = function (item, array, compareFunction) {
+
+    var location = EPUBJS.core.locationOf(item, array, compareFunction);
+    array.splice(location, 0, item);
+
+    return location;
 };
 
-EPUBJS.core.locationOf = function(item, array, compareFunction, _start, _end) {
-	var start = _start || 0;
-	var end = _end || array.length;
-	var pivot = parseInt(start + (end - start) / 2);
-	var compared;
-	if(!compareFunction){
-		compareFunction = function(a, b) {
-			if(a > b) return 1;
-			if(a < b) return -1;
-			if(a = b) return 0;
-		};
-	}
-	if(end-start <= 0) {
-		return pivot;
-	}
+EPUBJS.core.locationOf = function (item, array, compareFunction, _start, _end) {
 
-	compared = compareFunction(array[pivot], item);
-	if(end-start === 1) {
-		return compared > 0 ? pivot : pivot + 1;
-	}
+    var start = _start || 0;
+    var end = _end || array.length;
+    var pivot = parseInt(start + (end - start) / 2);
+    var compared;
+    if (!compareFunction) {
+        compareFunction = function (a, b) {
+            if (a > b) return 1;
+            if (a < b) return -1;
+            if (a === b) return 0;
+        };
+    }
+    if (end - start <= 0) {
+        return pivot;
+    }
 
-	if(compared === 0) {
-		return pivot;
-	}
-	if(compared === -1) {
-		return EPUBJS.core.locationOf(item, array, compareFunction, pivot, end);
-	} else{
-		return EPUBJS.core.locationOf(item, array, compareFunction, start, pivot);
-	}
+    compared = compareFunction(array[pivot], item);
+    if (end - start === 1) {
+        return compared > 0 ? pivot : pivot + 1;
+    }
+
+    if (compared === 0) {
+        return pivot;
+    }
+    if (compared === -1) {
+        return EPUBJS.core.locationOf(item, array, compareFunction, pivot, end);
+    } else {
+        return EPUBJS.core.locationOf(item, array, compareFunction, start, pivot);
+    }
 };
 
-EPUBJS.core.indexOfSorted = function(item, array, compareFunction, _start, _end) {
-	var start = _start || 0;
-	var end = _end || array.length;
-	var pivot = parseInt(start + (end - start) / 2);
-	var compared;
-	if(!compareFunction){
-		compareFunction = function(a, b) {
-			if(a > b) return 1;
-			if(a < b) return -1;
-			if(a = b) return 0;
-		};
-	}
-	if(end-start <= 0) {
-		return -1; // Not found
-	}
+EPUBJS.core.indexOfSorted = function (item, array, compareFunction, _start, _end) {
 
-	compared = compareFunction(array[pivot], item);
-	if(end-start === 1) {
-		return compared === 0 ? pivot : -1;
-	}
-	if(compared === 0) {
-		return pivot; // Found
-	}
-	if(compared === -1) {
-		return EPUBJS.core.indexOfSorted(item, array, compareFunction, pivot, end);
-	} else{
-		return EPUBJS.core.indexOfSorted(item, array, compareFunction, start, pivot);
-	}
+    var start = _start || 0;
+    var end = _end || array.length;
+    var pivot = parseInt(start + (end - start) / 2);
+    var compared;
+    if (!compareFunction) {
+        compareFunction = function (a, b) {
+            if (a > b) return 1;
+            if (a < b) return -1;
+            if (a === b) return 0;
+        };
+    }
+    if (end - start <= 0) {
+        return -1; // Not found
+    }
+
+    compared = compareFunction(array[pivot], item);
+    if (end - start === 1) {
+        return compared === 0 ? pivot : -1;
+    }
+    if (compared === 0) {
+        return pivot; // Found
+    }
+    if (compared === -1) {
+        return EPUBJS.core.indexOfSorted(item, array, compareFunction, pivot, end);
+    } else {
+        return EPUBJS.core.indexOfSorted(item, array, compareFunction, start, pivot);
+    }
 };
 
 
-EPUBJS.core.queue = function(_scope){
-	var _q = [];
-	var scope = _scope;
-	// Add an item to the queue
-	var enqueue = function(funcName, args, context) {
-		_q.push({
-			"funcName" : funcName,
-			"args"     : args,
-			"context"  : context
-		});
-		return _q;
-	};
-	// Run one item
-	var dequeue = function(){
-		var inwait;
-		if(_q.length) {
-			inwait = _q.shift();
-			// Defer to any current tasks
-			// setTimeout(function(){
-			scope[inwait.funcName].apply(inwait.context || scope, inwait.args);
-			// }, 0);
-		}
-	};
+EPUBJS.core.queue = function (_scope) {
 
-	// Run All
-	var flush = function(){
-		while(_q.length) {
-			dequeue();
-		}
-	};
-	// Clear all items in wait
-	var clear = function(){
-		_q = [];
-	};
+    var _q = [];
+    var scope = _scope;
+    // Add an item to the queue
+    var enqueue = function (funcName, args, context) {
+        _q.push({
+            "funcName": funcName,
+            "args": args,
+            "context": context
+        });
+        return _q;
+    };
+    // Run one item
+    var dequeue = function () {
+        var inwait;
+        if (_q.length) {
+            inwait = _q.shift();
+            // Defer to any current tasks
+            // setTimeout(function(){
+            scope[inwait.funcName].apply(inwait.context || scope, inwait.args);
+            // }, 0);
+        }
+    };
 
-	var length = function(){
-		return _q.length;
-	};
+    // Run All
+    var flush = function () {
+        while (_q.length) {
+            dequeue();
+        }
+    };
+    // Clear all items in wait
+    var clear = function () {
+        _q = [];
+    };
 
-	return {
-		"enqueue" : enqueue,
-		"dequeue" : dequeue,
-		"flush" : flush,
-		"clear" : clear,
-		"length" : length
-	};
+    var length = function () {
+        return _q.length;
+    };
+
+    return {
+        "enqueue": enqueue,
+        "dequeue": dequeue,
+        "flush": flush,
+        "clear": clear,
+        "length": length
+    };
 };
 
 // From: https://code.google.com/p/fbug/source/browse/branches/firebug1.10/content/firebug/lib/xpath.js
 /**
  * Gets an XPath for an element which describes its hierarchical location.
  */
-EPUBJS.core.getElementXPath = function(element) {
-	if (element && element.id) {
-		return '//*[@id="' + element.id + '"]';
-	} else {
-		return EPUBJS.core.getElementTreeXPath(element);
-	}
+EPUBJS.core.getElementXPath = function (element) {
+
+    if (element && element.id) {
+        return '//*[@id="' + element.id + '"]';
+    } else {
+        return EPUBJS.core.getElementTreeXPath(element);
+    }
 };
 
-EPUBJS.core.getElementTreeXPath = function(element) {
-	var paths = [];
-	var 	isXhtml = (element.ownerDocument.documentElement.getAttribute('xmlns') === "http://www.w3.org/1999/xhtml");
-	var index, nodeName, tagName, pathIndex;
+EPUBJS.core.getElementTreeXPath = function (element) {
 
-	if(element.nodeType === Node.TEXT_NODE){
-		// index = Array.prototype.indexOf.call(element.parentNode.childNodes, element) + 1;
-		index = EPUBJS.core.indexOfTextNode(element) + 1;
+    var paths = [];
+    var isXhtml = (element.ownerDocument.documentElement.getAttribute('xmlns') === "http://www.w3.org/1999/xhtml");
+    var index, nodeName, tagName, pathIndex;
 
-		paths.push("text()["+index+"]");
-		element = element.parentNode;
-	}
+    if (element.nodeType === Node.TEXT_NODE) {
+        // index = Array.prototype.indexOf.call(element.parentNode.childNodes, element) + 1;
+        index = EPUBJS.core.indexOfTextNode(element) + 1;
 
-	// Use nodeName (instead of localName) so namespace prefix is included (if any).
-	for (; element && element.nodeType == 1; element = element.parentNode)
-	{
-		index = 0;
-		for (var sibling = element.previousSibling; sibling; sibling = sibling.previousSibling)
-		{
-			// Ignore document type declaration.
-			if (sibling.nodeType == Node.DOCUMENT_TYPE_NODE) {
-				continue;
-			}
-			if (sibling.nodeName == element.nodeName) {
-				++index;
-			}
-		}
-		nodeName = element.nodeName.toLowerCase();
-		tagName = (isXhtml ? "xhtml:" + nodeName : nodeName);
-		pathIndex = (index ? "[" + (index+1) + "]" : "");
-		paths.splice(0, 0, tagName + pathIndex);
-	}
+        paths.push("text()[" + index + "]");
+        element = element.parentNode;
+    }
 
-	return paths.length ? "./" + paths.join("/") : null;
+    // Use nodeName (instead of localName) so namespace prefix is included (if any).
+    for (; element && element.nodeType === 1; element = element.parentNode) {
+        index = 0;
+        for (var sibling = element.previousSibling; sibling; sibling = sibling.previousSibling) {
+            // Ignore document type declaration.
+            if (sibling.nodeType === Node.DOCUMENT_TYPE_NODE) {
+                continue;
+            }
+            if (sibling.nodeName === element.nodeName) {
+                ++index;
+            }
+        }
+        nodeName = element.nodeName.toLowerCase();
+        tagName = (isXhtml ? "xhtml:" + nodeName : nodeName);
+        pathIndex = (index ? "[" + (index + 1) + "]" : "");
+        paths.splice(0, 0, tagName + pathIndex);
+    }
+
+    return paths.length ? "./" + paths.join("/") : null;
 };
 
-EPUBJS.core.nsResolver = function(prefix) {
-	var ns = {
-		'xhtml' : 'http://www.w3.org/1999/xhtml',
-		'epub': 'http://www.idpf.org/2007/ops'
-	};
-	return ns[prefix] || null;
+EPUBJS.core.nsResolver = function (prefix) {
+
+    var ns = {
+        'xhtml': 'http://www.w3.org/1999/xhtml',
+        'epub': 'http://www.idpf.org/2007/ops'
+    };
+    return ns[prefix] || null;
 };
 
-//https://stackoverflow.com/questions/13482352/xquery-looking-for-text-with-single-quote/13483496#13483496
-EPUBJS.core.cleanStringForXpath = function(str)  {
-		var parts = str.match(/[^'"]+|['"]/g);
-		parts = parts.map(function(part){
-				if (part === "'")  {
-						return '\"\'\"'; // output "'"
-				}
+// https://stackoverflow.com/questions/13482352/xquery-looking-for-text-with-single-quote/13483496#13483496
 
-				if (part === '"') {
-						return "\'\"\'"; // output '"'
-				}
-				return "\'" + part + "\'";
-		});
-		return "concat(\'\'," + parts.join(",") + ")";
+EPUBJS.core.cleanStringForXpath = function (str) {
+
+    var parts = str.match(/[^'"]+|['"]/g);
+    parts = parts.map(function (part) {
+        if (part === "'") {
+            return '"\'"'; // output "'"
+        }
+
+        if (part === '"') {
+            return "'\"'"; // output '"'
+        }
+        return "'" + part + "'";
+    });
+    return "concat(''," + parts.join(",") + ")";
 };
 
-EPUBJS.core.indexOfTextNode = function(textNode){
-	var parent = textNode.parentNode;
-	var children = parent.childNodes;
-	var sib;
-	var index = -1;
-	for (var i = 0; i < children.length; i++) {
-		sib = children[i];
-		if(sib.nodeType === Node.TEXT_NODE){
-			index++;
-		}
-		if(sib == textNode) break;
-	}
+EPUBJS.core.indexOfTextNode = function (textNode) {
 
-	return index;
+    var parent = textNode.parentNode;
+    var children = parent.childNodes;
+    var sib;
+    var index = -1;
+    for (var i = 0; i < children.length; i++) {
+        sib = children[i];
+        if (sib.nodeType === Node.TEXT_NODE) {
+            index++;
+        }
+        if (sib === textNode)
+            break;
+    }
+
+    return index;
 };
 
 // Underscore
-EPUBJS.core.defaults = function(obj) {
-  for (var i = 1, length = arguments.length; i < length; i++) {
-    var source = arguments[i];
-    for (var prop in source) {
-      if (obj[prop] === void 0) obj[prop] = source[prop];
+EPUBJS.core.defaults = function (obj) {
+
+    for (var i = 1, length = arguments.length; i < length; i++) {
+        var source = arguments[i];
+        for (var prop in source) {
+            if (obj[prop] === void 0)
+                obj[prop] = source[prop];
+        }
     }
-  }
-  return obj;
+    return obj;
 };
 
-EPUBJS.core.extend = function(target) {
+EPUBJS.core.extend = function (target) {
+
     var sources = [].slice.call(arguments, 1);
     sources.forEach(function (source) {
-      if(!source) return;
-      Object.getOwnPropertyNames(source).forEach(function(propName) {
-        Object.defineProperty(target, propName, Object.getOwnPropertyDescriptor(source, propName));
-      });
+        if (!source) return;
+        Object.getOwnPropertyNames(source).forEach(function (propName) {
+            Object.defineProperty(target, propName,
+                Object.getOwnPropertyDescriptor(source, propName));
+        });
     });
     return target;
 };
 
-EPUBJS.core.clone = function(obj) {
-  return EPUBJS.core.isArray(obj) ? obj.slice() : EPUBJS.core.extend({}, obj);
+EPUBJS.core.clone = function (obj) {
+
+    return EPUBJS.core.isArray(obj) ? obj.slice() : EPUBJS.core.extend({}, obj);
 };
 
-EPUBJS.core.isElement = function(obj) {
-    return !!(obj && obj.nodeType == 1);
+EPUBJS.core.isElement = function (obj) {
+
+    return !!(obj && obj.nodeType === 1);
 };
 
-EPUBJS.core.isNumber = function(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
+EPUBJS.core.isNumber = function (n) {
+
+    return !isNaN(parseFloat(n)) && isFinite(n);
 };
 
-EPUBJS.core.isString = function(str) {
-  return (typeof str === 'string' || str instanceof String);
+EPUBJS.core.isString = function (str) {
+
+    return (typeof str === 'string' || str instanceof String);
 };
 
-EPUBJS.core.isArray = Array.isArray || function(obj) {
-  return Object.prototype.toString.call(obj) === '[object Array]';
+EPUBJS.core.isArray = Array.isArray || function (obj) {
+
+    return Object.prototype.toString.call(obj) === '[object Array]';
 };
 
 // Lodash
-EPUBJS.core.values = function(object) {
-	var index = -1;
-	var props, length, result;
+EPUBJS.core.values = function (object) {
 
-	if(!object) return [];
+    var index = -1;
+    var props, length, result;
 
-  props = Object.keys(object);
-  length = props.length;
-  result = Array(length);
+    if (!object) return [];
 
-  while (++index < length) {
-    result[index] = object[props[index]];
-  }
-  return result;
+    props = Object.keys(object);
+    length = props.length;
+    result = Array(length);
+
+    while (++index < length) {
+        result[index] = object[props[index]];
+    }
+    return result;
 };
 
-EPUBJS.core.indexOfNode = function(node, typeId) {
-	var parent = node.parentNode;
-	var children = parent.childNodes;
-	var sib;
-	var index = -1;
-	for (var i = 0; i < children.length; i++) {
-		sib = children[i];
-		if (sib.nodeType === typeId) {
-			index++;
-		}
-		if (sib == node) break;
-	}
+EPUBJS.core.indexOfNode = function (node, typeId) {
 
-	return index;
+    var parent = node.parentNode;
+    var children = parent.childNodes;
+    var sib;
+    var index = -1;
+    for (var i = 0; i < children.length; i++) {
+        sib = children[i];
+        if (sib.nodeType === typeId) {
+            index++;
+        }
+        if (sib === node)
+            break;
+    }
+
+    return index;
 }
 
-EPUBJS.core.indexOfTextNode = function(textNode) {
-	return EPUBJS.core.indexOfNode(textNode, TEXT_NODE);
+EPUBJS.core.indexOfTextNode = function (textNode) {
+
+    return EPUBJS.core.indexOfNode(textNode, TEXT_NODE);
 }
 
-EPUBJS.core.indexOfElementNode = function(elementNode) {
-	return EPUBJS.core.indexOfNode(elementNode, ELEMENT_NODE);
+EPUBJS.core.indexOfElementNode = function (elementNode) {
+
+    return EPUBJS.core.indexOfNode(elementNode, ELEMENT_NODE);
 }
