@@ -14,22 +14,23 @@ module.exports = function (grunt) {
 					sourceMap: false
 				},
 				files: {
-					'reader/js/reader.min.js': ['<banner>', 'node_modules/rsvp/dist/rsvp.js', 'src/core.js', 'src/reader.js', 'src/controllers/*.js'],
-					'reader/js/storage.min.js': ['<banner>', 'src/storage.js']
+                    'reader/js/reader.min.js': ['<banner>', 'src/core.js', 'src/reader.js', 'src/controllers/*.js'],
+                    'reader/js/storage.min.js': ['<banner>', 'src/storage.js'],
+                    'reader/js/libs/rsvp.min.js': ['node_modules/rsvp/dist/rsvp.js']
 				}
 			}
 		},
 		copy: {
 			main: {
 				files: [
-					{ src: 'node_modules/jszip/dist/jszip.min.js', dest: 'reader/js/libs/jszip.min.js' },
-					{ src: 'node_modules/jquery/dist/jquery.min.js', dest: 'reader/js/libs/jquery.min.js' },
-					{ src: 'node_modules/screenfull/dist/screenfull.js', dest: 'reader/js/libs/screenfull.js' },
-					{ src: 'node_modules/epubjs/dist/epub.min.js', dest: 'reader/js/libs/epub.min.js' },
-					{ src: 'src/plugins/search.js', dest: 'reader/js/plugins/search.js' },
-					{ src: 'src/plugins/hypothesis.js', dest: 'reader/js/plugins/hypothesis.js' },
-					{ src: 'src/main.js', dest: 'reader/main.js' },
-					{ src: 'hooks/extensions/highlight.js', dest: 'reader/js/hooks/extensions/highlight.js' },
+                    { src: 'node_modules/jszip/dist/jszip.min.js', dest: 'reader/js/libs/jszip.min.js' },
+                    { src: 'node_modules/jquery/dist/jquery.min.js', dest: 'reader/js/libs/jquery.min.js' },
+                    { src: 'node_modules/screenfull/dist/screenfull.js', dest: 'reader/js/libs/screenfull.js' },
+                    { src: 'node_modules/epubjs/dist/epub.min.js', dest: 'reader/js/libs/epub.min.js' },
+                    { src: 'src/plugins/search.js', dest: 'reader/js/plugins/search.js' },
+                    { src: 'src/plugins/hypothesis.js', dest: 'reader/js/plugins/hypothesis.js' },
+                    { src: 'src/main.js', dest: 'reader/main.js' },
+                    { src: 'hooks/extensions/highlight.js', dest: 'reader/js/hooks/extensions/highlight.js' },
 					// {src: 'node_modules/epubjs/build/hooks.min.js', dest: 'reader/js/hooks.min.js'}
 				]
 			},
