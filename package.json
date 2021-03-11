@@ -29,11 +29,11 @@
         "portfinder": "^1.0.28"
     },
     "dependencies": {
-        "core-js": "^3.8.3",
+        "core-js": "^3.9.1",
         "epubjs": "^0.3.88",
         "immediate": "^3.3.0",
-        "jquery": "^3.5.1",
-        "jszip": "^3.5.0",
+        "jquery": "^3.6.0",
+        "jszip": "^3.6.0",
         "lie": "^3.3.0",
         "morgan": "^1.10.0",
         "pako": "^1.0.11",
