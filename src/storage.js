@@ -63,16 +63,18 @@ EPUBJS.storage = function () {
 			request.onsuccess = function (event) {
 
 				callback(event.target.result);
+				console.log('storage.get');
 			};
 		},
 
-		set: function (data) {
-
+		set: function (data, callback) {
+			
 			var transaction = database.transaction(['entries'], 'readwrite');
 			var objectStore = transaction.objectStore('entries');
 			var request = objectStore.put(data, 0);
 			request.onsuccess = function () {
 
+				callback();
 				console.log('storage.set');
 			};
 		},
