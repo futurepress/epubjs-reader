@@ -309,8 +309,10 @@ EPUBJS.Reader.prototype.applySavedSettings = function () {
 EPUBJS.Reader.prototype.saveSettings = function () {
 
     if (this.book) {
-        var cfi = this.rendition.currentLocation().start.cfi;
-        this.settings.previousLocationCfi = cfi;
+        var curLocation = this.rendition.currentLocation();
+        if (curLocation.start) {
+            this.settings.previousLocationCfi = curLocation.start.cfi;
+        }
     }
 
     if (!localStorage) {
