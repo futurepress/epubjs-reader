@@ -1,14 +1,14 @@
-EPUBJS.reader.MetaController = function(meta) {
-	var title = meta.title,
-			author = meta.creator;
+export class MetaController {
+	
+	constructor(meta) {
+		
+		this.title = document.getElementById('book-title');
+		this.title.textContent = meta.title;
+		this.author = document.getElementById('chapter-title');
+		this.author.textContent = meta.creator;
+		this.dash = document.getElementById('title-separator');
+		this.dash.style.display = 'inline-block';
 
-	var $title = $("#book-title"),
-			$author = $("#chapter-title"),
-			$dash = $("#title-seperator");
-
-		document.title = title+" – "+author;
-
-		$title.html(title);
-		$author.html(author);
-		$dash.show();
-};
+		document.title = meta.title + " – " + meta.creator;
+	}
+}

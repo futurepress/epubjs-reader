@@ -1,33 +1,25 @@
-EPUBJS.reader.SettingsController = function() {
-	var book = this.book;
-	var reader = this;
-	var $settings = $("#settings-modal"),
-			$overlay = $(".overlay");
+export class SettingsController {
 
-	var show = function() {
-		$settings.addClass("md-show");
-	};
+	constructor(reader) {
 
-	var hide = function() {
-		$settings.removeClass("md-show");
-	};
+		const scope = this;
+		
+		this.reader = reader;
+		this.settings = $("#settings-modal");
+		this.settings.find('.closer').on('click', function() {
+			scope.hide();
+		});
+		this.sidebarReflowSetting = $('#sidebarReflow');
+		this.sidebarReflowSetting.on('click', function() {
+			reader.settings.sidebarReflow = !reader.settings.sidebarReflow;
+		});
+		this.overlay = $(".overlay");
+		this.overlay.on('click', function() {
+			scope.hide();
+		});
+	}
 
-	var $sidebarReflowSetting = $('#sidebarReflow');
+	show() { this.settings.addClass('md-show'); }
 
-	$sidebarReflowSetting.on('click', function() {
-		reader.settings.sidebarReflow = !reader.settings.sidebarReflow;
-	});
-
-	$settings.find(".closer").on("click", function() {
-		hide();
-	});
-
-	$overlay.on("click", function() {
-		hide();
-	});
-
-	return {
-		"show" : show,
-		"hide" : hide
-	};
-};
+	hide() { this.settings.removeClass('md-show'); }
+}

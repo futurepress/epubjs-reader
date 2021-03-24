@@ -1,153 +1,154 @@
-EPUBJS.reader.ReaderController = function (book) {
-    var $main = $("#main"),
-        $divider = $("#divider"),
-        $loader = $("#loader"),
-        $next = $("#next"),
-        $prev = $("#prev");
-    var reader = this;
-    var book = this.book;
-    var rendition = this.rendition;
-    var slideIn = function () {
+export class ReaderController {
+
+    constructor(reader) {
+
+        const scope = this;
+        
+        this.main = $("#main");
+        this.divider = $("#divider");
+        this.loader = $("#loader");
+        this.next = $("#next");
+        this.prev = $("#prev");
+        
+        this.reader = reader;
+        this.reader.rendition.on('layout', function(props) {
+            if (props.spread === true) {
+                scope.showDivider();
+            } else {
+                scope.hideDivider();
+            }
+        });
+        this.reader.rendition.on('relocated', function (location) {
+            if (location.atStart) {
+                scope.prev.addClass('disabled');
+            }
+            if (location.atEnd) {
+                scope.next.addClass('disabled');
+            }
+        });
+
+        document.addEventListener('keydown', this.arrowKeys, false);
+        this.keylock = false;
+
+        this.next.on('click', function (e) {
+
+            if (reader.book.package.metadata.direction === 'rtl') {
+                reader.rendition.prev();
+            } else {
+                reader.rendition.next();
+            }
+
+            e.preventDefault();
+        });
+        this.prev.on('click', function (e) {
+
+            if (reader.book.package.metadata.direction === 'rtl') {
+                reader.rendition.next();
+            } else {
+                reader.rendition.prev();
+            }
+
+            e.preventDefault();
+        });
+    }
+
+    slideIn() {
+
+        const scope = this;
         //var currentPosition = rendition.currentLocation().start.cfi;
-        if (reader.settings.sidebarReflow) {
-            $main.removeClass('single');
-            $main.one("transitionend", function () {
-                rendition.resize();
+        if (this.reader.settings.sidebarReflow) {
+            this.main.removeClass('single');
+            this.main.one('transitionend', function () {
+                scope.reader.rendition.resize();
             });
         } else {
-            $main.removeClass("closed");
+            this.main.removeClass('closed');
         }
-    };
+    }
 
-    var slideOut = function () {
-		/*
+    slideOut() {
+
+        const scope = this;
+        /*
 		var location = rendition.currentLocation();
 		if (!location) {
 			return;
 		}
 		var currentPosition = location.start.cfi;
 		*/
-        if (reader.settings.sidebarReflow) {
-            $main.addClass('single');
-            $main.one("transitionend", function () {
-                rendition.resize();
+        if (this.reader.settings.sidebarReflow) {
+            this.main.addClass('single');
+            this.main.one('transitionend', function () {
+                scope.reader.rendition.resize();
             });
         } else {
-            $main.addClass("closed");
+            this.main.addClass('closed');
         }
-    };
+    }
 
-    var showLoader = function () {
-        $loader.show();
-        hideDivider();
-    };
+    showLoader() {
+        this.loader.show();
+        this.hideDivider();
+    }
 
-    var hideLoader = function () {
-        $loader.hide();
+    hideLoader() {
+        this.loader.hide();
 
         //-- If the book is using spreads, show the divider
         // if(book.settings.spreads) {
         // 	showDivider();
         // }
-    };
+    }
 
-    var showDivider = function () {
-        $divider.addClass("show");
-    };
+    showDivider() {
 
-    var hideDivider = function () {
-        $divider.removeClass("show");
-    };
+        this.divider.addClass('show');
+    }
 
-    var keylock = false;
+    hideDivider() {
 
-    var arrowKeys = function (e) {
+        this.divider.removeClass('show');
+    }
+
+    arrowKeys(e) {
+
+        const scope = this;
+        
         if (e.keyCode == 37) {
 
-            if (book.package.metadata.direction === "rtl") {
-                rendition.next();
+            if (this.reader.book.package.metadata.direction === 'rtl') {
+                this.reader.rendition.next();
             } else {
-                rendition.prev();
+                this.reader.rendition.prev();
             }
 
-            $prev.addClass("active");
+            this.prev.addClass('active');
 
-            keylock = true;
+            this.keylock = true;
             setTimeout(function () {
-                keylock = false;
-                $prev.removeClass("active");
+                scope.keylock = false;
+                scope.prev.removeClass('active');
             }, 100);
 
             e.preventDefault();
         }
         if (e.keyCode == 39) {
 
-            if (book.package.metadata.direction === "rtl") {
-                rendition.prev();
+            if (this.reader.book.package.metadata.direction === 'rtl') {
+                this.reader.rendition.prev();
             } else {
                 rendition.next();
             }
 
-            $next.addClass("active");
+            this.next.addClass('active');
 
-            keylock = true;
+            this.keylock = true;
             setTimeout(function () {
-                keylock = false;
-                $next.removeClass("active");
+                scope.keylock = false;
+                scope.next.removeClass('active');
             }, 100);
 
             e.preventDefault();
         }
     }
-
-    document.addEventListener('keydown', arrowKeys, false);
-
-    $next.on("click", function (e) {
-
-        if (book.package.metadata.direction === "rtl") {
-            rendition.prev();
-        } else {
-            rendition.next();
-        }
-
-        e.preventDefault();
-    });
-
-    $prev.on("click", function (e) {
-
-        if (book.package.metadata.direction === "rtl") {
-            rendition.next();
-        } else {
-            rendition.prev();
-        }
-
-        e.preventDefault();
-    });
-
-    rendition.on("layout", function (props) {
-        if (props.spread === true) {
-            showDivider();
-        } else {
-            hideDivider();
-        }
-    });
-
-    rendition.on('relocated', function (location) {
-        if (location.atStart) {
-            $prev.addClass("disabled");
-        }
-        if (location.atEnd) {
-            $next.addClass("disabled");
-        }
-    });
-
-    return {
-        "slideOut": slideOut,
-        "slideIn": slideIn,
-        "showLoader": showLoader,
-        "hideLoader": hideLoader,
-        "showDivider": showDivider,
-        "hideDivider": hideDivider,
-        "arrowKeys": arrowKeys
-    };
-};
+}

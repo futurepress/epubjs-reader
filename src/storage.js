@@ -1,96 +1,101 @@
-var EPUBJS = EPUBJS || {};
+export class Storage {
 
-EPUBJS.storage = function () {
-	
-	var indexedDB = window.indexedDB ||
-					window.webkitIndexedDB ||
-					window.mozIndexedDB ||
-					window.OIndexedDB ||
-					window.msIndexedDB;
+	constructor() {
+		
+		this.name = 'epubjs-reader';
+		this.version = 1.0;
+		this.database;
+		this.indexedDB = window.indexedDB || 
+						 window.webkitIndexedDB || 
+						 window.mozIndexedDB ||
+						 window.OIndexedDB ||
+						 window.msIndexedDB;
+		
+		if (this.indexedDB === undefined) {
 
-	if (indexedDB === undefined) {
-
-		console.warn('Storage: IndexedDB not available.');
-		return {
-
-			init : function () { },
-			get  : function () { },
-			set  : function () { },
-			clear: function () { }
-		};
+			alert('The IndexedDB API not available in your browser.');
+		}
 	}
 
-	var name = 'epubjs-reader';
-	var version = 1.0;
-	var database;
+	init(callback) {
 
-	return {
+		if (this.indexedDB === undefined) {
+			callback();
+			return;
+		}
+		
+		const scope = this;
+		const request = indexedDB.open(this.name, this.version);
+		request.onupgradeneeded = function (event) {
 
-		init: function (callback) {
+			const db = event.target.result;
+			if (db.objectStoreNames.contains('entries') === false) {
 
-			var request = indexedDB.open(name, version);
-			request.onupgradeneeded = function (event) {
-
-				var db = event.target.result;
-				if (db.objectStoreNames.contains('entries') === false) {
-
-					db.createObjectStore("entries");
-				}
-			};
-
-			request.onsuccess = function (event) {
-
-				database = event.target.result;
-				database.onerror = function (event) {
-
-					console.error('IndexedDB', event);
-				};
-
-				callback();
+				db.createObjectStore("entries");
 			}
+		};
 
-			request.onerror = function (event) {
+		request.onsuccess = function (event) {
+
+			scope.database = event.target.result;
+			scope.database.onerror = function (event) {
 
 				console.error('IndexedDB', event);
 			};
-		},
-
-		get: function (callback) {
-
-			var transaction = database.transaction(['entries'], 'readwrite');
-			var objectStore = transaction.objectStore('entries');
-			var request = objectStore.get(0);
-			request.onsuccess = function (event) {
-
-				callback(event.target.result);
-				console.log('storage.get');
-			};
-		},
-
-		set: function (data, callback) {
-			
-			var transaction = database.transaction(['entries'], 'readwrite');
-			var objectStore = transaction.objectStore('entries');
-			var request = objectStore.put(data, 0);
-			request.onsuccess = function () {
-
-				callback();
-				console.log('storage.set');
-			};
-		},
-
-		clear: function () {
-
-			if (database === undefined)
-				return;
-
-			var transaction = database.transaction(['entries'], 'readwrite');
-			var objectStore = transaction.objectStore('entries');
-			var request = objectStore.clear();
-			request.onsuccess = function () {
-
-				console.log('storage.clear');
-			};
+			callback();
 		}
+
+		request.onerror = function (event) {
+
+			console.error('IndexedDB', event);
+		};
 	}
-};
+
+	get(callback) {
+
+		if (this.database === undefined) {
+			callback();
+			return;
+		}
+		
+		const transaction = this.database.transaction(['entries'], 'readwrite');
+		const objectStore = transaction.objectStore('entries');
+		const request = objectStore.get(0);
+		request.onsuccess = function (event) {
+
+			callback(event.target.result);
+			console.log('storage.get');
+		};
+	}
+
+	set(data, callback) {
+		
+		if (this.database === undefined) {
+			callback();
+			return;
+		}
+		
+		const transaction = this.database.transaction(['entries'], 'readwrite');
+		const objectStore = transaction.objectStore('entries');
+		const request = objectStore.put(data, 0);
+		request.onsuccess = function () {
+
+			callback();
+			console.log('storage.set');
+		};
+	}
+
+	clear() {
+
+		if (this.database === undefined)
+			return;
+
+		const transaction = this.database.transaction(['entries'], 'readwrite');
+		const objectStore = transaction.objectStore('entries');
+		const request = objectStore.clear();
+		request.onsuccess = function () {
+
+			console.log('storage.clear');
+		};
+	}
+}

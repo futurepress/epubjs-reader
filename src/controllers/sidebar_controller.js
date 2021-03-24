@@ -1,51 +1,58 @@
-EPUBJS.reader.SidebarController = function (book) {
-    var reader = this;
+export class SidebarController {
+    
+    constructor(reader) {
 
-    var $sidebar = $("#sidebar"),
-        $panels = $("#panels");
+        const scope = this;
+        
+        this.reader = reader;
+        this.panels = $("#panels");
+        this.panels.find('.show_view').on('click', function (event) {
+            const view = $(this).data('view');
 
-    var activePanel = "Toc";
+            scope.changePanelTo(view);
+            event.preventDefault();
+        });
+        this.sidebar = $("#sidebar");
+        this.activePanel = 'Toc';
+    }
 
-    var changePanelTo = function (viewName) {
-        var controllerName = viewName + "Controller";
+    /**
+     * Change panel state to active control view.
+     * @param {*} name The control view name
+     */
+    changePanelTo(name) {
 
-        if (activePanel == viewName || typeof reader[controllerName] === 'undefined')
+        const controllerName = name + "Controller";
+
+        if (this.activePanel == name || typeof this.reader[controllerName] === 'undefined')
             return;
-        reader[activePanel + "Controller"].hide();
-        reader[controllerName].show();
-        activePanel = viewName;
+        
+        this.reader[this.activePanel + "Controller"].hide();
+        this.reader[controllerName].show();
+        this.activePanel = name;
 
-        $panels.find('.active').removeClass("active");
-        $panels.find("#show-" + viewName).addClass("active");
-    };
-
-    var getActivePanel = function () {
-        return activePanel;
-    };
-
-    var show = function () {
-        reader.sidebarOpen = true;
-        reader.ReaderController.slideOut();
-        $sidebar.addClass("open");
+        this.panels.find('.active').removeClass('active');
+        this.panels.find('#show-' + name).addClass('active');
     }
 
-    var hide = function () {
-        reader.sidebarOpen = false;
-        reader.ReaderController.slideIn();
-        $sidebar.removeClass("open");
+    /**
+     * Get the active panel name.
+     * @returns Current active panel name.
+     */
+    getActivePanel() {
+
+        return this.activePanel;
     }
 
-    $panels.find(".show_view").on("click", function (event) {
-        var view = $(this).data("view");
+    show() {
+        this.reader.sidebarOpen = true;
+        this.reader.ReaderController.slideOut();
+        this.sidebar.addClass('open');
+    }
 
-        changePanelTo(view);
-        event.preventDefault();
-    });
-
-    return {
-        'show': show,
-        'hide': hide,
-        'getActivePanel': getActivePanel,
-        'changePanelTo': changePanelTo
-    };
-};
+    hide() {
+        this.reader.sidebarOpen = false;
+        this.reader.ReaderController.slideIn();
+        this.sidebar.removeClass('open');
+    }
+}

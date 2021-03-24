@@ -1,9 +1,11 @@
+import * as EPUBJS from './reader.js';
+
 "use strict";
 
 window.onload = function() {
 	
-	var storage = new EPUBJS.storage();
-	var upload = document.getElementById('upload');
+	const storage = new EPUBJS.Storage();
+	const upload = document.getElementById('upload');
 
 	upload.addEventListener('change', function (e) {
 
@@ -18,7 +20,7 @@ window.onload = function() {
 				storage.clear();
 				storage.set(e.target.result, function() {
 
-					window.reader = ePubReader(e.target.result, { restore: true });
+					window.reader = new EPUBJS.Reader(e.target.result, { restore: true });
 				});
 			};
 			fr.readAsArrayBuffer(e.target.files[0]);
@@ -33,18 +35,18 @@ window.onload = function() {
 		}
 
 	}, false);
-
+	
 	storage.init(function () {
 
 		storage.get(function (data) {
 
 			if (data !== undefined) {
 
-				window.reader = ePubReader(data, { restore: true });
+				window.reader = new EPUBJS.Reader(data, { restore: true });
 
 			} else {
 
-				window.reader = ePubReader('https://s3.amazonaws.com/moby-dick/', {
+				window.reader = new EPUBJS.Reader('https://s3.amazonaws.com/moby-dick/', {
 
 					restore: true
 				});

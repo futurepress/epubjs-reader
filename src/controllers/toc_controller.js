@@ -1,37 +1,72 @@
-EPUBJS.reader.TocController = function (toc) {
-    var book = this.book;
-    var rendition = this.rendition;
+export class TocController {
+    
+    constructor(reader, toc) {
 
-    var $list = $("#tocView").empty(),
-        docfrag = document.createDocumentFragment();
+        const scope = this;
 
-    var currentChapter = false;
+        this.reader = reader;
+        this.reader.rendition.on('renderered', this.chapterChange);        
+        this.currentChapter = false;
 
-    var generateTocItems = function (toc, level) {
-        var container = document.createElement("ul");
+        const docfrag = document.createDocumentFragment();
+        const tocitems = this.generateTocItems(toc);
+        docfrag.appendChild(tocitems);
+
+        this.list = $('#tocView').empty();
+        this.list.append(docfrag);
+        this.list.find('.toc_link').on('click', function (event) {
+
+            const url = this.getAttribute('href');
+            event.preventDefault();
+
+            //-- Provide the Book with the url to show
+            //   The Url must be found in the books manifest
+            reader.rendition.display(url);
+
+            scope.list.find('.currentChapter')
+                .addClass('openChapter')
+                .removeClass('currentChapter');
+
+            $(this).parent('li').addClass('currentChapter');
+        });
+        this.list.find('.toc_toggle').on('click', function (event) {
+            const el = $(this).parent('li');
+            const open = el.hasClass('openChapter');
+
+            event.preventDefault();
+            if (open) {
+                el.removeClass('openChapter');
+            } else {
+                el.addClass('openChapter');
+            }
+        });
+    }
+
+    generateTocItems(toc, level) {
+
+        const scope = this;
+        const container = document.createElement('ul');
 
         if (!level) level = 1;
 
         toc.forEach(function (chapter) {
-            var listitem = document.createElement("li"),
-                link = document.createElement("a");
-            toggle = document.createElement("a");
 
-            var subitems;
+            const listitem = document.createElement('li');
+            const link = document.createElement('a');
+            const toggle = document.createElement('a');
 
-            listitem.id = "toc-" + chapter.id;
+            listitem.id = 'toc-' + chapter.id;
             listitem.classList.add('list_item');
 
             link.textContent = chapter.label;
             link.href = chapter.href;
-
             link.classList.add('toc_link');
 
             listitem.appendChild(link);
 
             if (chapter.subitems && chapter.subitems.length > 0) {
                 level++;
-                subitems = generateTocItems(chapter.subitems, level);
+                const subitems = scope.generateTocItems(chapter.subitems, level);
                 toggle.classList.add('toc_toggle');
 
                 listitem.insertBefore(toggle, link);
@@ -42,72 +77,29 @@ EPUBJS.reader.TocController = function (toc) {
         });
 
         return container;
-    };
+    }
 
-    var onShow = function () {
-        $list.show();
-    };
+    show() { this.list.show(); }
 
-    var onHide = function () {
-        $list.hide();
-    };
+    hide() { this.list.hide(); }
 
-    var chapterChange = function (e) {
-        var id = e.id,
-            $item = $list.find("#toc-" + id),
-            $current = $list.find(".currentChapter"),
-            $open = $list.find('.openChapter');
+    chapterChange(e) {
+        
+        const id = e.id;
+        const item = this.list.find('#toc-' + id);
+        const open = this.list.find('.openChapter');        
+        const current = this.list.find('.currentChapter');
 
-        if ($item.length) {
+        if (item.length) {
 
-            if ($item != $current && $item.has(currentChapter).length > 0) {
-                $current.removeClass("currentChapter");
+            if (item != current && item.has(currentChapter).length > 0) {
+                current.removeClass('currentChapter');
             }
 
-            $item.addClass("currentChapter");
+            item.addClass('currentChapter');
 
             // $open.removeClass("openChapter");
-            $item.parents('li').addClass("openChapter");
+            item.parents('li').addClass('openChapter');
         }
-    };
-
-    rendition.on('renderered', chapterChange);
-
-    var tocitems = generateTocItems(toc);
-
-    docfrag.appendChild(tocitems);
-
-    $list.append(docfrag);
-    $list.find(".toc_link").on("click", function (event) {
-        var url = this.getAttribute('href');
-
-        event.preventDefault();
-
-        //-- Provide the Book with the url to show
-        //   The Url must be found in the books manifest
-        rendition.display(url);
-
-        $list.find(".currentChapter")
-            .addClass("openChapter")
-            .removeClass("currentChapter");
-
-        $(this).parent('li').addClass("currentChapter");
-    });
-
-    $list.find(".toc_toggle").on("click", function (event) {
-        var $el = $(this).parent('li'),
-            open = $el.hasClass("openChapter");
-
-        event.preventDefault();
-        if (open) {
-            $el.removeClass("openChapter");
-        } else {
-            $el.addClass("openChapter");
-        }
-    });
-
-    return {
-        "show": onShow,
-        "hide": onHide
-    };
-};
+    }
+}

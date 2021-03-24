@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="no-js">
+<html>
 
 <head>
 	<meta charset="utf-8">
@@ -19,21 +19,6 @@
 	<script src="node_modules/screenfull/dist/screenfull.js"></script>
 	<script src="node_modules/epubjs/dist/epub.js"></script>
 
-	<!-- Storage -->
-	<script src="src/storage.js"></script>
-
-	<!-- Reader -->
-	<script src="src/core.js"></script>
-	<script src="src/reader.js"></script>
-	<script src="src/controllers/bookmarks_controller.js"></script>
-	<script src="src/controllers/controls_controller.js"></script>
-	<script src="src/controllers/meta_controller.js"></script>
-	<script src="src/controllers/notes_controller.js"></script>
-	<script src="src/controllers/reader_controller.js"></script>
-	<script src="src/controllers/settings_controller.js"></script>
-	<script src="src/controllers/sidebar_controller.js"></script>
-	<script src="src/controllers/toc_controller.js"></script>
-
 	<!-- Plugins -->
 	<!-- <script src="src/plugins/search.js"></script> -->
 	
@@ -41,7 +26,7 @@
 	<!-- <script src="js/libs/jquery.highlight.js"></script> -->
 	<!-- <script src="js/hooks/extensions/highlight.js"></script> -->
 
-	<script src="src/main.js"></script>
+	<script type="module" src="src/main.js"></script>
 </head>
 
 <body>
@@ -75,7 +60,7 @@
 			</div>
 			<div id="metainfo">
 				<span id="book-title"></span>
-				<span id="title-seperator">&nbsp;&nbsp;–&nbsp;&nbsp;</span>
+				<span id="title-separator">&nbsp;&nbsp;–&nbsp;&nbsp;</span>
 				<span id="chapter-title"></span>
 			</div>
 			<div id="title-controls">

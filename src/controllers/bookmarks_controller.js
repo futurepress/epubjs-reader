@@ -1,34 +1,48 @@
-EPUBJS.reader.BookmarksController = function() {
-	var reader = this;
-	var book = this.book;
-	var rendition = this.rendition;
+export class BookmarksController {
+	
+	constructor(reader) {
 
-	var $bookmarks = $("#bookmarksView"),
-			$list = $bookmarks.find("#bookmarks");
+		const scope = this;
+		const docfrag = document.createDocumentFragment();
 
-	var docfrag = document.createDocumentFragment();
+		this.reader = reader;
+		this.bookmarks = $('#bookmarksView');
+		this.list = this.bookmarks.find('#bookmarks');
+		this.counter = 0;
 
-	var show = function() {
-		$bookmarks.show();
-	};
+		$(reader).on('reader:bookmarked', function(cfi) {
+			const item = scope.createBookmarkItem(cfi);
+			scope.list.append(item);
+		});
+		$(reader).on('reader:unbookmarked', function(index) {
+			const item = $('#bookmark-' + index);
+			item.remove();
+		});
 
-	var hide = function() {
-		$bookmarks.hide();
-	};
+		reader.settings.bookmarks.forEach(function(cfi) {
+			const bookmark = scope.createBookmarkItem(cfi);
+			docfrag.appendChild(bookmark);
+		});
 
-	var counter = 0;
+		this.list.append(docfrag);
+	}
 
-	var createBookmarkItem = function(cfi) {
-		var listitem = document.createElement("li"),
-				link = document.createElement("a");
+	show() { this.bookmarks.show(); }
 
-		listitem.id = "bookmark-"+counter;
+	hide() { this.bookmarks.hide(); }
+
+	createBookmarkItem(cfi) {
+
+		const scope = this;
+		const listitem = document.createElement('li');
+		const link = document.createElement('a');
+
+		listitem.id = 'bookmark-' + counter;
 		listitem.classList.add('list_item');
 
-		var spineItem = book.spine.get(cfi);
-		var tocItem;
+		const spineItem = book.spine.get(cfi);
 		if (spineItem.index in book.navigation.toc) {
-			tocItem = book.navigation.toc[spineItem.index];
+			const tocItem = book.navigation.toc[spineItem.index];
 			link.textContent = tocItem.label;
 		} else {
 			link.textContent = cfi;
@@ -38,10 +52,10 @@ EPUBJS.reader.BookmarksController = function() {
 
 		link.classList.add('bookmark_link');
 
-		link.addEventListener("click", function(event){
-				var cfi = this.getAttribute('href');
-				rendition.display(cfi);
-				event.preventDefault();
+		link.addEventListener('click', function(event) {
+			const cfi = this.getAttribute('href');
+			scope.reader.rendition.display(cfi);
+			event.preventDefault();
 		}, false);
 
 		listitem.appendChild(link);
@@ -49,27 +63,5 @@ EPUBJS.reader.BookmarksController = function() {
 		counter++;
 
 		return listitem;
-	};
-
-	this.settings.bookmarks.forEach(function(cfi) {
-		var bookmark = createBookmarkItem(cfi);
-		docfrag.appendChild(bookmark);
-	});
-
-	$list.append(docfrag);
-
-	this.on("reader:bookmarked", function(cfi) {
-		var item = createBookmarkItem(cfi);
-		$list.append(item);
-	});
-
-	this.on("reader:unbookmarked", function(index) {
-		var $item = $("#bookmark-"+index);
-		$item.remove();
-	});
-
-	return {
-		"show" : show,
-		"hide" : hide
-	};
-};
+	}
+}
