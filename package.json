@@ -16,17 +16,17 @@
     "devDependencies": {
         "colors": "~1.4.0",
         "connect": "~3.7.0",
-        "copy-webpack-plugin": "^8.1.0",
+        "copy-webpack-plugin": "^8.1.1",
         "express": "^4.17.1",
         "gh-pages": "^2.2.0",
         "optimist": "~0.6.1",
         "portfinder": "^1.0.28",
-        "webpack": "^5.27.2",
-        "webpack-cli": "^4.5.0",
+        "webpack": "^5.36.2",
+        "webpack-cli": "^4.6.0",
         "webpack-concat-files-plugin": "^0.5.2"
     },
     "dependencies": {
-        "core-js": "^3.9.1",
+        "core-js": "^3.11.2",
         "epubjs": "^0.3.88",
         "immediate": "^3.3.0",
         "js-md5": "^0.7.3",
