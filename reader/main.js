@@ -1,1 +1,60 @@
-(()=>{"use strict";window.onload=function(){var e=new EPUBJS.storage;document.getElementById("upload").addEventListener("change",(function(r){if(0!==r.target.files.length)if(window.FileReader){var o=new FileReader;o.onload=function(r){e.clear(),e.set(r.target.result,(function(){window.reader=ePubReader(r.target.result,{restore:!0})}))},o.readAsArrayBuffer(r.target.files[0]),o.onerror=function(e){console.error(e)}}else alert("Your browser does not support the required features.\nPlease use a modern browser such as Google Chrome, or Mozilla Firefox.")}),!1),e.init((function(){e.get((function(e){window.reader=void 0!==e?ePubReader(e,{restore:!0}):ePubReader("https://s3.amazonaws.com/moby-dick/",{restore:!0})}))}))}})();
+import { Reader } from './reader.min.js';
+
+"use strict";
+
+window.addEventListener('load', function() {
+	
+	
+	
+	//const storage = new EPUBJS.Storage();
+	
+	//const storage = ERI.storage;
+	const upload = document.getElementById('upload');
+
+	upload.addEventListener('change', function (e) {
+		
+		if (e.target.files.length === 0)
+			return;
+
+		if (window.FileReader) {
+
+			var fr = new FileReader();
+			fr.onload = function (e) {
+
+				window.storage.clear();
+				window.storage.set(e.target.result, function() {
+
+					window.reader = new Reader(e.target.result, { restore: true });
+				});
+			};
+			fr.readAsArrayBuffer(e.target.files[0]);
+			fr.onerror = function(e) {
+				console.error(e);
+			};
+
+		} else {
+
+			alert("Your browser does not support the required features.\n" +
+				"Please use a modern browser such as Google Chrome, or Mozilla Firefox.");
+		}
+
+	}, false);
+	
+	// storage.init(function () {
+
+	// 	storage.get(function (data) {
+
+	// 		if (data !== undefined) {
+
+	// 			window.reader = new EPUBJS.Reader(data, { restore: true });
+
+	// 		} else {
+
+	// 			window.reader = new EPUBJS.Reader('https://s3.amazonaws.com/moby-dick/', {
+
+	// 				restore: true
+	// 			});
+	// 		}
+	// 	});
+	// });
+});

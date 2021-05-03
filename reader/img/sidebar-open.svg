@@ -7,13 +7,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="32mm"
-   height="32mm"
-   viewBox="0 0 32 32"
+   width="36mm"
+   height="36mm"
+   viewBox="0 0 36 36"
    version="1.1"
    id="svg8"
-   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
-   sodipodi:docname="toc.svg">
+   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)"
+   sodipodi:docname="sidebar-open.svg">
   <defs
      id="defs2">
     <pattern
@@ -87,7 +87,35 @@
        x="0"
        y="0" />
     <pattern
-       id="EMFhbasepattern-50"
+       id="EMFhbasepattern-4"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+    <pattern
+       id="EMFhbasepattern-7"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+    <pattern
+       id="EMFhbasepattern-04"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+    <pattern
+       id="EMFhbasepattern-18"
+       patternUnits="userSpaceOnUse"
+       width="6"
+       height="6"
+       x="0"
+       y="0" />
+    <pattern
+       id="EMFhbasepattern-75"
        patternUnits="userSpaceOnUse"
        width="6"
        height="6"
@@ -101,9 +129,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="4"
-     inkscape:cx="80.710873"
-     inkscape:cy="40.986172"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="53.91501"
+     inkscape:cy="61.472048"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -123,7 +151,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -132,40 +160,20 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 0.006324,31.993676 H 31.993676 V 0.006324 H 0.006324 Z"
-       id="path847" />
-    <path
-       style="fill:#cccccc;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 26.996389,17.001323 H 11.002713 v 3.997436 h 15.993676 z"
-       id="path849" />
-    <path
-       style="fill:#cccccc;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 5.0075401,20.998759 H 9.0030128 V 17.001323 H 5.0075401 Z"
+       style="fill:none;stroke:none;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 0,36 H 36 V 0 H 0 Z"
        id="path851" />
     <path
-       style="fill:#cccccc;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 26.996389,22.997478 H 11.002713 v 3.997437 h 15.993676 z"
+       style="fill:none;stroke:#ffffff;stroke-width:6;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 9.0013658,9.0020478 H 26.998633"
        id="path853" />
     <path
-       style="fill:#cccccc;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 5.0075401,26.994915 H 9.0030128 V 22.997478 H 5.0075401 Z"
+       style="fill:none;stroke:#ffffff;stroke-width:6;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 9.0013658,27.000682 H 26.998633"
        id="path855" />
     <path
-       style="fill:#cccccc;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 26.996389,5.0050841 H 11.002713 v 3.9974368 h 15.993676 z"
+       style="fill:none;stroke:#ffffff;stroke-width:6;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 9.0013658,18.001364 H 26.998633"
        id="path857" />
-    <path
-       style="fill:#cccccc;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 5.0075401,9.0025209 H 9.0030128 V 5.0050841 H 5.0075401 Z"
-       id="path859" />
-    <path
-       style="fill:#cccccc;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 26.996389,11.00124 H 11.002713 v 4.001364 h 15.993676 z"
-       id="path861" />
-    <path
-       style="fill:#cccccc;stroke:#000000;stroke-width:0.012648px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 5.0075401,15.002604 H 9.0030128 V 11.00124 H 5.0075401 Z"
-       id="path863" />
   </g>
 </svg>

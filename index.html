@@ -2,9 +2,10 @@
 <html>
 
 <head>
+	<title></title>
+
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title></title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, user-scalable=no">
 	<meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,80 +14,16 @@
 	<link rel="stylesheet" href="reader/css/main.css">
 
 	<!-- Libs -->
-	<script src="node_modules/jquery/dist/jquery.js"></script>
+	<script src="node_modules/signals/dist/signals.js"></script>
 	<script src="node_modules/jszip/dist/jszip.js"></script>
-	<script src="node_modules/rsvp/dist/rsvp.js"></script>
-	<script src="node_modules/screenfull/dist/screenfull.js"></script>
+	<script src="node_modules/js-md5/build/md5.min.js"></script>
 	<script src="node_modules/epubjs/dist/epub.js"></script>
 
-	<!-- Plugins -->
-	<!-- <script src="src/plugins/search.js"></script> -->
-	
-	<!-- Highlights -->
-	<!-- <script src="js/libs/jquery.highlight.js"></script> -->
-	<!-- <script src="js/hooks/extensions/highlight.js"></script> -->
-
+	<!-- Reader -->
 	<script type="module" src="src/main.js"></script>
 </head>
 
 <body>
-	<div id="sidebar">
-		<div id="panels">
-			<input type="button" id="show-Toc" class="show_view icon-toc-view active" title="TOC" data-view="Toc">
-			<input type="button" id="show-Bookmarks" class="show_view icon-bookmark-view" title="Bookmarks" data-view="Bookmarks">
-			<input type="button" id="show-Notes" class="show_view icon-edit" title="Notes" data-view="Notes">
-			<input type="search" id="searchBox" placeholder="search">
-			<input type="button" id="show-Search" class="show_view icon-search" title="Search" data-view="Search">
-		</div>
-		<div id="tocView" class="view"></div>
-		<div id="searchView" class="view">
-			<ul id="searchResults"></ul>
-		</div>
-		<div id="bookmarksView" class="view">
-			<ul id="bookmarks"></ul>
-		</div>
-		<div id="notesView" class="view">
-			<div id="new-note">
-				<textarea id="note-text"></textarea>
-				<button id="note-anchor">Anchor</button>
-			</div>
-			<ol id="notes"></ol>
-		</div>
-	</div>
-	<div id="main">
-		<div id="titlebar">
-			<div id="opener">
-				<input type="button" id="slider" class="icon-menu" title="Menu">
-			</div>
-			<div id="metainfo">
-				<span id="book-title"></span>
-				<span id="title-separator">&nbsp;&nbsp;–&nbsp;&nbsp;</span>
-				<span id="chapter-title"></span>
-			</div>
-			<div id="title-controls">
-				<input type="file" id="upload" class="icon-upload" accept="application/epub+zip">
-				<input type="button" id="bookmark" class="icon-bookmark-empty" title="Bookmark">
-				<input type="button" id="settings" class="icon-settings" title="Settings">
-				<input type="button" id="fullscreen" class="icon-resize-full" title="Fullscreen">
-			</div>
-		</div>
-		<div id="divider"></div>
-		<div id="prev" class="arrow">‹</div>
-		<div id="viewer"></div>
-		<div id="next" class="arrow">›</div>
-		<div id="loader" style="display:none"><img src="reader/img/loader.gif"></div>
-	</div>
-	<div class="modal md-effect-1" id="settings-modal">
-		<div class="md-content">
-			<h3>Settings</h3>
-			<div>
-				<input type="checkbox" id="sidebarReflow" name="sidebarReflow">
-				<label>Reflow text when sidebars are open.</label>
-			</div>
-			<div class="closer icon-cancel-circled"></div>
-		</div>
-	</div>
-	<div class="overlay"></div>
 </body>
 
 </html>

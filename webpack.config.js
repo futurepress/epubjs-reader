@@ -14,8 +14,8 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: 'node_modules/jquery/dist/jquery.min.js',
-                    to: 'js/libs/jquery.min.js',
+                    from: 'node_modules/signals/dist/signals.min.js',
+                    to: 'js/libs/signals.min.js',
                     toType: 'file',
                     force: true
                 },
@@ -26,14 +26,8 @@ module.exports = {
                     force: true
                 },
                 {
-                    from: 'node_modules/rsvp/dist/rsvp.js',
-                    to: 'js/libs/rsvp.min.js',
-                    toType: 'file',
-                    force: true
-                },
-                {
-                    from: 'node_modules/screenfull/dist/screenfull.js',
-                    to: 'js/libs/screenfull.min.js',
+                    from: 'node_modules/js-md5/build/md5.min.js',
+                    to: 'js/libs/md5.min.js',
                     toType: 'file',
                     force: true
                 },

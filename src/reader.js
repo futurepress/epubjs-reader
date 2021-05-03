@@ -1,247 +1,212 @@
-import { Core } from './core.js';
-import { Storage } from './storage.js';
-import { ReaderController } from './controllers/reader_controller.js';
-import { SettingsController } from './controllers/settings_controller.js';
-import { ControlsController } from './controllers/controls_controller.js';
-import { SidebarController } from './controllers/sidebar_controller.js';
-import { BookmarksController } from './controllers/bookmarks_controller.js';
-import { NotesController } from './controllers/notes_controller.js';
-import { MetaController } from './controllers/meta_controller.js';
-import { TocController } from './controllers/toc_controller.js';
-
-let EPUBJS = {};
-
-EPUBJS.reader = {};
-EPUBJS.reader.plugins = {}; //-- Attach extra Controllers as plugins (like search?)
-EPUBJS.core = new Core();
+import { Toolbar } from './controllers/toolbar.js';
+import { Sidebar } from './controllers/sidebar.js';
+import { Content } from './controllers/content.js';
+import { Strings } from './strings.js';
 
 export class Reader {
-    
+
     constructor(bookPath, _options) {
 
-        const scope = this;
+        const Signal = signals.Signal;
+        this.signals = {
+            //-- reader
+            sidebarOpener: new Signal(),
+            bookmarked: new Signal(),
+            //-- epubjs
+            bookready: new Signal(),
+            renderered: new Signal(),
+            metadata: new Signal(),
+            navigation: new Signal(),
+            //-- rendition
+            layout: new Signal(),
+            selected: new Signal(),
+            unselected: new Signal(),
+            relocated: new Signal(),
+        };
 
-        this.viewer = document.getElementById("viewer");
+        this.strings = new Strings(this);
+        this.toolbar = new Toolbar(this);
+        this.sidebar = new Sidebar(this);
+        this.content = new Content(this);
+        
         this.search = window.location.search;
         this.offline = false;
-        this.sidebarOpen = false;
+        this.settings = undefined;
+        this.book = undefined;
+        this.rendition = undefined;
+        this.displayed = undefined;
+
+        this.init(bookPath, _options);
+
+        this.keylock = false;
+
+        window.addEventListener('beforeunload', this.unload.bind(this), false);
+        window.addEventListener('hashchange', this.hashChanged.bind(this), false);
+        window.addEventListener('keydown', this.arrowKeys.bind(this), false);
+    }
+
+    /**
+     * Initialize book.
+     * @param {*} bookPath 
+     * @param {*} _options 
+     */
+    init(bookPath, _options) {
         
-        this.settings = EPUBJS.core.defaults(_options || {}, {
+        this.settings = this.defaults(_options || {}, {
             bookPath: bookPath,
             restore: false,
-            reload: false,
+            reload: false, // ??
             bookmarks: undefined,
             annotations: undefined,
             contained: undefined,
             bookKey: undefined,
             styles: undefined,
-            sidebarReflow: false,
-            generatePagination: false,
-            history: true
+            reflowText: false,
+            pagination: false,
+            history: true,
+            language: 'en'
         });
 
         if (this.search) {
             this.parameters = this.search.slice(1).split("&");
-            this.parameters.forEach(function (p) {
-                const split = p.split("=");
-                const name  = split[0];
+            this.parameters.forEach((p) => {
+                const split = p.split('=');
+                const name = split[0];
                 const value = split[1] || '';
                 this.settings[name] = decodeURIComponent(value);
             });
         }
 
-        //-- This could be username + path or any unique string
         this.setBookKey(this.settings.bookPath);
 
         if (this.settings.restore && this.isSaved()) {
             this.applySavedSettings();
         }
 
-        this.settings.styles = this.settings.styles || { fontSize: "100%" };
-
-        this.book = new ePub(this.settings.bookPath, this.settings);
-
-        if (!this.settings.bookmarks) {
+        if (this.settings.bookmarks === undefined) {
             this.settings.bookmarks = [];
         }
 
-        if (!this.settings.annotations) {
+        if (this.settings.annotations === undefined) {
             this.settings.annotations = [];
         }
 
-        if (this.settings.generatePagination) {
-            this.book.generatePagination(
-                this.viewer.clientWidth(), 
-                this.viewer.clientHeight());
-        }
+        this.settings.styles = this.settings.styles || { fontSize: '100%' };
 
-        this.rendition = this.book.renderTo("viewer", {
-            ignoreClass: "annotator-hl",
-            width: "100%",
-            height: "100%"
+        this.book = new ePub(this.settings.bookPath/*, this.settings*/);
+
+        this.rendition = this.book.renderTo('viewer', {
+            ignoreClass: 'annotator-hl',
+            width: '100%',
+            height: '100%'
         });
 
-        const plCfi = this.settings.previousLocationCfi;
-        if (plCfi) {
-            this.displayed = this.rendition.display(plCfi);
+        const cfi = this.settings.previousLocationCfi;
+        if (cfi) {
+            this.displayed = this.rendition.display(cfi);
         } else {
             this.displayed = this.rendition.display();
         }
 
+        this.displayed.then((renderer) => {
+            this.signals.renderered.dispatch(renderer);
+        });
+
         this.book.ready.then(function () {
-
-            this.ReaderController = new ReaderController(this);
-            this.SettingsController = new SettingsController(this);
-            this.ControlsController = new ControlsController(this);
-            this.SidebarController = new SidebarController(this);
-            this.BookmarksController = new BookmarksController(this);
-            this.NotesController = new NotesController(this);
-
-            window.addEventListener('hashchange', this.hashChanged.bind(this), false);
-
-            document.addEventListener('keydown', this.adjustFontSize.bind(this), false);
-
-            this.rendition.on('keydown', this.adjustFontSize.bind(this));
-            this.rendition.on('keydown', this.ReaderController.arrowKeys.bind(this));
-            this.rendition.on('selected', this.selectedRange.bind(this));
-
+            if (this.settings.pagination) {
+                this.generatePagination();
+            }
+            this.signals.bookready.dispatch();
         }.bind(this)).then(function () {
-            this.ReaderController.hideLoader();
+            this.content.hideLoader();
         }.bind(this));
 
-        this.book.loaded.metadata.then(function (meta) {
-            scope.MetaController = new MetaController(meta);
-        });
-        this.book.loaded.navigation.then(function (toc) {
-            scope.TocController = new TocController(scope, toc);
+        this.book.loaded.metadata.then((meta) => {
+            this.signals.metadata.dispatch(meta);
         });
 
-        const plugins = EPUBJS.reader.plugins;
-        for (let plugin in plugins) {
+        this.book.loaded.navigation.then((toc) => {
+            this.signals.navigation.dispatch(toc);
+        });
 
-            if (Object.prototype.hasOwnProperty.call(plugins, plugin)) {
-                this[plugin] = plugins[plugin].call(this, this.book);
+        this.rendition.on('click', (e) => {
+            const selection = e.view.document.getSelection();
+            const range = selection.getRangeAt(0);
+            if (range.startOffset === range.endOffset) {
+                this.signals.unselected.dispatch();
+            }
+        });
+
+        this.rendition.on('layout', (props) => {
+            this.signals.layout.dispatch(props);
+        });
+
+        this.rendition.on('selected', (cfiRange, contents) => {
+            this.setLocation(cfiRange);
+            this.signals.selected.dispatch(cfiRange, contents);
+        });
+
+        this.rendition.on('relocated', (location) => {
+            this.setLocation(location.start.cfi);
+            this.signals.relocated.dispatch(location);
+        });
+    }
+
+    /* ------------------------------- Common ------------------------------- */
+
+    defaults(obj) {
+
+        for (let i = 1, length = arguments.length; i < length; i++) {
+            const source = arguments[i];
+            for (let prop in source) {
+                if (obj[prop] === void 0)
+                    obj[prop] = source[prop];
             }
         }
-
-        window.addEventListener('beforeunload', this.unload.bind(this), false);
-
-        //-- controllers
-        this.ReaderController;
-        this.SettingsController;
-        this.ControlsController;
-        this.SidebarController;
-        this.BookmarksController;
-        this.NotesController;
-        this.MetaController;
-        this.TocController;
+        return obj;
     }
 
-    /* ----------------------------- Bookmarks ------------------------------ */
+    uuid() {
 
-    addBookmark(cfi) {
-
-        const present = this.isBookmarked(cfi);
-        if (present > -1)
-            return;
-
-        this.settings.bookmarks.push(cfi);
-        $(this).trigger('reader:bookmarked', cfi);
+        let d = new Date().getTime();
+        const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            let r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c === 'x' ? r : (r & 0x7 | 0x8)).toString(16);
+        });
+        return uuid;
     }
 
-    removeBookmark(cfi) {
+    /* ------------------------------ Bookmarks ----------------------------- */
 
-        const bookmark = this.isBookmarked(cfi);
-        if (bookmark === -1)
-            return;
-
-        this.settings.bookmarks.splice(bookmark, 1);
-        $(this).trigger('reader:unbookmarked', bookmark);
-    }
-
+    /**
+     * Verifying the current page in bookmarks.
+     * @param {*} cfi 
+     * @returns The index of the bookmark if it exists, or -1 otherwise.
+     */
     isBookmarked(cfi) {
 
-        const bookmarks = this.settings.bookmarks;
-        return bookmarks.indexOf(cfi);
+        return this.settings.bookmarks.indexOf(cfi);
     }
 
-    clearBookmarks() {
+    /* ----------------------------- Annotations ---------------------------- */
 
-        this.settings.bookmarks = [];
-    }
+    isAnnotated(note) {
 
-    /* ------------------------------- Notes -------------------------------- */
-
-    addNote(note) {
-
-        this.settings.annotations.push(note);
-    }
-
-    removeNote(note) {
-
-        const index = this.settings.annotations.indexOf(note);
-        if (index === -1)
-            return;
-
-        delete this.settings.annotations[index];
-    }
-
-    clearNotes() {
-
-        this.settings.annotations = [];
+        return this.settings.annotations.indexOf(note);
     }
 
     /* ------------------------------ Settings ------------------------------ */
 
-    adjustFontSize(e) {
-
-        let fontSize;
-        let interval = 2;
-        const PLUS = 187;
-        const MINUS = 189;
-        const ZERO = 48;
-        const MOD = (e.ctrlKey || e.metaKey);
-
-        if (!this.settings.styles)
-            return;
-
-        if (!this.settings.styles.fontSize) {
-            this.settings.styles.fontSize = "100%";
-        }
-
-        fontSize = parseInt(this.settings.styles.fontSize.slice(0, -1));
-
-        if (MOD) {
-
-            switch (e.keyCode) {
-
-                case PLUS:
-                    e.preventDefault();
-                    this.book.setStyle("fontSize", (fontSize + interval) + "%");
-                    break;
-                case MINUS:
-                    e.preventDefault();
-                    this.book.setStyle("fontSize", (fontSize - interval) + "%");
-                    break;
-                case ZERO:
-                    e.preventDefault();
-                    this.book.setStyle("fontSize", "100%");
-                    break;
-            }
-        }
-    }
-    
     /**
      * Set book key in settings.
-     * @param {*} identifier 
+     * @param {*} identifier (url | blob)
      * @returns Current book key.
      */
     setBookKey(identifier) {
 
-        if (!this.settings.bookKey) {
-            this.settings.bookKey = "epubjsreader:" +
-                EPUBJS.VERSION + ":" +
-                window.location.host + ":" + identifier;
+        if (this.settings.bookKey === undefined) {
+            this.settings.bookKey = 'epubjs-reader:' + md5(identifier);
         }
         return this.settings.bookKey;
     }
@@ -254,8 +219,8 @@ export class Reader {
 
         if (!localStorage)
             return false;
-
-        return (localStorage.getItem(this.settings.bookKey) !== null);
+        
+        return localStorage.getItem(this.settings.bookKey) !== null;
     }
 
     /**
@@ -265,7 +230,7 @@ export class Reader {
      */
     removeSavedSettings() {
 
-        if (!localStorage)
+        if (!this.isSaved())
             return false;
 
         localStorage.removeItem(this.settings.bookKey);
@@ -282,17 +247,16 @@ export class Reader {
             stored = JSON.parse(localStorage.getItem(this.settings.bookKey));
         } catch (e) { // parsing error of localStorage
             console.exception(e);
-            return false;
         }
 
         if (stored) {
             // Merge styles
             if (stored.styles) {
-                this.settings.styles = EPUBJS.core.defaults(
-                    this.settings.styles || {}, stored.styles);
+                this.settings.styles = this.defaults(this.settings.styles || {},
+                    stored.styles);
             }
             // Merge the rest
-            this.settings = EPUBJS.core.defaults(this.settings, stored);
+            this.settings = this.defaults(this.settings, stored);
             return true;
         } else {
             return false;
@@ -306,6 +270,7 @@ export class Reader {
     saveSettings() {
 
         if (this.book) {
+            
             const curLocation = this.rendition.currentLocation();
             if (curLocation.start) {
                 this.settings.previousLocationCfi = curLocation.start.cfi;
@@ -320,7 +285,7 @@ export class Reader {
     }
 
     unload() {
-
+        
         if (this.settings.restore && localStorage) {
             this.saveSettings();
         }
@@ -332,34 +297,95 @@ export class Reader {
         this.rendition.display(hash);
     }
 
-    selectedRange(cfiRange) {
+    setLocation(cfi) {
 
-        const cfiFragment = "#" + cfiRange;
+        const cfiFragment = "#" + cfi;
+        this.currentLocationCfi = cfi;
 
         // Update the History Location
         if (this.settings.history && window.location.hash !== cfiFragment) {
             // Add CFI fragment to the history
-            history.pushState({}, '', cfiFragment);
-            this.currentLocationCfi = cfiRange;
+            window.history.pushState({}, '', cfiFragment);
+        }
+    }
+
+    generatePagination() {
+        //
+        // no implemented
+        //
+        //const rect = this.content.viewer.getRect();
+        //this.book.generatePagination(rect.width, rect.height);
+    }
+
+    arrowKeys(e) {
+
+        const MOD = (e.ctrlKey || e.metaKey);
+
+        if (MOD) {
+
+            if (this.settings.styles === undefined)
+                return;
+
+            if (this.settings.styles.fontSize === undefined)
+                this.settings.styles.fontSize = "100%";
+
+            const interval = 2;
+            let fontSize = parseInt(this.settings.styles.fontSize.slice(0, -1));
+            switch (e.key) {
+
+                case '=':
+                    e.preventDefault();
+                    fontSize += interval;
+                    this.rendition.themes.fontSize(fontSize + "%");
+                    break;
+                case '-':
+                    e.preventDefault();
+                    fontSize -= interval;
+                    this.rendition.themes.fontSize(fontSize + "%");
+                    break;
+                case '0':
+                    e.preventDefault();
+                    fontSize = 100;
+                    this.rendition.themes.fontSize("100%");
+                    break;
+            }
+
+            this.settings.styles.fontSize = fontSize + "%";
+        }
+
+        switch (e.key) {
+            case 'ArrowLeft':
+                if (this.book.package.metadata.direction === 'rtl') {
+                    this.rendition.next();
+                } else {
+                    this.rendition.prev();
+                }
+
+                this.content.prev.addClass('active');
+                this.keylock = true;
+
+                setTimeout(() => {
+                    this.keylock = false;
+                    this.content.prev.removeClass('active');
+                }, 100);
+                e.preventDefault();
+                break;
+            case 'ArrowRight':
+                if (this.book.package.metadata.direction === 'rtl') {
+                    this.rendition.prev();
+                } else {
+                    this.rendition.next();
+                }
+
+                this.content.next.addClass('active');
+                this.keylock = true;
+
+                setTimeout(() => {
+                    this.keylock = false;
+                    this.content.next.removeClass('active');
+                }, 100);
+                e.preventDefault();
+                break;
         }
     }
 }
-
-export { Storage };
-
-/*
-EPUBJS.Reader.prototype.searchBookmarked = function(cfi) {
-    var bookmarks = this.settings.bookmarks,
-            len = bookmarks.length,
-            i;
-
-    for(i = 0; i < len; i++) {
-        if (bookmarks[i]['cfi'] === cfi) return i;
-    }
-    return -1;
-};
-*/
-
-//-- Enable binding events to reader
-
-RSVP.EventTarget.mixin(Reader);

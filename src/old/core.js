@@ -123,7 +123,7 @@ export class Core {
             xhr.responseType = BLOB_RESPONSE;
         }
 
-        if (type === "json") {
+        if (type === 'json') {
             xhr.setRequestHeader("Accept", "application/json");
         }
 
