@@ -48,7 +48,7 @@ export class SettingsPanel {
 
 		this.panel.add([
 			languageRow,
-			reflowTextRow,
+			//reflowTextRow,
 			//paginationRow
 		]);
 
