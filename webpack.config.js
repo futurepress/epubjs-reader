@@ -7,7 +7,7 @@ module.exports = {
         main: './src/main.js'
     },
     output: {
-        filename: 'reader.min.js',
+        filename: 'js/reader.min.js',
         path: path.resolve(__dirname, 'reader')
     },
     plugins: [
