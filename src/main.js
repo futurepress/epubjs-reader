@@ -3,10 +3,11 @@ import { Storage } from './storage.js';
 
 "use strict";
 
-window.onload = function() {
-	
+window.onload = function () {
+
 	const storage = new Storage();
-	
+	const path = "https://s3.amazonaws.com/moby-dick/";
+
 	storage.init(function () {
 
 		storage.get(function (data) {
@@ -17,10 +18,7 @@ window.onload = function() {
 
 			} else {
 
-				window.reader = new Reader('https://s3.amazonaws.com/moby-dick/', {
-
-					restore: true
-				});
+				window.reader = new Reader(path, { restore: true });
 			}
 		});
 	});
