@@ -60,7 +60,7 @@ export class Toolbar {
                 };
 
                 if (window.location.href.includes("?bookPath=")) {
-                    window.location.href = window.location.origin;
+                    window.location.href = window.location.origin + window.location.pathname;
                 }
 
             } else {
