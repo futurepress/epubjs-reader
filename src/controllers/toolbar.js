@@ -39,11 +39,12 @@ export class Toolbar {
         upload.dom.title = uploadStr;
         upload.dom.accept = 'application/epub+zip';
         upload.dom.addEventListener('change', function (e) {
-            
+
             if (e.target.files.length === 0)
                 return;
 
             if (window.FileReader) {
+
                 const fr = new FileReader();
                 fr.onload = function (e) {
                     storage.clear();
@@ -57,6 +58,11 @@ export class Toolbar {
                 fr.onerror = function (e) {
                     console.error(e);
                 };
+
+                if (window.location.href.includes("?bookPath=")) {
+                    window.location.href = window.location.origin;
+                }
+
             } else {
                 alert(strings.get('toolbar/upload/error'));
             }
