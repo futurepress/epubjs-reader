@@ -1,0 +1,103 @@
+#toolbar {
+    height: 58px;
+    margin: 0;
+    padding: 0;
+    z-index: 10;
+    display: flex;
+    position: relative;
+    align-items: center;
+}
+
+#toolbar input {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    margin: 11px;
+    padding: 0;
+    display: inline-flex;
+    outline: none;
+    opacity: 0.2;
+    vertical-align: middle;
+    background-size: 24px;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#toolbar input:hover {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+#toolbar input[type=file]::file-selector-button, 
+#toolbar input[type=file]::-webkit-file-upload-button {
+    content: none;
+    visibility: hidden;
+}
+
+#toolbar .panel {
+    overflow: hidden;
+}
+
+#start {
+    flex: 0.6;
+    align-items: flex-start;
+}
+
+#metadata {
+    flex: 1.8;
+    text-align: center;
+    align-items: center;
+    color: gray;
+}
+
+#book-title {
+    font-weight: 600;
+}
+
+#book-title-separator {
+    display: none;
+    margin: 0 10px;
+}
+
+#book-title-separator::after {
+    content: '–';
+}
+
+#end {
+    flex: 0.6;
+    text-align: end;
+    align-items: flex-end;
+}
+
+#btn-s {
+    background-image: url('../img/sidebar.svg');
+}
+#btn-s.open {
+    opacity: 0.5;
+    background-image: url('../img/sidebar-open.svg');
+}
+#btn-s.open:hover {
+    opacity: 1;
+}
+#btn-u {
+    background-image: url('../img/upload.svg');
+}
+#btn-b {
+    background-image: url('../img/bookmark-empty.svg');
+}
+#btn-b.bookmarked {
+    background-image: url('../img/bookmark.svg');
+}
+#btn-f {
+    background-image: url('../img/resize-full.svg');
+}
+#btn-f.resize-small {
+    background-image: url('../img/resize-small.svg');
+}
+
+/* @media only screen and (max-width: 550px) {
+    #metainfo {
+        font-size: 10px;
+    }
+} */

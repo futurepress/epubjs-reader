@@ -3,12 +3,12 @@ Epub.js Reader
 
 ![Demo](http://fchasen.com/futurepress/epubjs-reader_moby-dick.png)
 
-[Try it while reading Moby Dick](http://futurepress.github.com/epubjs-reader/)
+[Try it while reading Moby Dick](https://futurepress.github.io/epubjs-reader/)
 
 About the Reader
 -------------------------
 
-[Epub.js](http://futurepress.github.com/epub.js/) library.
+[Epub.js](https://github.com/futurepress/epub.js) library.
 
 
 Getting Started
@@ -23,7 +23,7 @@ You can change the ePub it opens by passing a link to bookPath in the url:
 Running Locally
 -------------------------
 
-Install [node.js](http://nodejs.org/)
+Install [node.js](https://nodejs.org/en/)
 
 Then install the project dependences with npm
 
@@ -37,18 +37,12 @@ You can run the reader locally with the command
 node start
 ```
 
-Builds are concatenated and minified using [gruntjs](http://gruntjs.com/getting-started)
+Builds are concatenated and minified using [webpack](https://github.com/webpack/webpack)
 
 To generate a new build run
 
 ```javascript
-grunt
-```
-
-Or, to generate builds as you make changes run
-
-```
-grunt watch
+npm run build
 ```
 
 Additional Resources

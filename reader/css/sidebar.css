@@ -1,0 +1,350 @@
+#sidebar {
+    top: 0;
+    width: 300px;
+    height: 100vh;
+    display: flex;
+    position: absolute;
+    overflow: hidden;
+    padding-top: 58px;
+}
+
+/* sidebar tabs */
+
+#sidebar .tabs {
+    display: flex;
+    min-width: 58px;
+    flex-direction: column;
+}
+
+#sidebar .tab {
+    width: 60px;
+    height: 36px;
+    padding: 11px 0;
+    align-content: center;
+}
+
+#sidebar .tab-selector {
+    width: 58px;
+    height: 36px;
+    margin: 11px 0;
+    position: absolute;
+    transition: transform 0.5s;
+    border-left: 2px solid rgb(138, 180, 248);
+}
+
+/* #sidebar .tab.selected { } */
+
+#sidebar .tab.selected > input {
+    opacity: 1;
+}
+
+#sidebar .tab input {
+    width: 36px;
+    height: 36px;
+    margin: 0 11px;
+    border: 0;
+    padding: 0;
+    opacity: 0.4;
+    outline: none;
+    background-size: 24px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+}
+
+#sidebar .tab:hover > input {
+    cursor: pointer;
+    opacity: 1;
+}
+
+#tab-t.tab input { background-image: url('../img/toc.svg'); }
+#tab-b.tab input { background-image: url('../img/bookmarks.svg'); }
+#tab-n.tab input { background-image: url('../img/annotations.svg'); }
+#tab-s.tab input { background-image: url('../img/search.svg'); }
+#tab-c.tab input { background-image: url('../img/settings.svg'); }
+
+#tab-t.tab.selected input {
+    background-image: url('../img/toc-selected.svg');
+}
+#tab-b.tab.selected input {
+    background-image: url('../img/bookmarks-selected.svg');
+}
+#tab-n.tab.selected input {
+    background-image: url('../img/annotations-selected.svg');
+}
+#tab-s.tab.selected input {
+    background-image: url('../img/search-selected.svg');
+}
+#tab-c.tab.selected input {
+    background-image: url('../img/settings-selected.svg');
+}
+
+/* sidebar panels */
+
+#sidebar .panels {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#sidebar .panel {
+    width: 240px;
+    height: calc(100vh - 86px);
+    margin: 0;
+    padding: 15px 0;
+    overflow: auto;
+    font-size: small;
+    font-family: Roboto, 'Segoe UI', Tahoma, sans-serif;
+}
+
+#sidebar .panel input {
+    outline: none;
+}
+
+#sidebar .panel input[class^="btn-"] {
+    flex: 1;
+}
+
+#sidebar .panel input.btn-start, 
+#sidebar .panel input.btn-start:disabled {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+#sidebar .panel input.btn-medium {
+    border-radius: 0;
+}
+
+#sidebar .panel input.btn-end, 
+#sidebar .panel input.btn-end:disabled {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+#sidebar .panel input[type=button] {
+    width: 50%;
+    color: #AAA;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    background: rgb(84, 90, 95);
+}
+
+#sidebar .panel input[type=button]:disabled {
+    cursor: auto;
+    opacity: 0.5;
+}
+
+#sidebar .panel ul {
+    margin: 0;
+    padding-right: 10px;
+}
+
+#sidebar .panel li {
+    width: 100%;
+    color: #AAA;
+    padding: 6px 0;
+    list-style: none;
+    font-weight: 500;
+    vertical-align: middle;
+    overflow-wrap: break-word;
+}
+
+#sidebar .panel li > ul {
+    width: calc(100% - 20px);
+    padding: 0 0 0 20px;
+    display: none;
+}
+
+#sidebar .panel li > a {
+    color: #AAA;
+    display: inline-block;
+    text-decoration: none;
+}
+
+#sidebar .panel li > a:hover {
+    color: #E2E2E2;
+}
+
+#sidebar .row {
+    margin: 0;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    vertical-align: middle;
+}
+
+#sidebar .row label {
+    flex: 1;
+    color: #AAA;
+    padding: 1px;
+    font-weight: 500;
+}
+
+#sidebar .row select {
+    flex: 1;
+    width: 100%;
+    color: #AAA;
+    outline: none;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px;
+    background: rgb(84, 90, 95);
+}
+
+#sidebar .row input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    border-color: rgb(118, 118, 118);
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px;
+    background-color: rgb(84, 90, 95);
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+#sidebar .row input[type=checkbox]:checked {
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+}
+
+/* toc panel */
+
+#contents.panel ul {
+    padding-left: 0;
+}
+
+#contents.panel li > a {
+    width: calc(100% - 20px);
+}
+
+#expander {
+    width: 20px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+#expander [class^="toggle-"]::before {
+    color: #AAA;
+    width: 20px;
+    margin: 5px;
+    cursor: pointer;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+#expander .toggle-collapsed::before {
+    content: '+';
+}
+
+#expander .toggle-expanded::before {
+    content: '\2212';
+}
+
+/* bookmarks panel */
+
+#bookmarks.panel ul {
+    padding-left: 10px;
+}
+
+#bookmarks.panel li > a {
+    width: 100%;
+}
+
+/* search panel */
+
+#search.panel ul {
+    padding-left: 10px;
+}
+
+#search.panel input[type=search] {
+    width: 220px;
+    color: white;
+    background: rgb(84, 90, 95);
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px;
+}
+
+#search.panel input[type=search]::placeholder,
+#search.panel input[type=search]::-webkit-input-placeholder,
+#search.panel input[type=search]:-moz-placeholder,
+#search.panel input[type=search]:-ms-placeholder {
+    color: #E2E2E2;
+}
+
+#search.panel input[type=search]:focus::placeholder {
+    color: transparent;
+}
+
+/* #search a {
+    color: #AAA;
+    text-decoration: none;
+}
+
+#search p {
+    font-size: 12px;
+    line-height: 16px;
+    text-decoration: none;
+}
+
+#search p .match {
+    color: #000;
+    background: #ccc;
+}
+
+#search li > p {
+    color: #AAA;
+}
+
+#search li a:hover {
+    color: #E2E2E2;
+} */
+
+/* annotations panel */
+
+#annotations.panel ul {
+    padding-left: 10px;
+}
+
+#annotations.panel li > a {
+    width: calc(100% - 20px);
+}
+
+#annotations.panel li > span.btn-remove {
+    width: 20px;
+    height: 17px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    background: rgb(84, 90, 95);
+    vertical-align: top;
+}
+
+#annotations.panel li > span.btn-remove::before {
+    content: 'X';
+}
+
+#annotations.panel textarea {
+    color: #fff;
+    outline: none;
+    max-width: calc(100% - 6px);
+    min-width: calc(100% - 6px);
+    min-height: 30px;
+    border-radius: 2px;
+    background: rgb(84, 90, 95);
+}
+
+/* settings panel */
