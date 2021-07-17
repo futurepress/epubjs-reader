@@ -8,8 +8,8 @@
         "test": "tests"
     },
     "scripts": {
-        "start": "node tools/serve",
-        "build": "webpack"
+        "build": "webpack",
+        "serve": "webpack serve"
     },
     "author": "fchasen@gmail.com",
     "license": "BSD-2-Clause",
@@ -22,7 +22,8 @@
         "portfinder": "^1.0.28",
         "webpack": "^5.45.1",
         "webpack-cli": "^4.7.2",
-        "webpack-concat-files-plugin": "^0.5.2"
+        "webpack-concat-files-plugin": "^0.5.2",
+        "webpack-dev-server": "^3.11.2"
     },
     "dependencies": {
         "core-js": "^3.15.2",
