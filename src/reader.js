@@ -24,19 +24,19 @@ export class Reader {
             relocated: new Signal(),
         };
 
+        this.settings = undefined;
+        this.cfgInit(bookPath, _options);
+
         this.strings = new Strings(this);
         this.toolbar = new Toolbar(this);
         this.sidebar = new Sidebar(this);
         this.content = new Content(this);
-        
-        this.search = window.location.search;
-        this.offline = false;
-        this.settings = undefined;
+
         this.book = undefined;
         this.rendition = undefined;
         this.displayed = undefined;
 
-        this.init(bookPath, _options);
+        this.init();
 
         this.keylock = false;
 
@@ -52,46 +52,10 @@ export class Reader {
      */
     init(bookPath, _options) {
         
-        this.settings = this.defaults(_options || {}, {
-            bookPath: bookPath,
-            restore: false,
-            reload: false, // ??
-            bookmarks: undefined,
-            annotations: undefined,
-            contained: undefined,
-            bookKey: undefined,
-            styles: undefined,
-            reflowText: false,
-            pagination: false,
-            history: true,
-            language: 'en'
-        });
+        if (arguments.length > 0) {
 
-        if (this.search) {
-            this.parameters = this.search.slice(1).split("&");
-            this.parameters.forEach((p) => {
-                const split = p.split('=');
-                const name = split[0];
-                const value = split[1] || '';
-                this.settings[name] = decodeURIComponent(value);
-            });
+            this.cfgInit(bookPath, _options);
         }
-
-        this.setBookKey(this.settings.bookPath);
-
-        if (this.settings.restore && this.isSaved()) {
-            this.applySavedSettings();
-        }
-
-        if (this.settings.bookmarks === undefined) {
-            this.settings.bookmarks = [];
-        }
-
-        if (this.settings.annotations === undefined) {
-            this.settings.annotations = [];
-        }
-
-        this.settings.styles = this.settings.styles || { fontSize: '100%' };
 
         this.book = new ePub(this.settings.bookPath/*, this.settings*/);
 
@@ -199,6 +163,55 @@ export class Reader {
     /* ------------------------------ Settings ------------------------------ */
 
     /**
+     * Initialize book settings.
+     * @param {*} bookPath
+     * @param {*} _options
+     */
+    cfgInit(bookPath, _options) {
+
+        this.settings = this.defaults(_options || {}, {
+            bookKey: this.getBookKey(bookPath),
+            bookPath: bookPath,
+            restore: false,
+            history: true,
+            reload: false, // ??
+            bookmarks: undefined,
+            annotations: undefined,
+            contained: undefined,
+            styles: undefined,
+            reflowText: false, // ??
+            pagination: false, // ??
+            language: undefined
+        });
+
+        if (this.settings.restore && this.isSaved()) {
+            this.applySavedSettings();
+        }
+
+        if (this.settings.bookmarks === undefined) {
+            this.settings.bookmarks = [];
+        }
+
+        if (this.settings.annotations === undefined) {
+            this.settings.annotations = [];
+        }
+
+        if (this.settings.styles === undefined) {
+            this.settings.styles = { fontSize: '100%' };
+        }
+    }
+    
+    /**
+     * Get book key.
+     * @param {*} identifier (url | blob)
+     * @returns Book key (MD5).
+     */
+    getBookKey(identifier) {
+
+        return 'epubjs-reader:' + md5(identifier);
+    }
+    
+    /**
      * Set book key in settings.
      * @param {*} identifier (url | blob)
      * @returns Current book key.
@@ -206,7 +219,7 @@ export class Reader {
     setBookKey(identifier) {
 
         if (this.settings.bookKey === undefined) {
-            this.settings.bookKey = 'epubjs-reader:' + md5(identifier);
+            this.settings.bookKey = this.getBookKey(identifier);
         }
         return this.settings.bookKey;
     }

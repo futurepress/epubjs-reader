@@ -2,9 +2,7 @@ export class Strings {
 
     constructor(reader) {
 
-        const signals = reader.signals;
-
-        this.language = 'en';
+        this.language = reader.settings.language || 'en';
         this.values = {
             en: {
                 'toolbar/opener': 'Sidebar',
@@ -53,13 +51,6 @@ export class Strings {
                 'sidebar/settings/pagination': ['Pagination', 'Établir une pagination']
             }
         };
-
-        //-- signals --//
-
-        signals.bookready.add(() => {
-
-            this.language = reader.settings.language;
-        });
     }
 
     get(key) { return this.values[this.language][key] || '???'; }
