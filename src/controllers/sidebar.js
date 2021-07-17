@@ -9,12 +9,13 @@ export class Sidebar {
     
     constructor(reader) {
         
+        const strings = reader.strings;
         const tabs = [
-            'Contents',
-            'Bookmarks',
-            'Annotations',
-            'Search',
-            'Settings'
+            strings.get('sidebar/contents'),
+            strings.get('sidebar/bookmarks'),
+            strings.get('sidebar/annotations'),
+            strings.get('sidebar/search'),
+            strings.get('sidebar/settings')
         ];
 
         this.toc = new TocPanel(reader);
