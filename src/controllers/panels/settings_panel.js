@@ -11,7 +11,7 @@ export class SettingsPanel {
 
 		const languageStr = strings.get('sidebar/settings/language');
 		const languageRow = new UIRow();
-		const language = new UISelect().setOptions({ en: 'English' });
+		const language = new UISelect().setOptions({ en: 'English', fr: 'French' });
 		language.dom.addEventListener('change', (e) => {
 
 			reader.settings.language = e.target.value;
