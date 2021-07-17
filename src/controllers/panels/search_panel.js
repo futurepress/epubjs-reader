@@ -4,11 +4,13 @@ export class SearchPanel {
 
     constructor(reader) {
 
+        const strings = reader.strings;
+        
         this.panel = new UIPanel().setId('search');
         this.query = undefined;
         this.pages = [];
         this.searchBox = new UIInput('search');
-        this.searchBox.dom.placeholder = 'search';
+        this.searchBox.dom.placeholder = strings.get('sidebar/search/placeholder');
         this.searchBox.dom.addEventListener('search', () => {
 
             const value = this.searchBox.getValue();
