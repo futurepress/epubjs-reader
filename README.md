@@ -34,7 +34,7 @@ npm install
 You can run the reader locally with the command
 
 ```javascript
-node start
+npm run serve
 ```
 
 Builds are concatenated and minified using [webpack](https://github.com/webpack/webpack)
