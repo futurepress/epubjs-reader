@@ -51,6 +51,30 @@ export class Strings {
                 'sidebar/settings/language': 'Langue',
                 'sidabar/settings/reflowtext': ['Réagencer', 'Réagencer les lignes lorsque le panneau latéral est ouvert'],
                 'sidebar/settings/pagination': ['Pagination', 'Établir une pagination']
+            },
+            ja: {
+                'toolbar/opener': 'サイドバー',
+                'toolbar/upload': '本を開く',
+                'toolbar/upload/error': 'ご利用のブラウザは必要な機能をサポートしていません。\nGoogle Chrome、Mozilla Firefox、その他のモダンなブラウザでご利用ください。',
+                'toolbar/bookmark': 'このページに栞を設定する',
+                'toolbar/fullsceen': 'フルスクリーン',
+
+                'sidebar/contents': '目次',
+                'sidebar/bookmarks': '栞',
+                'sidebar/bookmarks/add': '追加',
+                'sidebar/bookmarks/remove': '削除',
+                'sidebar/bookmarks/clear': 'クリア',
+                'sidebar/annotations': '注釈',
+                'sidebar/annotations/add': '追加',
+                'sidebar/annotations/clear': 'クリア',
+                'sidebar/annotations/anchor': 'アンカー',
+                'sidebar/annotations/cancel': 'キャンセル',
+                'sidebar/search': '検索',
+                'sidebar/search/placeholder': '検索',
+                'sidebar/settings': '設定',
+                'sidebar/settings/language': '表示言語',
+                'sidabar/settings/reflowtext': ['再配置', 'サイドバーを開いた時に、テキストを再配置します。'],
+                'sidebar/settings/pagination': ['ページネーション', 'ページネーションを生成します。']
             }
         };
     }
