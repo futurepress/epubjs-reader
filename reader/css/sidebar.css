@@ -104,6 +104,7 @@
 
 #sidebar .panel input[class^="btn-"] {
     flex: 1;
+    height: 19px;
 }
 
 #sidebar .panel input.btn-start, 
