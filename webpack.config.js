@@ -10,6 +10,13 @@ module.exports = {
         filename: 'js/reader.min.js',
         path: path.resolve(__dirname, 'reader')
     },
+    devServer: {
+        static: {
+            directory: path.join(__dirname, '/')
+        },
+        compress: true,
+        port: 8080
+    },
     plugins: [
         new CopyPlugin({
             patterns: [
