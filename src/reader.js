@@ -199,6 +199,10 @@ export class Reader {
         if (this.settings.styles === undefined) {
             this.settings.styles = { fontSize: '100%' };
         }
+
+        if (this.settings.language === undefined) {
+            this.settings.language = 'en';
+        }
     }
     
     /**
