@@ -25,6 +25,7 @@ export class Strings {
                 'sidebar/search/placeholder': 'search',
                 'sidebar/settings': 'Settings',
                 'sidebar/settings/language': 'Language',
+                'sidebar/settings/fontsize': 'Font size (%)',
                 'sidabar/settings/reflowtext': ['Reflow text', 'Reflow text when sidebars are open'],
                 'sidebar/settings/pagination': ['Pagination', 'Generate pagination']
             },
@@ -49,6 +50,7 @@ export class Strings {
                 'sidebar/search/placeholder': 'rechercher',
                 'sidebar/settings': 'Réglages',
                 'sidebar/settings/language': 'Langue',
+                'sidebar/settings/fontsize': '???',
                 'sidabar/settings/reflowtext': ['Réagencer', 'Réagencer les lignes lorsque le panneau latéral est ouvert'],
                 'sidebar/settings/pagination': ['Pagination', 'Établir une pagination']
             },
@@ -73,6 +75,7 @@ export class Strings {
                 'sidebar/search/placeholder': '検索',
                 'sidebar/settings': '設定',
                 'sidebar/settings/language': '表示言語',
+                'sidebar/settings/fontsize': '???',
                 'sidabar/settings/reflowtext': ['再配置', 'サイドバーを開いた時に、テキストを再配置します。'],
                 'sidebar/settings/pagination': ['ページネーション', 'ページネーションを生成します。']
             }

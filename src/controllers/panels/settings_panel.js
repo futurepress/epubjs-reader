@@ -1,4 +1,4 @@
-import { UIPanel, UIRow, UISelect, UIInput, UILabel } from '../../ui.js';
+import { UIPanel, UIRow, UISelect, UIInput, UILabel, UIInteger } from '../../ui.js';
 
 export class SettingsPanel {
 
@@ -20,6 +20,22 @@ export class SettingsPanel {
 		languageRow.add(new UILabel(languageStr));
 		languageRow.add(language);
 		
+		const fontSizeStr = strings.get('sidebar/settings/fontsize');
+		const fontSizeRow = new UIRow();
+		const fontSize = new UIInteger(100, 1);
+		fontSize.dom.addEventListener('change', (e) => {
+
+			const value = e.target.value + "%";
+
+			console.log(value);
+			
+			reader.rendition.themes.fontSize(value);
+			reader.settings.styles.fontSize = value;
+		});
+
+		fontSizeRow.add(new UILabel(fontSizeStr));
+		fontSizeRow.add(fontSize);
+
 		const reflowTextStr = strings.get('sidabar/settings/reflowtext');
 		const reflowTextRow = new UIRow();
 		const reflowText = new UIInput('checkbox', false, reflowTextStr[1]);
@@ -48,6 +64,7 @@ export class SettingsPanel {
 
 		this.panel.add([
 			languageRow,
+			fontSizeRow,
 			//reflowTextRow,
 			//paginationRow
 		]);

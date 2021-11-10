@@ -216,6 +216,17 @@
     -moz-appearance: auto;
 }
 
+#sidebar .row input[type=number] {
+    flex: 0.963;
+    width: 100%;
+    color: #AAA;
+    outline: none;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px;
+    background: rgb(84, 90, 95);
+}
+
 /* toc panel */
 
 #contents.panel ul {
