@@ -71,6 +71,14 @@ export class SettingsPanel {
 		signals.bookready.add(() => {
 
 			language.setValue(reader.settings.language);
+
+			const tsz = reader.settings.styles.fontSize;
+			const isz = parseInt(tsz);
+			if (fontSize.getValue() !== isz) {
+
+				fontSize.setValue(isz);
+				reader.rendition.themes.fontSize(tsz);
+			}
 		});
 	}
 }
