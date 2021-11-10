@@ -809,166 +809,47 @@ class UINumber extends UIElement {
 
 /**
  * UIInteger
- * @param {any} number
+ * @param {number} value
+ * @param {number} step
+ * @param {number} min
+ * @param {number} max
  */
 class UIInteger extends UIElement {
 
-    constructor(number) {
+    constructor(value, step, min, max) {
 
         super(document.createElement('input'));
 
         this.dom.type = 'number';
-        this.dom.value = '0';
+        this.dom.value = value;
 
-        this.value = 0;
-
-        this.min = - Infinity;
-        this.max = + Infinity;
-
-        this.step = 1;
-        this.nudge = 1;
-
-        this.setValue(number);
-
-        const scope = this;
-
-        const changeEvent = document.createEvent('HTMLEvents');
-        changeEvent.initEvent('change', true, true);
-
-        let distance = 0;
-        let onMouseDownValue = 0;
-
-        const pointer = { x: 0, y: 0 };
-        const prevPointer = { x: 0, y: 0 };
-
-        function onMouseDown(event) {
-
-            event.preventDefault();
-
-            distance = 0;
-
-            onMouseDownValue = scope.value;
-
-            prevPointer.x = event.clientX;
-            prevPointer.y = event.clientY;
-
-            document.addEventListener('mousemove', onMouseMove, false);
-            document.addEventListener('mouseup', onMouseUp, false);
+        if (step != undefined)
+        {
+            this.dom.step = step;
+        }
+        
+        if (min !== undefined)
+        {
+            this.dom.min = min;
         }
 
-        function onMouseMove(event) {
-
-            const currentValue = scope.value;
-
-            pointer.x = event.clientX;
-            pointer.y = event.clientY;
-
-            distance += (pointer.x - prevPointer.x) - (pointer.y - prevPointer.y);
-
-            let value = onMouseDownValue + (distance / (event.shiftKey ? 5 : 50)) * scope.step;
-            value = Math.min(scope.max, Math.max(scope.min, value)) | 0;
-
-            if (currentValue !== value) {
-
-                scope.setValue(value);
-                scope.dom.dispatchEvent(changeEvent);
-            }
-
-            prevPointer.x = event.clientX;
-            prevPointer.y = event.clientY;
+        if (max !== undefined)
+        {
+            this.dom.max = max;
         }
-
-        function onMouseUp() {
-
-            document.removeEventListener('mousemove', onMouseMove, false);
-            document.removeEventListener('mouseup', onMouseUp, false);
-
-            if (Math.abs(distance) < 2) {
-
-                scope.dom.focus();
-                scope.dom.select();
-            }
-        }
-
-        function onChange() {
-
-            scope.setValue(this.value);
-        }
-
-        // function onFocus() {
-        //     dom.style.backgroundColor = '';
-        //     dom.style.cursor = '';
-        // }
-        //function onBlur() {
-        //    dom.style.backgroundColor = 'transparent';
-        //    dom.style.cursor = 'ns-resize';
-        //}
-
-        function onKeyDown(event) {
-
-            event.stopPropagation();
-
-            switch (event.keyCode) {
-
-                // case 13: // enter
-                //     dom.blur();
-                //     break;
-                case 38: // up
-                    event.preventDefault();
-                    scope.setValue(scope.getValue() + scope.nudge);
-                    scope.dom.dispatchEvent(changeEvent);
-                    break;
-                case 40: // down
-                    event.preventDefault();
-                    scope.setValue(scope.getValue() - scope.nudge);
-                    scope.dom.dispatchEvent(changeEvent);
-                    break;
-            }
-        }
-
-        //onBlur();
-        this.dom.addEventListener('keydown', onKeyDown, false);
-        this.dom.addEventListener('mousedown', onMouseDown, false);
-        this.dom.addEventListener('change', onChange, false);
-        //dom.addEventListener('focus', onFocus, false);
-        //dom.addEventListener('blur', onBlur, false);
     }
 
     getValue() {
 
-        return this.value;
+        return this.dom.value;
     }
 
     setValue(value) {
 
         if (value !== undefined) {
-
-            value = parseInt(value);
-
-            this.value = value;
+            
             this.dom.value = value;
         }
-
-        return this;
-    }
-
-    setStep(step) {
-
-        this.step = parseInt(step);
-        return this;
-    }
-
-    setNudge(nudge) {
-
-        this.nudge = nudge;
-        return this;
-    }
-
-    setRange(min, max) {
-
-        this.min = min;
-        this.max = max;
-
         return this;
     }
 }
