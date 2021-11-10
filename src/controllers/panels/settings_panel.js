@@ -26,9 +26,6 @@ export class SettingsPanel {
 		fontSize.dom.addEventListener('change', (e) => {
 
 			const value = e.target.value + "%";
-
-			console.log(value);
-			
 			reader.rendition.themes.fontSize(value);
 			reader.settings.styles.fontSize = value;
 		});
