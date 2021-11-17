@@ -30,24 +30,44 @@ export class Content {
         };
         next.add(new UILabel('>'));
 
-        this.viewer = new UIDiv().setId('viewer');
+        const viewer  = new UIDiv().setId('viewer');
+        const divider = new UIDiv().setId('divider');
+        const loader  = new UIDiv().setId('loader');
 
-        this.divider = new UIDiv().setId('divider');
-        this.loader = new UIDiv().setId('loader');
+        const showDivider = () => {
+            divider.dom.style.display = 'block';
+        };
 
-        this.main.add([
-            prev, 
-            this.viewer, 
-            next, 
-            this.divider, 
-            this.loader
-        ]);
+        const hideDivider = () => {
+            divider.dom.style.display = 'none';
+        };
+
+        const showLoader = () => {
+            loader.dom.style.display = 'block';
+            hideDivider();
+        };
+
+        const hideLoader = () => {
+            loader.dom.style.display = 'none';
+
+            //-- If the book is using spreads, show the divider
+            if(reader.book.settings.spreads) {
+                showDivider();
+            }
+        };
+
+        this.main.add([prev, viewer, next, divider, loader]);
 
         this.reader = reader;
         
         document.body.appendChild(this.main.dom);
 
         //-- signals --//
+
+        signals.bookloaded.add(() => {
+
+            hideLoader();
+        });
 
         signals.sidebarOpener.add((value) => {
             
@@ -61,9 +81,9 @@ export class Content {
         signals.layout.add((props) => {
 
             if (props.spread === true && props.width > props.spreadWidth) {
-                this.showDivider();
+                showDivider();
             } else {
-                this.hideDivider();
+                hideDivider();
             }
         });
 
@@ -89,8 +109,14 @@ export class Content {
         });
 
         signals.renditionNext.add(() => {
+
             next.addClass('active');
             setTimeout(() => { next.removeClass('active'); }, 100);
+        });
+
+        signals.viewercleanup.add(() => {
+
+            viewer.clear();
         });
     }
 
@@ -120,27 +146,5 @@ export class Content {
         } else {
             this.main.addClass('closed');
         }
-    }
-
-    showLoader() {
-        this.loader.dom.style.display = 'block';
-        this.hideDivider();
-    }
-
-    hideLoader() {
-        this.loader.dom.style.display = 'none';
-
-        //-- If the book is using spreads, show the divider
-        if(this.reader.book.settings.spreads) {
-        	this.showDivider();
-        }
-    }
-
-    showDivider() {
-        this.divider.dom.style.display = 'block';
-    }
-
-    hideDivider() {
-        this.divider.dom.style.display = 'none';
     }
 }

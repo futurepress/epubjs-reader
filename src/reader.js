@@ -11,10 +11,12 @@ export class Reader {
         this.signals = {
             //-- reader
             sidebarOpener: new Signal(),
+            bookloaded: new Signal(),
             bookmarked: new Signal(),
             fontresize: new Signal(),
             renditionPrev: new Signal(),
             renditionNext: new Signal(),
+            viewercleanup: new Signal(),
             //-- epubjs
             bookready: new Signal(),
             renderered: new Signal(),
@@ -53,6 +55,8 @@ export class Reader {
      */
     init(bookPath, _options) {
         
+        this.signals.viewercleanup.dispatch();
+        
         if (arguments.length > 0) {
 
             this.cfgInit(bookPath, _options);
@@ -85,7 +89,7 @@ export class Reader {
             this.signals.bookready.dispatch();
             this.signals.fontresize.dispatch(sz);
         }.bind(this)).then(function () {
-            this.content.hideLoader();
+            this.signals.bookloaded.dispatch();
         }.bind(this));
 
         this.book.loaded.metadata.then((meta) => {

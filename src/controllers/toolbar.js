@@ -50,7 +50,6 @@ export class Toolbar {
                     storage.clear();
                     storage.set(e.target.result, () => {
                         reader.unload();
-                        reader.content.viewer.clear(); // clear viewer
                         reader.init(e.target.result, { restore: true });
                     });
                 };
