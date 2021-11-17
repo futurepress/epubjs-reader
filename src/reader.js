@@ -12,6 +12,7 @@ export class Reader {
             //-- reader
             sidebarOpener: new Signal(),
             bookmarked: new Signal(),
+            fontresize: new Signal(),
             //-- epubjs
             bookready: new Signal(),
             renderered: new Signal(),
@@ -42,7 +43,7 @@ export class Reader {
 
         window.addEventListener('beforeunload', this.unload.bind(this), false);
         window.addEventListener('hashchange', this.hashChanged.bind(this), false);
-        window.addEventListener('keydown', this.arrowKeys.bind(this), false);
+        window.addEventListener('keydown', this.keyboardHandler.bind(this), false);
     }
 
     /**
@@ -80,7 +81,9 @@ export class Reader {
             if (this.settings.pagination) {
                 this.generatePagination();
             }
+            const sz = parseInt(this.settings.styles.fontSize);
             this.signals.bookready.dispatch();
+            this.signals.fontresize.dispatch(sz);
         }.bind(this)).then(function () {
             this.content.hideLoader();
         }.bind(this));
@@ -113,6 +116,12 @@ export class Reader {
         this.rendition.on('relocated', (location) => {
             this.setLocation(location.start.cfi);
             this.signals.relocated.dispatch(location);
+        });
+
+        this.signals.fontresize.add((value) => {
+            const fontSize = value + "%";
+            this.settings.styles.fontSize = fontSize;
+            this.rendition.themes.fontSize(fontSize);
         });
     }
 
@@ -334,75 +343,69 @@ export class Reader {
         //this.book.generatePagination(rect.width, rect.height);
     }
 
-    arrowKeys(e) {
+    keyboardHandler(e) {
 
         const MOD = (e.ctrlKey || e.metaKey);
 
         if (MOD) {
 
-            if (this.settings.styles === undefined)
-                return;
+            const step = 2;
+            let value = parseInt(this.settings.styles.fontSize);
 
-            if (this.settings.styles.fontSize === undefined)
-                this.settings.styles.fontSize = "100%";
-
-            const interval = 2;
-            let fontSize = parseInt(this.settings.styles.fontSize.slice(0, -1));
             switch (e.key) {
 
                 case '=':
                     e.preventDefault();
-                    fontSize += interval;
-                    this.rendition.themes.fontSize(fontSize + "%");
+                    value += step;
+                    this.signals.fontresize.dispatch(value);
                     break;
                 case '-':
                     e.preventDefault();
-                    fontSize -= interval;
-                    this.rendition.themes.fontSize(fontSize + "%");
+                    value -= step;
+                    this.signals.fontresize.dispatch(value);
                     break;
                 case '0':
                     e.preventDefault();
-                    fontSize = 100;
-                    this.rendition.themes.fontSize("100%");
+                    value = 100;
+                    this.signals.fontresize.dispatch(value);
                     break;
             }
+        } else {
+            
+            switch (e.key) {
+                case 'ArrowLeft':
+                    if (this.book.package.metadata.direction === 'rtl') {
+                        this.rendition.next();
+                    } else {
+                        this.rendition.prev();
+                    }
 
-            this.settings.styles.fontSize = fontSize + "%";
-        }
+                    this.content.prev.addClass('active');
+                    this.keylock = true;
 
-        switch (e.key) {
-            case 'ArrowLeft':
-                if (this.book.package.metadata.direction === 'rtl') {
-                    this.rendition.next();
-                } else {
-                    this.rendition.prev();
-                }
+                    setTimeout(() => {
+                        this.keylock = false;
+                        this.content.prev.removeClass('active');
+                    }, 100);
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    if (this.book.package.metadata.direction === 'rtl') {
+                        this.rendition.prev();
+                    } else {
+                        this.rendition.next();
+                    }
 
-                this.content.prev.addClass('active');
-                this.keylock = true;
+                    this.content.next.addClass('active');
+                    this.keylock = true;
 
-                setTimeout(() => {
-                    this.keylock = false;
-                    this.content.prev.removeClass('active');
-                }, 100);
-                e.preventDefault();
-                break;
-            case 'ArrowRight':
-                if (this.book.package.metadata.direction === 'rtl') {
-                    this.rendition.prev();
-                } else {
-                    this.rendition.next();
-                }
-
-                this.content.next.addClass('active');
-                this.keylock = true;
-
-                setTimeout(() => {
-                    this.keylock = false;
-                    this.content.next.removeClass('active');
-                }, 100);
-                e.preventDefault();
-                break;
+                    setTimeout(() => {
+                        this.keylock = false;
+                        this.content.next.removeClass('active');
+                    }, 100);
+                    e.preventDefault();
+                    break;
+            }
         }
     }
 }

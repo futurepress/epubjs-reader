@@ -25,9 +25,7 @@ export class SettingsPanel {
 		const fontSize = new UIInteger(100, 1);
 		fontSize.dom.addEventListener('change', (e) => {
 
-			const value = e.target.value + "%";
-			reader.rendition.themes.fontSize(value);
-			reader.settings.styles.fontSize = value;
+			signals.fontresize.dispatch(e.target.value);
 		});
 
 		fontSizeRow.add(new UILabel(fontSizeStr));
@@ -71,13 +69,12 @@ export class SettingsPanel {
 		signals.bookready.add(() => {
 
 			language.setValue(reader.settings.language);
+		});
 
-			const tsz = reader.settings.styles.fontSize;
-			const isz = parseInt(tsz);
-			if (fontSize.getValue() !== isz) {
+		signals.fontresize.add((value) => {
 
-				fontSize.setValue(isz);
-				reader.rendition.themes.fontSize(tsz);
+			if (fontSize.getValue() !== value) {
+				fontSize.setValue(value);
 			}
 		});
 	}
