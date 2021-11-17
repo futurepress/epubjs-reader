@@ -13,6 +13,8 @@ export class Reader {
             sidebarOpener: new Signal(),
             bookmarked: new Signal(),
             fontresize: new Signal(),
+            renditionPrev: new Signal(),
+            renditionNext: new Signal(),
             //-- epubjs
             bookready: new Signal(),
             renderered: new Signal(),
@@ -38,8 +40,6 @@ export class Reader {
         this.displayed = undefined;
 
         this.init();
-
-        this.keylock = false;
 
         window.addEventListener('beforeunload', this.unload.bind(this), false);
         window.addEventListener('hashchange', this.hashChanged.bind(this), false);
@@ -122,6 +122,22 @@ export class Reader {
             const fontSize = value + "%";
             this.settings.styles.fontSize = fontSize;
             this.rendition.themes.fontSize(fontSize);
+        });
+
+        this.signals.renditionPrev.add(() => {
+            if (this.book.package.metadata.direction === 'rtl') {
+                this.rendition.next();
+            } else {
+                this.rendition.prev();
+            }
+        });
+
+        this.signals.renditionNext.add(() => {
+            if (this.book.package.metadata.direction === 'rtl') {
+                this.rendition.prev();
+            } else {
+                this.rendition.next();
+            }
         });
     }
 
@@ -371,38 +387,14 @@ export class Reader {
                     break;
             }
         } else {
-            
+
             switch (e.key) {
                 case 'ArrowLeft':
-                    if (this.book.package.metadata.direction === 'rtl') {
-                        this.rendition.next();
-                    } else {
-                        this.rendition.prev();
-                    }
-
-                    this.content.prev.addClass('active');
-                    this.keylock = true;
-
-                    setTimeout(() => {
-                        this.keylock = false;
-                        this.content.prev.removeClass('active');
-                    }, 100);
+                    this.signals.renditionPrev.dispatch();
                     e.preventDefault();
                     break;
                 case 'ArrowRight':
-                    if (this.book.package.metadata.direction === 'rtl') {
-                        this.rendition.prev();
-                    } else {
-                        this.rendition.next();
-                    }
-
-                    this.content.next.addClass('active');
-                    this.keylock = true;
-
-                    setTimeout(() => {
-                        this.keylock = false;
-                        this.content.next.removeClass('active');
-                    }, 100);
+                    this.signals.renditionNext.dispatch();
                     e.preventDefault();
                     break;
             }

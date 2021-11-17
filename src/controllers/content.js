@@ -13,37 +13,32 @@ export class Content {
                 reader.rendition.resize();
             }
         });
-        this.prev = new UIDiv().setId('prev').setClass('arrow');
-        this.prev.dom.addEventListener('click', (e) => {
-            
-            if (reader.book.package.metadata.direction === 'rtl') {
-                reader.rendition.next();
-            } else {
-                reader.rendition.prev();
-            }
+
+        const prev = new UIDiv().setId('prev').setClass('arrow');
+        prev.dom.onclick = (e) => {
+
+            signals.renditionPrev.dispatch();
             e.preventDefault();
-        });
-        this.prev.add(new UILabel('<'));
-        this.next = new UIDiv().setId('next').setClass('arrow');
-        this.next.dom.addEventListener('click', (e) => {
+        };
+        prev.add(new UILabel('<'));
+
+        const next = new UIDiv().setId('next').setClass('arrow');
+        next.dom.onclick = (e) => {
             
-            if (reader.book.package.metadata.direction === 'rtl') {
-                reader.rendition.prev();
-            } else {
-                reader.rendition.next();
-            }
+            signals.renditionNext.dispatch();
             e.preventDefault();
-        });
-        this.next.add(new UILabel('>'));
+        };
+        next.add(new UILabel('>'));
+
         this.viewer = new UIDiv().setId('viewer');
 
         this.divider = new UIDiv().setId('divider');
         this.loader = new UIDiv().setId('loader');
 
         this.main.add([
-            this.prev, 
+            prev, 
             this.viewer, 
-            this.next, 
+            next, 
             this.divider, 
             this.loader
         ]);
@@ -75,16 +70,27 @@ export class Content {
         signals.relocated.add((location) => {
 
             if (location.atStart) {
-                this.prev.addClass('disabled');
+                prev.addClass('disabled');
             } else {
-                this.prev.removeClass('disabled');
+                prev.removeClass('disabled');
             }
 
             if (location.atEnd) {
-                this.next.addClass('disabled');
+                next.addClass('disabled');
             } else {
-                this.next.removeClass('disabled');
+                next.removeClass('disabled');
             }
+        });
+
+        signals.renditionPrev.add(() => {
+
+            prev.addClass('active');
+            setTimeout(() => { prev.removeClass('active'); }, 100);
+        });
+
+        signals.renditionNext.add(() => {
+            next.addClass('active');
+            setTimeout(() => { next.removeClass('active'); }, 100);
         });
     }
 
