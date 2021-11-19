@@ -1,3 +1,5 @@
+import { Book } from 'epubjs';
+
 import { Toolbar } from './controllers/toolbar.js';
 import { Sidebar } from './controllers/sidebar.js';
 import { Content } from './controllers/content.js';
@@ -62,8 +64,7 @@ export class Reader {
             this.cfgInit(bookPath, _options);
         }
 
-        this.book = new ePub(this.settings.bookPath/*, this.settings*/);
-
+        this.book = new Book(this.settings.bookPath);
         this.rendition = this.book.renderTo('viewer', {
             ignoreClass: 'annotator-hl',
             width: '100%',
