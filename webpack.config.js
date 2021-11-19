@@ -7,7 +7,7 @@ const config = {
         epubreader: './src/main.js'
     },
     output: {
-        path: path.resolve(__dirname, 'reader/'),
+        path: path.resolve(__dirname, 'dist/'),
         filename: 'js/[name].min.js'
     },
     optimization: {
@@ -15,7 +15,7 @@ const config = {
     },
     devServer: {
         static: {
-            directory: path.join(__dirname, 'reader/')
+            directory: path.join(__dirname, 'dist/')
         },
         compress: true,
         port: 8080
