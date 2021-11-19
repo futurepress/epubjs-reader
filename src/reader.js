@@ -48,6 +48,11 @@ export class Reader {
         window.addEventListener('beforeunload', this.unload.bind(this), false);
         window.addEventListener('hashchange', this.hashChanged.bind(this), false);
         window.addEventListener('keydown', this.keyboardHandler.bind(this), false);
+        window.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
 
     /**
