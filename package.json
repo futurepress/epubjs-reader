@@ -8,7 +8,7 @@
         "test": "tests"
     },
     "scripts": {
-        "build": "webpack",
+        "build": "webpack --mode=development --progress",
         "serve": "webpack serve"
     },
     "author": "fchasen@gmail.com",

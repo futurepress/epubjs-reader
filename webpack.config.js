@@ -1,18 +1,21 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
-module.exports = {
+const config = {
     mode: 'production',
     entry: {
-        main: './src/main.js'
+        epubreader: './src/main.js'
     },
     output: {
-        filename: 'js/reader.min.js',
-        path: path.resolve(__dirname, 'reader')
+        path: path.resolve(__dirname, 'reader/'),
+        filename: 'js/[name].min.js'
+    },
+    optimization: {
+        minimize: true
     },
     devServer: {
         static: {
-            directory: path.join(__dirname, '/')
+            directory: path.join(__dirname, 'reader/')
         },
         compress: true,
         port: 8080
@@ -38,16 +41,23 @@ module.exports = {
                     toType: 'file',
                     force: true
                 },
-                {
-                    from: 'node_modules/epubjs/dist/epub.min.js',
-                    to: 'js/libs/epub.min.js',
-                    toType: 'file',
-                    force: true
-                },
             ],
             options: {
                 concurrency: 100,
             },
         }),
     ],
+    performance: {
+        hints: false
+    }
+};
+
+module.exports = (env, args) => {
+
+    if (args.mode === 'development') {
+        config.output.filename = 'js/[name].js';
+        config.optimization.minimize = false;
+    }
+    
+    return config;
 };
