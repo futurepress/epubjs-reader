@@ -2,16 +2,18 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
 const config = {
-    mode: 'production',
+    mode: 'development',
     entry: {
         epubreader: './src/main.js'
     },
     output: {
         path: path.resolve(__dirname, 'dist/'),
-        filename: 'js/[name].min.js'
+        filename: 'js/[name].js',
+        sourceMapFilename: 'js/[name].js.map'
     },
+    devtool: 'source-map',
     optimization: {
-        minimize: true
+        minimize: false
     },
     devServer: {
         static: {
@@ -54,10 +56,10 @@ const config = {
 
 module.exports = (env, args) => {
 
-    if (args.mode === 'development') {
-        config.output.filename = 'js/[name].js';
-        config.optimization.minimize = false;
-    }
+    if (args.optimizationMinimize) {
+		config.devtool = false;
+		config.output.filename = 'js/[name].min.js';
+	}
     
     return config;
 };

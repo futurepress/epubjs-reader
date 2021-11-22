@@ -8,8 +8,10 @@
         "test": "tests"
     },
     "scripts": {
-        "build": "webpack --mode=development --progress",
-        "serve": "webpack serve"
+        "build": "webpack --mode=production --progress",
+        "serve": "webpack serve",
+        "minify": "webpack --mode=production --optimization-minimize --progress",
+        "prepare": "npm run build && npm run minify"
     },
     "author": "fchasen@gmail.com",
     "license": "BSD-2-Clause",
