@@ -71,7 +71,6 @@ export class Reader {
 
         this.book = new Book(this.settings.bookPath);
         this.rendition = this.book.renderTo('viewer', {
-            ignoreClass: 'annotator-hl',
             width: '100%',
             height: '100%'
         });
