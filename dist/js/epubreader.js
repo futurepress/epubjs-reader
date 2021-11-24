@@ -35516,8 +35516,6 @@ class MetadataPanel {
 	
 	constructor(reader) {
 		
-		const signals = reader.signals;
-		
 		this.panel = new UIPanel().setId('metadata');
 		this.title = new UIText().setId('book-title');
 		this.creator = new UIText().setId('book-creator');
@@ -35525,7 +35523,10 @@ class MetadataPanel {
 
 		this.panel.add([this.title, this.separator, this.creator]);
 
-		signals.metadata.add((meta) => {
+		//-- events --//
+
+		reader.on('metadata', (meta) => {
+
 			this.init(meta);
 		});
 	}
@@ -35548,28 +35549,26 @@ class Toolbar {
     
     constructor(reader) {
 
-        const signals = reader.signals;
         const strings = reader.strings;
-        
-        this.sidebarOpen = false;
 
         const container = new UIDiv().setId('toolbar');
-        
+
         const start = new UIPanel().setId('start');
         const opener = new UIInput('button').setId('btn-s');
         const openerStr = strings.get('toolbar/opener');
         opener.dom.title = openerStr;
-        opener.dom.addEventListener('click', () => {
+        opener.dom.onclick = () => {
 
-            this.sidebarOpen = !this.sidebarOpen;
-            signals.sidebarOpener.dispatch(this.sidebarOpen);
+            const isOpen = opener.dom.classList.length > 0;
 
-            if (this.sidebarOpen) {
+            reader.emit('sidebaropener', !isOpen);
+
+            if (!isOpen) {
                 opener.addClass('open');
             } else {
                 opener.removeClass('open');
             }
-        });
+        };
 
         start.add(opener);
 
@@ -35618,7 +35617,7 @@ class Toolbar {
         bookmark.dom.addEventListener('click', () => {
 
             const cfi = reader.rendition.currentLocation().start.cfi;
-            signals.bookmarked.dispatch(reader.isBookmarked(cfi) === -1);
+            reader.emit('bookmarked', reader.isBookmarked(cfi) === -1);
         });
 
         end.add(bookmark);
@@ -35659,10 +35658,10 @@ class Toolbar {
         container.add([start, center.panel, end]);
         document.body.appendChild(container.dom);
 
-        //-- signals --//
+        //-- events --//
 
-        signals.relocated.add((location) => {
-            
+        reader.on('relocated', (location) => {
+
             const cfi = location.start.cfi;
 
             if (reader.isBookmarked(cfi) === -1) {
@@ -35672,8 +35671,8 @@ class Toolbar {
             }
         });
 
-        signals.bookmarked.add((value) => {
-            
+        reader.on('bookmarked', (value) => {
+
             if (value) {
                 bookmark.addClass('bookmarked');
             } else {
@@ -35700,15 +35699,13 @@ class Toolbar {
 class TocPanel {
     
     constructor(reader) {
-
-        const signals = reader.signals;
         
         this.panel = new UIPanel().setId('contents');
         this.reader = reader;
 
-        //-- signals --//
+        //-- events --//
 
-        signals.navigation.add((toc) => {
+        reader.on('navigation', (toc) => {
             
             this.init(toc);
         });
@@ -35782,8 +35779,7 @@ class TocPanel {
 class BookmarksPanel {
 
     constructor(reader) {
-
-        const signals = reader.signals;
+        
         const strings = reader.strings;
 
         const ctrlRow = new UIRow();
@@ -35798,20 +35794,20 @@ class BookmarksPanel {
 
         btn_a.dom.onclick = () => {
 
-            signals.bookmarked.dispatch(true);
+            reader.emit('bookmarked', true);
             return false;
         };
 
         btn_r.dom.onclick = () => {
 
-            signals.bookmarked.dispatch(false);
+            reader.emit('bookmarked', false);
             return false;
         };
 
         btn_c.dom.onclick = () => {
 
             this.clearBookmarks();
-            signals.bookmarked.dispatch(false);
+            reader.emit('bookmarked', false);
             return false;
         };
 
@@ -35830,9 +35826,9 @@ class BookmarksPanel {
             btn_c.dom.disabled = reader.settings.bookmarks.length === 0;
         };
 
-        //-- signals --//
+        //-- events --//
 
-        signals.bookready.add(() => {
+        reader.on ('bookready', () => {
 
             reader.settings.bookmarks.forEach((cfi) => {
                 
@@ -35843,18 +35839,18 @@ class BookmarksPanel {
             update();
         });
 
-        signals.relocated.add((location) => {
-            
+        reader.on('relocated', (location) => {
+
             const cfi = location.start.cfi;
             const val = reader.isBookmarked(cfi) === -1;
             btn_a.dom.disabled = !val;
             btn_r.dom.disabled = val;
         });
 
-        signals.bookmarked.add((value) => {
+        reader.on('bookmarked', (value) => {
 
             const cfi = reader.rendition.currentLocation().start.cfi;
-            
+
             if (value) {
                 this.addBookmark(cfi);
                 btn_a.dom.disabled = true;
@@ -35929,8 +35925,7 @@ class BookmarksPanel {
 class AnnotationsPanel {
 
 	constructor(reader) {
-
-		const signals = reader.signals;
+		
 		const strings = reader.strings;
 
 		this.panel = new UIPanel().setId('annotations');
@@ -36002,9 +35997,9 @@ class AnnotationsPanel {
 			return this.range && this.range.startOffset !== this.range.endOffset;
 		};
 
-		//-- signals --//
+		//-- events --//
 
-		signals.bookready.add(() => {
+		reader.on('bookready', () => {
 
 			reader.settings.annotations.forEach((note) => {
 
@@ -36012,7 +36007,7 @@ class AnnotationsPanel {
 			});
 		});
 
-		signals.selected.add((cfiRange, contents) => {
+		reader.on('selected', (cfiRange, contents) => {
 
 			this.range = contents.range(cfiRange);
 			this.cfiRange = cfiRange;
@@ -36024,7 +36019,7 @@ class AnnotationsPanel {
 			}
 		});
 
-		signals.unselected.add(() => {
+		reader.on('unselected', () => {
 
 			btn_a.dom.disabled = true;
 		});
@@ -36175,9 +36170,8 @@ class SettingsPanel {
 
 	constructor(reader) {
 
-		const signals = reader.signals;
 		const strings = reader.strings;
-		
+
 		this.panel = new UIPanel().setId('settings');
 
 		const languageStr = strings.get('sidebar/settings/language');
@@ -36190,13 +36184,13 @@ class SettingsPanel {
 
 		languageRow.add(new UILabel(languageStr));
 		languageRow.add(language);
-		
+
 		const fontSizeStr = strings.get('sidebar/settings/fontsize');
 		const fontSizeRow = new UIRow();
 		const fontSize = new UIInteger(100, 1);
 		fontSize.dom.addEventListener('change', (e) => {
 
-			signals.fontresize.dispatch(e.target.value);
+			reader.emit('fontresize', e.target.value);
 		});
 
 		fontSizeRow.add(new UILabel(fontSizeStr));
@@ -36207,7 +36201,7 @@ class SettingsPanel {
 		const reflowText = new UIInput('checkbox', false, reflowTextStr[1]);
 		reflowText.setId('reflowtext');
 		reflowText.dom.addEventListener('click', (e) => {
-			
+
 			reader.settings.reflowText = e.target.checked;
 			reader.rendition.resize();
 		});
@@ -36235,14 +36229,14 @@ class SettingsPanel {
 			//paginationRow
 		]);
 
-		//-- signals --//
+		//-- events --//
 
-		signals.bookready.add(() => {
+		reader.on('bookready', () => {
 
 			language.setValue(reader.settings.language);
 		});
 
-		signals.fontresize.add((value) => {
+		reader.on('fontresize', (value) => {
 
 			if (fontSize.getValue() !== value) {
 				fontSize.setValue(value);
@@ -36297,8 +36291,6 @@ class Sidebar {
 class Content {
 
     constructor(reader) {
-
-        const signals = reader.signals;
         
         this.main = new UIDiv().setId('content');
         this.main.dom.addEventListener('transitionend', (e) => {
@@ -36311,7 +36303,7 @@ class Content {
         const prev = new UIDiv().setId('prev').setClass('arrow');
         prev.dom.onclick = (e) => {
 
-            signals.renditionPrev.dispatch();
+            reader.emit('prev');
             e.preventDefault();
         };
         prev.add(new UILabel('<'));
@@ -36319,7 +36311,7 @@ class Content {
         const next = new UIDiv().setId('next').setClass('arrow');
         next.dom.onclick = (e) => {
             
-            signals.renditionNext.dispatch();
+            reader.emit('next');
             e.preventDefault();
         };
         next.add(new UILabel('>'));
@@ -36356,14 +36348,14 @@ class Content {
         
         document.body.appendChild(this.main.dom);
 
-        //-- signals --//
+        //-- events --//
 
-        signals.bookloaded.add(() => {
+        reader.on('bookloaded', () => {
 
             hideLoader();
         });
 
-        signals.sidebarOpener.add((value) => {
+        reader.on('sidebaropener', (value) => {
             
             if (value) {
                 this.slideOut();
@@ -36372,7 +36364,7 @@ class Content {
             }
         });
 
-        signals.layout.add((props) => {
+        reader.on('layout', (props) => {
 
             if (props.spread === true && props.width > props.spreadWidth) {
                 showDivider();
@@ -36381,7 +36373,7 @@ class Content {
             }
         });
 
-        signals.relocated.add((location) => {
+        reader.on('relocated', (location) => {
 
             if (location.atStart) {
                 prev.addClass('disabled');
@@ -36396,19 +36388,19 @@ class Content {
             }
         });
 
-        signals.renditionPrev.add(() => {
+        reader.on('prev', () => {
 
             prev.addClass('active');
             setTimeout(() => { prev.removeClass('active'); }, 100);
         });
 
-        signals.renditionNext.add(() => {
+        reader.on('next', () => {
 
             next.addClass('active');
             setTimeout(() => { next.removeClass('active'); }, 100);
         });
 
-        signals.viewercleanup.add(() => {
+        reader.on('viewercleanup', () => {
 
             viewer.clear();
         });
@@ -36538,31 +36530,10 @@ class Strings {
 
 
 
+
 class Reader {
 
     constructor(bookPath, _options) {
-
-        const Signal = signals.Signal;
-        this.signals = {
-            //-- reader
-            sidebarOpener: new Signal(),
-            bookloaded: new Signal(),
-            bookmarked: new Signal(),
-            fontresize: new Signal(),
-            renditionPrev: new Signal(),
-            renditionNext: new Signal(),
-            viewercleanup: new Signal(),
-            //-- epubjs
-            bookready: new Signal(),
-            renderered: new Signal(),
-            metadata: new Signal(),
-            navigation: new Signal(),
-            //-- rendition
-            layout: new Signal(),
-            selected: new Signal(),
-            unselected: new Signal(),
-            relocated: new Signal(),
-        };
 
         this.settings = undefined;
         this.cfgInit(bookPath, _options);
@@ -36594,8 +36565,8 @@ class Reader {
      * @param {*} _options 
      */
     init(bookPath, _options) {
-        
-        this.signals.viewercleanup.dispatch();
+
+        this.emit('viewercleanup');
         
         if (arguments.length > 0) {
 
@@ -36616,57 +36587,56 @@ class Reader {
         }
 
         this.displayed.then((renderer) => {
-            this.signals.renderered.dispatch(renderer);
+            this.emit('renderered', renderer);
         });
 
         this.book.ready.then(function () {
             if (this.settings.pagination) {
                 this.generatePagination();
             }
-            const sz = parseInt(this.settings.styles.fontSize);
-            this.signals.bookready.dispatch();
-            this.signals.fontresize.dispatch(sz);
+            this.emit('bookready');
+            this.emit('fontresize', parseInt(this.settings.styles.fontSize));
         }.bind(this)).then(function () {
-            this.signals.bookloaded.dispatch();
+            this.emit('bookloaded');
         }.bind(this));
 
         this.book.loaded.metadata.then((meta) => {
-            this.signals.metadata.dispatch(meta);
+            this.emit('metadata', meta);
         });
 
         this.book.loaded.navigation.then((toc) => {
-            this.signals.navigation.dispatch(toc);
+            this.emit('navigation', toc);
         });
 
         this.rendition.on('click', (e) => {
             const selection = e.view.document.getSelection();
             const range = selection.getRangeAt(0);
             if (range.startOffset === range.endOffset) {
-                this.signals.unselected.dispatch();
+                this.emit('unselected');
             }
         });
 
         this.rendition.on('layout', (props) => {
-            this.signals.layout.dispatch(props);
+            this.emit('layout', props);
         });
 
         this.rendition.on('selected', (cfiRange, contents) => {
             this.setLocation(cfiRange);
-            this.signals.selected.dispatch(cfiRange, contents);
+            this.emit('selected', cfiRange, contents);
         });
 
         this.rendition.on('relocated', (location) => {
             this.setLocation(location.start.cfi);
-            this.signals.relocated.dispatch(location);
+            this.emit('relocated', location);
         });
 
-        this.signals.fontresize.add((value) => {
+        this.on('fontresize', (value) => {
             const fontSize = value + "%";
             this.settings.styles.fontSize = fontSize;
             this.rendition.themes.fontSize(fontSize);
         });
 
-        this.signals.renditionPrev.add(() => {
+        this.on('prev', () => {
             if (this.book.package.metadata.direction === 'rtl') {
                 this.rendition.next();
             } else {
@@ -36674,7 +36644,7 @@ class Reader {
             }
         });
 
-        this.signals.renditionNext.add(() => {
+        this.on('next', () => {
             if (this.book.package.metadata.direction === 'rtl') {
                 this.rendition.prev();
             } else {
@@ -36915,34 +36885,36 @@ class Reader {
                 case '=':
                     e.preventDefault();
                     value += step;
-                    this.signals.fontresize.dispatch(value);
+                    this.emit('fontresize', value);
                     break;
                 case '-':
                     e.preventDefault();
                     value -= step;
-                    this.signals.fontresize.dispatch(value);
+                    this.emit('fontresize', value);
                     break;
                 case '0':
                     e.preventDefault();
                     value = 100;
-                    this.signals.fontresize.dispatch(value);
+                    this.emit('fontresize', value);
                     break;
             }
         } else {
 
             switch (e.key) {
                 case 'ArrowLeft':
-                    this.signals.renditionPrev.dispatch();
+                    this.emit('prev');
                     e.preventDefault();
                     break;
                 case 'ArrowRight':
-                    this.signals.renditionNext.dispatch();
+                    this.emit('next');
                     e.preventDefault();
                     break;
             }
         }
     }
 }
+
+event_emitter_default()(Reader.prototype);
 
 ;// CONCATENATED MODULE: ./src/storage.js
 class Storage {
