@@ -3,15 +3,13 @@ import { UIPanel } from '../../ui.js';
 export class TocPanel {
     
     constructor(reader) {
-
-        const signals = reader.signals;
         
         this.panel = new UIPanel().setId('contents');
         this.reader = reader;
 
-        //-- signals --//
+        //-- events --//
 
-        signals.navigation.add((toc) => {
+        reader.on('navigation', (toc) => {
             
             this.init(toc);
         });

@@ -3,8 +3,7 @@ import { UIPanel, UIRow, UIInput } from '../../ui.js';
 export class BookmarksPanel {
 
     constructor(reader) {
-
-        const signals = reader.signals;
+        
         const strings = reader.strings;
 
         const ctrlRow = new UIRow();
@@ -19,20 +18,20 @@ export class BookmarksPanel {
 
         btn_a.dom.onclick = () => {
 
-            signals.bookmarked.dispatch(true);
+            reader.emit('bookmarked', true);
             return false;
         };
 
         btn_r.dom.onclick = () => {
 
-            signals.bookmarked.dispatch(false);
+            reader.emit('bookmarked', false);
             return false;
         };
 
         btn_c.dom.onclick = () => {
 
             this.clearBookmarks();
-            signals.bookmarked.dispatch(false);
+            reader.emit('bookmarked', false);
             return false;
         };
 
@@ -51,9 +50,9 @@ export class BookmarksPanel {
             btn_c.dom.disabled = reader.settings.bookmarks.length === 0;
         };
 
-        //-- signals --//
+        //-- events --//
 
-        signals.bookready.add(() => {
+        reader.on ('bookready', () => {
 
             reader.settings.bookmarks.forEach((cfi) => {
                 
@@ -64,18 +63,18 @@ export class BookmarksPanel {
             update();
         });
 
-        signals.relocated.add((location) => {
-            
+        reader.on('relocated', (location) => {
+
             const cfi = location.start.cfi;
             const val = reader.isBookmarked(cfi) === -1;
             btn_a.dom.disabled = !val;
             btn_r.dom.disabled = val;
         });
 
-        signals.bookmarked.add((value) => {
+        reader.on('bookmarked', (value) => {
 
             const cfi = reader.rendition.currentLocation().start.cfi;
-            
+
             if (value) {
                 this.addBookmark(cfi);
                 btn_a.dom.disabled = true;

@@ -1,3 +1,4 @@
+import EventEmitter from "event-emitter";
 import { Book } from 'epubjs';
 
 import { Toolbar } from './controllers/toolbar.js';
@@ -8,28 +9,6 @@ import { Strings } from './strings.js';
 export class Reader {
 
     constructor(bookPath, _options) {
-
-        const Signal = signals.Signal;
-        this.signals = {
-            //-- reader
-            sidebarOpener: new Signal(),
-            bookloaded: new Signal(),
-            bookmarked: new Signal(),
-            fontresize: new Signal(),
-            renditionPrev: new Signal(),
-            renditionNext: new Signal(),
-            viewercleanup: new Signal(),
-            //-- epubjs
-            bookready: new Signal(),
-            renderered: new Signal(),
-            metadata: new Signal(),
-            navigation: new Signal(),
-            //-- rendition
-            layout: new Signal(),
-            selected: new Signal(),
-            unselected: new Signal(),
-            relocated: new Signal(),
-        };
 
         this.settings = undefined;
         this.cfgInit(bookPath, _options);
@@ -61,8 +40,8 @@ export class Reader {
      * @param {*} _options 
      */
     init(bookPath, _options) {
-        
-        this.signals.viewercleanup.dispatch();
+
+        this.emit('viewercleanup');
         
         if (arguments.length > 0) {
 
@@ -83,57 +62,56 @@ export class Reader {
         }
 
         this.displayed.then((renderer) => {
-            this.signals.renderered.dispatch(renderer);
+            this.emit('renderered', renderer);
         });
 
         this.book.ready.then(function () {
             if (this.settings.pagination) {
                 this.generatePagination();
             }
-            const sz = parseInt(this.settings.styles.fontSize);
-            this.signals.bookready.dispatch();
-            this.signals.fontresize.dispatch(sz);
+            this.emit('bookready');
+            this.emit('fontresize', parseInt(this.settings.styles.fontSize));
         }.bind(this)).then(function () {
-            this.signals.bookloaded.dispatch();
+            this.emit('bookloaded');
         }.bind(this));
 
         this.book.loaded.metadata.then((meta) => {
-            this.signals.metadata.dispatch(meta);
+            this.emit('metadata', meta);
         });
 
         this.book.loaded.navigation.then((toc) => {
-            this.signals.navigation.dispatch(toc);
+            this.emit('navigation', toc);
         });
 
         this.rendition.on('click', (e) => {
             const selection = e.view.document.getSelection();
             const range = selection.getRangeAt(0);
             if (range.startOffset === range.endOffset) {
-                this.signals.unselected.dispatch();
+                this.emit('unselected');
             }
         });
 
         this.rendition.on('layout', (props) => {
-            this.signals.layout.dispatch(props);
+            this.emit('layout', props);
         });
 
         this.rendition.on('selected', (cfiRange, contents) => {
             this.setLocation(cfiRange);
-            this.signals.selected.dispatch(cfiRange, contents);
+            this.emit('selected', cfiRange, contents);
         });
 
         this.rendition.on('relocated', (location) => {
             this.setLocation(location.start.cfi);
-            this.signals.relocated.dispatch(location);
+            this.emit('relocated', location);
         });
 
-        this.signals.fontresize.add((value) => {
+        this.on('fontresize', (value) => {
             const fontSize = value + "%";
             this.settings.styles.fontSize = fontSize;
             this.rendition.themes.fontSize(fontSize);
         });
 
-        this.signals.renditionPrev.add(() => {
+        this.on('prev', () => {
             if (this.book.package.metadata.direction === 'rtl') {
                 this.rendition.next();
             } else {
@@ -141,7 +119,7 @@ export class Reader {
             }
         });
 
-        this.signals.renditionNext.add(() => {
+        this.on('next', () => {
             if (this.book.package.metadata.direction === 'rtl') {
                 this.rendition.prev();
             } else {
@@ -382,31 +360,33 @@ export class Reader {
                 case '=':
                     e.preventDefault();
                     value += step;
-                    this.signals.fontresize.dispatch(value);
+                    this.emit('fontresize', value);
                     break;
                 case '-':
                     e.preventDefault();
                     value -= step;
-                    this.signals.fontresize.dispatch(value);
+                    this.emit('fontresize', value);
                     break;
                 case '0':
                     e.preventDefault();
                     value = 100;
-                    this.signals.fontresize.dispatch(value);
+                    this.emit('fontresize', value);
                     break;
             }
         } else {
 
             switch (e.key) {
                 case 'ArrowLeft':
-                    this.signals.renditionPrev.dispatch();
+                    this.emit('prev');
                     e.preventDefault();
                     break;
                 case 'ArrowRight':
-                    this.signals.renditionNext.dispatch();
+                    this.emit('next');
                     e.preventDefault();
                     break;
             }
         }
     }
 }
+
+EventEmitter(Reader.prototype);

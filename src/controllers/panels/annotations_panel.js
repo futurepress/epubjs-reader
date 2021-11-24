@@ -3,8 +3,7 @@ import { UIPanel, UIRow, UITextArea, UIInput } from '../../ui.js';
 export class AnnotationsPanel {
 
 	constructor(reader) {
-
-		const signals = reader.signals;
+		
 		const strings = reader.strings;
 
 		this.panel = new UIPanel().setId('annotations');
@@ -76,9 +75,9 @@ export class AnnotationsPanel {
 			return this.range && this.range.startOffset !== this.range.endOffset;
 		};
 
-		//-- signals --//
+		//-- events --//
 
-		signals.bookready.add(() => {
+		reader.on('bookready', () => {
 
 			reader.settings.annotations.forEach((note) => {
 
@@ -86,7 +85,7 @@ export class AnnotationsPanel {
 			});
 		});
 
-		signals.selected.add((cfiRange, contents) => {
+		reader.on('selected', (cfiRange, contents) => {
 
 			this.range = contents.range(cfiRange);
 			this.cfiRange = cfiRange;
@@ -98,7 +97,7 @@ export class AnnotationsPanel {
 			}
 		});
 
-		signals.unselected.add(() => {
+		reader.on('unselected', () => {
 
 			btn_a.dom.disabled = true;
 		});

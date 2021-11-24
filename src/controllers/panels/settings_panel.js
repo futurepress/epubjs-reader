@@ -4,9 +4,8 @@ export class SettingsPanel {
 
 	constructor(reader) {
 
-		const signals = reader.signals;
 		const strings = reader.strings;
-		
+
 		this.panel = new UIPanel().setId('settings');
 
 		const languageStr = strings.get('sidebar/settings/language');
@@ -19,13 +18,13 @@ export class SettingsPanel {
 
 		languageRow.add(new UILabel(languageStr));
 		languageRow.add(language);
-		
+
 		const fontSizeStr = strings.get('sidebar/settings/fontsize');
 		const fontSizeRow = new UIRow();
 		const fontSize = new UIInteger(100, 1);
 		fontSize.dom.addEventListener('change', (e) => {
 
-			signals.fontresize.dispatch(e.target.value);
+			reader.emit('fontresize', e.target.value);
 		});
 
 		fontSizeRow.add(new UILabel(fontSizeStr));
@@ -36,7 +35,7 @@ export class SettingsPanel {
 		const reflowText = new UIInput('checkbox', false, reflowTextStr[1]);
 		reflowText.setId('reflowtext');
 		reflowText.dom.addEventListener('click', (e) => {
-			
+
 			reader.settings.reflowText = e.target.checked;
 			reader.rendition.resize();
 		});
@@ -64,14 +63,14 @@ export class SettingsPanel {
 			//paginationRow
 		]);
 
-		//-- signals --//
+		//-- events --//
 
-		signals.bookready.add(() => {
+		reader.on('bookready', () => {
 
 			language.setValue(reader.settings.language);
 		});
 
-		signals.fontresize.add((value) => {
+		reader.on('fontresize', (value) => {
 
 			if (fontSize.getValue() !== value) {
 				fontSize.setValue(value);

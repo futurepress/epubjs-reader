@@ -3,8 +3,6 @@ import { UIDiv, UILabel } from '../ui.js';
 export class Content {
 
     constructor(reader) {
-
-        const signals = reader.signals;
         
         this.main = new UIDiv().setId('content');
         this.main.dom.addEventListener('transitionend', (e) => {
@@ -17,7 +15,7 @@ export class Content {
         const prev = new UIDiv().setId('prev').setClass('arrow');
         prev.dom.onclick = (e) => {
 
-            signals.renditionPrev.dispatch();
+            reader.emit('prev');
             e.preventDefault();
         };
         prev.add(new UILabel('<'));
@@ -25,7 +23,7 @@ export class Content {
         const next = new UIDiv().setId('next').setClass('arrow');
         next.dom.onclick = (e) => {
             
-            signals.renditionNext.dispatch();
+            reader.emit('next');
             e.preventDefault();
         };
         next.add(new UILabel('>'));
@@ -62,14 +60,14 @@ export class Content {
         
         document.body.appendChild(this.main.dom);
 
-        //-- signals --//
+        //-- events --//
 
-        signals.bookloaded.add(() => {
+        reader.on('bookloaded', () => {
 
             hideLoader();
         });
 
-        signals.sidebarOpener.add((value) => {
+        reader.on('sidebaropener', (value) => {
             
             if (value) {
                 this.slideOut();
@@ -78,7 +76,7 @@ export class Content {
             }
         });
 
-        signals.layout.add((props) => {
+        reader.on('layout', (props) => {
 
             if (props.spread === true && props.width > props.spreadWidth) {
                 showDivider();
@@ -87,7 +85,7 @@ export class Content {
             }
         });
 
-        signals.relocated.add((location) => {
+        reader.on('relocated', (location) => {
 
             if (location.atStart) {
                 prev.addClass('disabled');
@@ -102,19 +100,19 @@ export class Content {
             }
         });
 
-        signals.renditionPrev.add(() => {
+        reader.on('prev', () => {
 
             prev.addClass('active');
             setTimeout(() => { prev.removeClass('active'); }, 100);
         });
 
-        signals.renditionNext.add(() => {
+        reader.on('next', () => {
 
             next.addClass('active');
             setTimeout(() => { next.removeClass('active'); }, 100);
         });
 
-        signals.viewercleanup.add(() => {
+        reader.on('viewercleanup', () => {
 
             viewer.clear();
         });

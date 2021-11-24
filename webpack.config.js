@@ -26,12 +26,6 @@ const config = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: 'node_modules/signals/dist/signals.min.js',
-                    to: 'js/libs/signals.min.js',
-                    toType: 'file',
-                    force: true
-                },
-                {
                     from: 'node_modules/jszip/dist/jszip.min.js',
                     to: 'js/libs/jszip.min.js',
                     toType: 'file',

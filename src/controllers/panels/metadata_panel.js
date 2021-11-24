@@ -4,8 +4,6 @@ export class MetadataPanel {
 	
 	constructor(reader) {
 		
-		const signals = reader.signals;
-		
 		this.panel = new UIPanel().setId('metadata');
 		this.title = new UIText().setId('book-title');
 		this.creator = new UIText().setId('book-creator');
@@ -13,7 +11,10 @@ export class MetadataPanel {
 
 		this.panel.add([this.title, this.separator, this.creator]);
 
-		signals.metadata.add((meta) => {
+		//-- events --//
+
+		reader.on('metadata', (meta) => {
+
 			this.init(meta);
 		});
 	}

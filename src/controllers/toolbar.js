@@ -5,28 +5,26 @@ export class Toolbar {
     
     constructor(reader) {
 
-        const signals = reader.signals;
         const strings = reader.strings;
-        
-        this.sidebarOpen = false;
 
         const container = new UIDiv().setId('toolbar');
-        
+
         const start = new UIPanel().setId('start');
         const opener = new UIInput('button').setId('btn-s');
         const openerStr = strings.get('toolbar/opener');
         opener.dom.title = openerStr;
-        opener.dom.addEventListener('click', () => {
+        opener.dom.onclick = () => {
 
-            this.sidebarOpen = !this.sidebarOpen;
-            signals.sidebarOpener.dispatch(this.sidebarOpen);
+            const isOpen = opener.dom.classList.length > 0;
 
-            if (this.sidebarOpen) {
+            reader.emit('sidebaropener', !isOpen);
+
+            if (!isOpen) {
                 opener.addClass('open');
             } else {
                 opener.removeClass('open');
             }
-        });
+        };
 
         start.add(opener);
 
@@ -75,7 +73,7 @@ export class Toolbar {
         bookmark.dom.addEventListener('click', () => {
 
             const cfi = reader.rendition.currentLocation().start.cfi;
-            signals.bookmarked.dispatch(reader.isBookmarked(cfi) === -1);
+            reader.emit('bookmarked', reader.isBookmarked(cfi) === -1);
         });
 
         end.add(bookmark);
@@ -116,10 +114,10 @@ export class Toolbar {
         container.add([start, center.panel, end]);
         document.body.appendChild(container.dom);
 
-        //-- signals --//
+        //-- events --//
 
-        signals.relocated.add((location) => {
-            
+        reader.on('relocated', (location) => {
+
             const cfi = location.start.cfi;
 
             if (reader.isBookmarked(cfi) === -1) {
@@ -129,8 +127,8 @@ export class Toolbar {
             }
         });
 
-        signals.bookmarked.add((value) => {
-            
+        reader.on('bookmarked', (value) => {
+
             if (value) {
                 bookmark.addClass('bookmarked');
             } else {
