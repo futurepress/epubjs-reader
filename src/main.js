@@ -6,13 +6,16 @@ import { Storage } from './storage.js';
 window.onload = function () {
 
 	const storage = new Storage();
-	const path = "https://s3.amazonaws.com/moby-dick/";
+	const url = new URL(window.location);
+	const path = url.search.length > 0 
+		? url.searchParams.get("bookPath") 
+		: "https://s3.amazonaws.com/moby-dick/";
 
 	storage.init(function () {
 
 		storage.get(function (data) {
 
-			if (data !== undefined) {
+			if (data !== undefined && url.search.length === 0) {
 
 				window.reader = new Reader(data, { restore: true });
 
