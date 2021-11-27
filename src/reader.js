@@ -1,5 +1,4 @@
 import EventEmitter from "event-emitter";
-import { Book } from "epubjs";
 
 import { Toolbar } from './controllers/toolbar.js';
 import { Sidebar } from './controllers/sidebar.js';
@@ -48,7 +47,7 @@ export class Reader {
             this.cfgInit(bookPath, _options);
         }
 
-        this.book = new Book(this.settings.bookPath);
+        this.book = ePub(this.settings.bookPath);
         this.rendition = this.book.renderTo('viewer', {
             width: '100%',
             height: '100%'

@@ -37,6 +37,12 @@ const config = {
                     toType: 'file',
                     force: true
                 },
+                {
+                    from: 'node_modules/epubjs/dist/epub.min.js',
+                    to: 'js/libs/epub.min.js',
+                    toType: 'file',
+                    force: true
+                },
             ],
             options: {
                 concurrency: 100,
