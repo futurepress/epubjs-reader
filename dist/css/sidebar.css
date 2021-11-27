@@ -29,7 +29,7 @@
     margin: 11px 0;
     position: absolute;
     transition: transform 0.5s;
-    border-left: 2px solid rgb(138, 180, 248);
+    border-left: 2px solid rgb(138, 180, 248) !important;
 }
 
 /* #sidebar .tab.selected { } */
@@ -125,11 +125,11 @@
 
 #sidebar .panel input[type=button] {
     width: 50%;
-    color: #AAA;
+    color: #AAA !important;
     cursor: pointer;
     border-width: 1px;
     border-style: solid;
-    background: rgb(84, 90, 95);
+    background: rgb(84, 90, 95) !important;
 }
 
 #sidebar .panel input[type=button]:disabled {
@@ -144,7 +144,7 @@
 
 #sidebar .panel li {
     width: 100%;
-    color: #AAA;
+    color: #AAA !important;
     padding: 6px 0;
     list-style: none;
     font-weight: 500;
@@ -159,13 +159,13 @@
 }
 
 #sidebar .panel li > a {
-    color: #AAA;
+    color: #AAA !important;
     display: inline-block;
     text-decoration: none;
 }
 
 #sidebar .panel li > a:hover {
-    color: #E2E2E2;
+    color: #E2E2E2 !important;
 }
 
 #sidebar .row {
@@ -178,7 +178,7 @@
 
 #sidebar .row label {
     flex: 1;
-    color: #AAA;
+    color: #AAA !important;
     padding: 1px;
     font-weight: 500;
 }
@@ -186,12 +186,12 @@
 #sidebar .row select {
     flex: 1;
     width: 100%;
-    color: #AAA;
+    color: #AAA !important;
     outline: none;
     border-width: 1px;
     border-style: solid;
     border-radius: 2px;
-    background: rgb(84, 90, 95);
+    background: rgb(84, 90, 95) !important;
 }
 
 #sidebar .row input[type=checkbox] {
@@ -199,11 +199,11 @@
     height: 16px;
     margin: 0;
     cursor: pointer;
-    border-color: rgb(118, 118, 118);
+    border-color: rgb(118, 118, 118) !important;
     border-width: 1px;
     border-style: solid;
     border-radius: 2px;
-    background-color: rgb(84, 90, 95);
+    background-color: rgb(84, 90, 95) !important;
 
     appearance: none;
     -webkit-appearance: none;
@@ -219,12 +219,12 @@
 #sidebar .row input[type=number] {
     flex: 0.963;
     width: 100%;
-    color: #AAA;
+    color: #AAA !important;
     outline: none;
     border-width: 1px;
     border-style: solid;
     border-radius: 2px;
-    background: rgb(84, 90, 95);
+    background: rgb(84, 90, 95) !important;
 }
 
 /* toc panel */
@@ -244,7 +244,7 @@
 }
 
 #expander [class^="toggle-"]::before {
-    color: #AAA;
+    color: #AAA !important;
     width: 20px;
     margin: 5px;
     cursor: pointer;
@@ -281,8 +281,8 @@
 
 #search.panel input[type=search] {
     width: 220px;
-    color: white;
-    background: rgb(84, 90, 95);
+    color: white !important;
+    background: rgb(84, 90, 95) !important;
     border-width: 1px;
     border-style: solid;
     border-radius: 2px;
@@ -292,7 +292,7 @@
 #search.panel input[type=search]::-webkit-input-placeholder,
 #search.panel input[type=search]:-moz-placeholder,
 #search.panel input[type=search]:-ms-placeholder {
-    color: #E2E2E2;
+    color: #E2E2E2 !important;
 }
 
 #search.panel input[type=search]:focus::placeholder {
@@ -341,7 +341,7 @@
     cursor: pointer;
     display: inline-block;
     text-align: center;
-    background: rgb(84, 90, 95);
+    background: rgb(84, 90, 95) !important;
     vertical-align: top;
 }
 
@@ -350,13 +350,13 @@
 }
 
 #annotations.panel textarea {
-    color: #fff;
+    color: #fff !important;
     outline: none;
     max-width: calc(100% - 6px);
     min-width: calc(100% - 6px);
     min-height: 30px;
     border-radius: 2px;
-    background: rgb(84, 90, 95);
+    background: rgb(84, 90, 95) !important;
 }
 
 /* settings panel */
