@@ -1,5 +1,5 @@
 import EventEmitter from "event-emitter";
-import { Book } from 'epubjs';
+import { Book } from "epubjs";
 
 import { Toolbar } from './controllers/toolbar.js';
 import { Sidebar } from './controllers/sidebar.js';
@@ -328,13 +328,15 @@ export class Reader {
 
     setLocation(cfi) {
 
-        const cfiFragment = "#" + cfi;
-        this.currentLocationCfi = cfi;
+        const baseUrl = this.book.archived ? undefined : this.book.url;
+        const url = new URL(window.location, baseUrl);
+        url.hash = "#" + cfi;
 
         // Update the History Location
-        if (this.settings.history && window.location.hash !== cfiFragment) {
+        if (this.settings.history && window.location.hash !== url.hash) {
             // Add CFI fragment to the history
-            window.history.pushState({}, '', cfiFragment);
+            window.history.pushState({}, "", url);
+            this.currentLocationCfi = cfi;
         }
     }
 
