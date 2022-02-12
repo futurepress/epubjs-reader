@@ -300,18 +300,16 @@ class UIText extends UISpan {
 
 /**
  * UILink
+ * @param {*} uri
+ * @param {*} label
  */
 class UILink extends UIElement {
 
-    constructor(uri, label, callback) {
+    constructor(uri, label) {
 
         super(document.createElement('a'));
         this.dom.href = uri;
         this.dom.textContent = label;
-        this.dom.onclick = () => {
-            callback(uri);
-            return false;
-        };
     }
 }
 
@@ -1173,18 +1171,16 @@ class UITreeView extends UIElement {
 /**
  * UITreeViewItem
  * @param {*} id
- * @param {*} uri
- * @param {*} label
- * @param {*} callback
+ * @param {*} link
  */
 class UITreeViewItem extends UIElement {
 
-    constructor(id, uri, label, callback) {
+    constructor(id, link) {
 
         super(document.createElement('li'));
         this.dom.id = id;
         this.expander = new UIDiv().setId('expander');
-        this.link = new UILink(uri, label, callback);
+        this.link = link;
         this.add([this.expander, this.link]);
     }
 

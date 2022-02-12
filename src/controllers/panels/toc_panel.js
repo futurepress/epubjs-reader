@@ -1,4 +1,4 @@
-import { UIPanel, UITreeView, UITreeViewItem } from '../../ui.js';
+import { UIPanel, UITreeView, UITreeViewItem, UILink } from '../../ui.js';
 
 export class TocPanel {
     
@@ -27,11 +27,14 @@ export class TocPanel {
 
         toc.forEach((chapter) => {
 
-            const treeItem = new UITreeViewItem(
-                chapter.id,
-                chapter.href,
-                chapter.label,
-                this.reader.rendition.display);
+            const link = new UILink(chapter.href, chapter.label);
+            link.dom.onclick = () => {
+                
+                this.reader.rendition.display(chapter.href);
+                return false;
+            };
+            
+            const treeItem = new UITreeViewItem(chapter.id, link);
 
             if (chapter.subitems && chapter.subitems.length > 0) {
 
