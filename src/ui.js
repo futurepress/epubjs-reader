@@ -299,6 +299,23 @@ class UIText extends UISpan {
 }
 
 /**
+ * UILink
+ */
+class UILink extends UIElement {
+
+    constructor(uri, label, callback) {
+
+        super(document.createElement('a'));
+        this.dom.href = uri;
+        this.dom.textContent = label;
+        this.dom.onclick = () => {
+            callback(uri);
+            return false;
+        };
+    }
+}
+
+/**
  * UIInput
  * @param {any} value
  */
@@ -1142,26 +1159,76 @@ class UIListbox extends UIElement {
     }
 }
 
+/**
+ * UITreeView
+ */
+class UITreeView extends UIElement {
+
+    constructor() {
+
+        super(document.createElement('ul'));
+    }
+}
+
+/**
+ * UITreeViewItem
+ * @param {*} id
+ * @param {*} uri
+ * @param {*} label
+ * @param {*} callback
+ */
+class UITreeViewItem extends UIElement {
+
+    constructor(id, uri, label, callback) {
+
+        super(document.createElement('li'));
+        this.dom.id = id;
+        this.expander = new UIDiv().setId('expander');
+        this.link = new UILink(uri, label, callback);
+        this.add([this.expander, this.link]);
+    }
+
+    setToggle(container) {
+
+        this.toggle = new UISpan().setClass('toggle-collapsed');
+        this.toggle.dom.onclick = () => {
+
+            if (this.toggle.dom.className === 'toggle-collapsed') {
+                this.toggle.setClass('toggle-expanded');
+                container.dom.style.display = 'block';
+            } else {
+                this.toggle.setClass('toggle-collapsed');
+                container.dom.style.display = 'none';
+            }
+            return false;
+        };
+        this.expander.add(this.toggle);
+    }
+}
+
 export {
-	UIElement,
-	UISpan,
-	UIDiv,
-	UIRow,
-	UIPanel,
-	UILabel,
-	UIText,
-	UIInput,
-	UITextArea,
-	UISelect,
-	UICheckbox,
-	UIColor,
-	UINumber,
-	UIInteger,
-	UIBreak,
-	UIHorizontalRule,
-	UIButton,
+    UIElement,
+    UISpan,
+    UIDiv,
+    UIRow,
+    UIPanel,
+    UILabel,
+    UIText,
+    UILink,
+    UIInput,
+    UITextArea,
+    UISelect,
+    UICheckbox,
+    UIColor,
+    UINumber,
+    UIInteger,
+    UIBreak,
+    UIHorizontalRule,
+    UIButton,
     UIProgress,
-	UITabbedPanel,
+    UITabbedPanel,
     UITab,
-	UIListbox
+    UIListbox,
+    UITreeView,
+    UITreeViewItem
 };
