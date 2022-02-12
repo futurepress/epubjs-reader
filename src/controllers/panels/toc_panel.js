@@ -1,4 +1,4 @@
-import { UIPanel } from '../../ui.js';
+import { UIPanel, UITreeView, UITreeViewItem } from '../../ui.js';
 
 export class TocPanel {
     
@@ -16,61 +16,31 @@ export class TocPanel {
     }
 
     init(toc) {
-        
+
         this.panel.clear();
-        this.panel.dom.appendChild(this.generateToc(toc));
+        this.panel.add(this.generateToc(toc));
     }
 
-    generateToc(toc, level) {
+    generateToc(toc) {
 
-        const container = document.createElement('ul');
-
-        if (!level) level = 1;
+        const container = new UITreeView();
 
         toc.forEach((chapter) => {
-            
-            const listItem = document.createElement('li');
-            const linkItem = document.createElement('a');
-            const expander = document.createElement('div');
-            
-            expander.id = 'expander';
-            listItem.id = chapter.id;
-            linkItem.href = chapter.href;
-            linkItem.textContent = chapter.label;
-            linkItem.onclick = () => {
-                
-                this.reader.rendition.display(chapter.href);
-                return false;
-            };
 
-            listItem.appendChild(expander);
-            listItem.appendChild(linkItem);
+            const treeItem = new UITreeViewItem(
+                chapter.id,
+                chapter.href,
+                chapter.label,
+                this.reader.rendition.display);
 
             if (chapter.subitems && chapter.subitems.length > 0) {
-                level++;
-                const subitems = this.generateToc(chapter.subitems, level);
-                const toggle = document.createElement('span');
-                
-                toggle.className = 'toggle-collapsed';
-                toggle.onclick = () => {
 
-                    if (toggle.className === 'toggle-collapsed') {
-                        toggle.className = 'toggle-expanded';
-                        subitems.style.display = 'block';
-                    } else {
-                        toggle.className = 'toggle-collapsed';
-                        subitems.style.display = 'none';
-                    }
-                    return false;
-                };
+                const subItems = this.generateToc(chapter.subitems);
 
-                expander.appendChild(toggle);
-
-                listItem.insertBefore(expander, linkItem);
-                listItem.appendChild(subitems);
+                treeItem.setToggle(subItems);
+                treeItem.add(subItems);
             }
-
-            container.appendChild(listItem);
+            container.add(treeItem);
         });
 
         return container;
