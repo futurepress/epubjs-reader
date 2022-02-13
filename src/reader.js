@@ -125,6 +125,10 @@ export class Reader {
                 this.rendition.next();
             }
         });
+
+        this.on('tocselected', (sectionId) => {
+            this.settings.sectionId = sectionId;
+        });
     }
 
     /* ------------------------------- Common ------------------------------- */
@@ -189,6 +193,7 @@ export class Reader {
             bookmarks: undefined,
             annotations: undefined,
             contained: undefined,
+            sectionId: undefined,
             styles: undefined,
             reflowText: false, // ??
             pagination: false, // ??

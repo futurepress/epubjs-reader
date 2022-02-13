@@ -1172,33 +1172,73 @@ class UITreeView extends UIElement {
  * UITreeViewItem
  * @param {*} id
  * @param {*} link
+ * @param {*} parent
  */
 class UITreeViewItem extends UIElement {
 
-    constructor(id, link) {
+    constructor(id, link, parent) {
 
         super(document.createElement('li'));
         this.dom.id = id;
-        this.expander = new UIDiv().setId('expander');
         this.link = link;
+        this.parent = parent;
+        this.toggle = new UISpan().setClass('toggle-collapsed');
+        this.expander = new UIDiv().setId('expander');
+        this.expanded = false;
+        this.selected = false;
         this.add([this.expander, this.link]);
     }
 
-    setToggle(container) {
+    setItems(subItems) {
 
-        this.toggle = new UISpan().setClass('toggle-collapsed');
+        this.add(subItems);
         this.toggle.dom.onclick = () => {
 
-            if (this.toggle.dom.className === 'toggle-collapsed') {
-                this.toggle.setClass('toggle-expanded');
-                container.dom.style.display = 'block';
+            if (this.expanded) {
+                this.collaps();
             } else {
-                this.toggle.setClass('toggle-collapsed');
-                container.dom.style.display = 'none';
+                this.expand();
             }
             return false;
         };
         this.expander.add(this.toggle);
+
+        if (!this.expanded) {
+
+            const items = subItems.dom.getElementsByTagName('li');
+            for (let item of items) {
+                if (item.className === 'selected') {
+                    this.expand();
+                    break;
+                }
+            }
+        }
+    }
+
+    select() {
+
+        this.selected = true;
+        this.setClass('selected');
+    }
+
+    unselect() {
+
+        this.selected = false;
+        this.dom.removeAttribute('class');
+    }
+
+    expand() {
+
+        this.toggle.setClass('toggle-expanded');
+        this.dom.children[2].style.display = 'block';
+        this.expanded = true;
+    }
+
+    collaps() {
+
+        this.toggle.setClass('toggle-collapsed');
+        this.dom.children[2].style.display = 'none';
+        this.expanded = false;
     }
 }
 

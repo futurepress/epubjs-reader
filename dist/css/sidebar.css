@@ -168,6 +168,10 @@
     color: #E2E2E2 !important;
 }
 
+#sidebar .panel li.selected > a {
+    color: #E2E2E2 !important;
+}
+
 #sidebar .row {
     margin: 0;
     padding: 5px 10px;
