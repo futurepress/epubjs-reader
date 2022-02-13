@@ -885,6 +885,21 @@ class UIText extends UISpan {
 }
 
 /**
+ * UILink
+ * @param {*} uri
+ * @param {*} label
+ */
+class UILink extends UIElement {
+
+    constructor(uri, label) {
+
+        super(document.createElement('a'));
+        this.dom.href = uri;
+        this.dom.textContent = label;
+    }
+}
+
+/**
  * UIInput
  * @param {any} value
  */
@@ -1728,6 +1743,91 @@ class UIListbox extends (/* unused pure expression or super */ null && (UIElemen
     }
 }
 
+/**
+ * UITreeView
+ */
+class UITreeView extends UIElement {
+
+    constructor() {
+
+        super(document.createElement('ul'));
+    }
+}
+
+/**
+ * UITreeViewItem
+ * @param {*} id
+ * @param {*} link
+ * @param {*} parent
+ */
+class UITreeViewItem extends UIElement {
+
+    constructor(id, link, parent) {
+
+        super(document.createElement('li'));
+        this.dom.id = id;
+        this.link = link;
+        this.parent = parent;
+        this.toggle = new UISpan().setClass('toggle-collapsed');
+        this.expander = new UIDiv().setId('expander');
+        this.expanded = false;
+        this.selected = false;
+        this.add([this.expander, this.link]);
+    }
+
+    setItems(subItems) {
+
+        this.add(subItems);
+        this.toggle.dom.onclick = () => {
+
+            if (this.expanded) {
+                this.collaps();
+            } else {
+                this.expand();
+            }
+            return false;
+        };
+        this.expander.add(this.toggle);
+
+        if (!this.expanded) {
+
+            const items = subItems.dom.getElementsByTagName('li');
+            for (let item of items) {
+                if (item.className === 'selected') {
+                    this.expand();
+                    break;
+                }
+            }
+        }
+    }
+
+    select() {
+
+        this.selected = true;
+        this.setClass('selected');
+    }
+
+    unselect() {
+
+        this.selected = false;
+        this.dom.removeAttribute('class');
+    }
+
+    expand() {
+
+        this.toggle.setClass('toggle-expanded');
+        this.dom.children[2].style.display = 'block';
+        this.expanded = true;
+    }
+
+    collaps() {
+
+        this.toggle.setClass('toggle-collapsed');
+        this.dom.children[2].style.display = 'none';
+        this.expanded = false;
+    }
+}
+
 
 
 ;// CONCATENATED MODULE: ./src/controllers/panels/metadata_panel.js
@@ -1923,71 +2023,54 @@ class TocPanel {
         
         this.panel = new UIPanel().setId('contents');
         this.reader = reader;
+        this.selector = undefined; // save reference to selected tree item
 
         //-- events --//
 
         reader.on('navigation', (toc) => {
-            
+
             this.init(toc);
         });
     }
 
     init(toc) {
-        
+
         this.panel.clear();
-        this.panel.dom.appendChild(this.generateToc(toc));
+        this.panel.add(this.generateToc(toc));
     }
 
-    generateToc(toc, level) {
+    generateToc(toc, parent) {
 
-        const container = document.createElement('ul');
-
-        if (!level) level = 1;
+        const container = new UITreeView();
 
         toc.forEach((chapter) => {
-            
-            const listItem = document.createElement('li');
-            const linkItem = document.createElement('a');
-            const expander = document.createElement('div');
-            
-            expander.id = 'expander';
-            listItem.id = chapter.id;
-            linkItem.href = chapter.href;
-            linkItem.textContent = chapter.label;
-            linkItem.onclick = () => {
-                
+
+            const link = new UILink(chapter.href, chapter.label);
+            const treeItem = new UITreeViewItem(chapter.id, link, parent);
+
+            link.dom.onclick = () => {
+
                 this.reader.rendition.display(chapter.href);
+                if (this.selector && this.selector !== treeItem) {
+                    this.selector.unselect();
+                }
+                treeItem.select();
+                this.selector = treeItem;
+                this.reader.emit('tocselected', chapter.id);
                 return false;
             };
 
-            listItem.appendChild(expander);
-            listItem.appendChild(linkItem);
-
-            if (chapter.subitems && chapter.subitems.length > 0) {
-                level++;
-                const subitems = this.generateToc(chapter.subitems, level);
-                const toggle = document.createElement('span');
-                
-                toggle.className = 'toggle-collapsed';
-                toggle.onclick = () => {
-
-                    if (toggle.className === 'toggle-collapsed') {
-                        toggle.className = 'toggle-expanded';
-                        subitems.style.display = 'block';
-                    } else {
-                        toggle.className = 'toggle-collapsed';
-                        subitems.style.display = 'none';
-                    }
-                    return false;
-                };
-
-                expander.appendChild(toggle);
-
-                listItem.insertBefore(expander, linkItem);
-                listItem.appendChild(subitems);
+            if (this.reader.settings.sectionId === chapter.id) {
+                treeItem.select();
+                this.selector = treeItem;
             }
 
-            container.appendChild(listItem);
+            if (chapter.subitems && chapter.subitems.length > 0) {
+                
+                treeItem.setItems(this.generateToc(chapter.subitems, treeItem));
+            }
+
+            container.add(treeItem);
         });
 
         return container;
@@ -2871,6 +2954,10 @@ class Reader {
                 this.rendition.next();
             }
         });
+
+        this.on('tocselected', (sectionId) => {
+            this.settings.sectionId = sectionId;
+        });
     }
 
     /* ------------------------------- Common ------------------------------- */
@@ -2935,6 +3022,7 @@ class Reader {
             bookmarks: undefined,
             annotations: undefined,
             contained: undefined,
+            sectionId: undefined,
             styles: undefined,
             reflowText: false, // ??
             pagination: false, // ??
