@@ -117,7 +117,7 @@ var keys  = __webpack_require__(103)
   , value = __webpack_require__(745)
   , max   = Math.max;
 
-module.exports = function (dest, src/*, …srcn*/) {
+module.exports = function (dest, src /*, …srcn*/) {
 	var error, i, length = max(arguments.length, 2), assign;
 	dest = Object(value(dest));
 	assign = function (key) {
@@ -206,7 +206,7 @@ var process = function (src, obj) {
 };
 
 // eslint-disable-next-line no-unused-vars
-module.exports = function (opts1/*, …options*/) {
+module.exports = function (opts1 /*, …options*/) {
 	var result = create(null);
 	forEach.call(arguments, function (options) {
 		if (!isValue(options)) return;
@@ -278,7 +278,7 @@ module.exports = function () {
 
 var indexOf = String.prototype.indexOf;
 
-module.exports = function (searchString/*, position*/) {
+module.exports = function (searchString /*, position*/) {
 	return indexOf.call(this, searchString, arguments[1]) > -1;
 };
 
@@ -2480,7 +2480,7 @@ class SettingsPanel {
 
 		const languageStr = strings.get('sidebar/settings/language');
 		const languageRow = new UIRow();
-		const language = new UISelect().setOptions({ en: 'English', fr: 'French', ja: 'Japanese' });
+		const language = new UISelect().setOptions({ en: 'English', fr: 'French', ja: 'Japanese', ru: 'Russian' });
 		language.dom.addEventListener('change', (e) => {
 
 			reader.settings.language = e.target.value;
@@ -2819,6 +2819,31 @@ class Strings {
                 'sidebar/settings/fontsize': '???',
                 'sidabar/settings/reflowtext': ['再配置', 'サイドバーを開いた時に、テキストを再配置します。'],
                 'sidebar/settings/pagination': ['ページネーション', 'ページネーションを生成します。']
+            },
+            ru: {
+                'toolbar/opener': 'Боковая панель',
+                'toolbar/upload': 'Загрузить книгу',
+                'toolbar/upload/error': 'Ваш браузер не поддерживает необходимые функции.\nПожалуйста, используйте современный браузер, такой как Google Chrome или Mozilla Firefox.',
+                'toolbar/bookmark': 'Добавить эту страницу в закладки',
+                'toolbar/fullsceen': 'Полноэкранный режим',
+
+                'sidebar/contents': 'Содержание',
+                'sidebar/bookmarks': 'Закладки',
+                'sidebar/bookmarks/add': 'Добавить',
+                'sidebar/bookmarks/remove': 'Удалить',
+                'sidebar/bookmarks/clear': 'Очистить',
+                'sidebar/annotations': 'Аннотации',
+                'sidebar/annotations/add': 'Добавить',
+                'sidebar/annotations/clear': 'Очистить',
+                'sidebar/annotations/anchor': 'Метка',
+                'sidebar/annotations/cancel': 'Отмена',
+                'sidebar/search': 'Поиск',
+                'sidebar/search/placeholder': 'поиск...',
+                'sidebar/settings': 'Настройки',
+                'sidebar/settings/language': 'Язык',
+                'sidebar/settings/fontsize': 'Размер шрифта',
+                'sidabar/settings/reflowtext': ['Перекомпоновать текст', 'Перекомпоновать текст при открытых боковых панелях'],
+                'sidebar/settings/pagination': ['Нумерация страниц', 'Генерировать нумерацию страниц']
             }
         };
     }
