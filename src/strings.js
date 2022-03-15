@@ -78,6 +78,31 @@ export class Strings {
                 'sidebar/settings/fontsize': '???',
                 'sidabar/settings/reflowtext': ['再配置', 'サイドバーを開いた時に、テキストを再配置します。'],
                 'sidebar/settings/pagination': ['ページネーション', 'ページネーションを生成します。']
+            },
+            ru: {
+                'toolbar/opener': 'Боковая панель',
+                'toolbar/upload': 'Загрузить книгу',
+                'toolbar/upload/error': 'Ваш браузер не поддерживает необходимые функции.\nПожалуйста, используйте современный браузер, такой как Google Chrome или Mozilla Firefox.',
+                'toolbar/bookmark': 'Добавить эту страницу в закладки',
+                'toolbar/fullsceen': 'Полноэкранный режим',
+
+                'sidebar/contents': 'Содержание',
+                'sidebar/bookmarks': 'Закладки',
+                'sidebar/bookmarks/add': 'Добавить',
+                'sidebar/bookmarks/remove': 'Удалить',
+                'sidebar/bookmarks/clear': 'Очистить',
+                'sidebar/annotations': 'Аннотации',
+                'sidebar/annotations/add': 'Добавить',
+                'sidebar/annotations/clear': 'Очистить',
+                'sidebar/annotations/anchor': 'Метка',
+                'sidebar/annotations/cancel': 'Отмена',
+                'sidebar/search': 'Поиск',
+                'sidebar/search/placeholder': 'поиск...',
+                'sidebar/settings': 'Настройки',
+                'sidebar/settings/language': 'Язык',
+                'sidebar/settings/fontsize': 'Размер шрифта',
+                'sidabar/settings/reflowtext': ['Перекомпоновать текст', 'Перекомпоновать текст при открытых боковых панелях'],
+                'sidebar/settings/pagination': ['Нумерация страниц', 'Генерировать нумерацию страниц']
             }
         };
     }
