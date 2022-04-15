@@ -1,10 +1,12 @@
 import { UIPanel, UITreeView, UITreeViewItem, UILink } from '../ui.js';
 
-export class TocPanel {
+export class TocPanel extends UIPanel {
     
     constructor(reader) {
         
-        this.panel = new UIPanel().setId('contents');
+        super();
+        super.setId('contents');
+
         this.reader = reader;
         this.selector = undefined; // save reference to selected tree item
 
@@ -18,8 +20,8 @@ export class TocPanel {
 
     init(toc) {
 
-        this.panel.clear();
-        this.panel.add(this.generateToc(toc));
+        super.clear();
+        super.add(this.generateToc(toc));
     }
 
     generateToc(toc, parent) {
