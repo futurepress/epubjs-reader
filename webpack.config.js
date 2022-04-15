@@ -11,7 +11,7 @@ const config = {
         filename: 'js/[name].js',
         sourceMapFilename: 'js/[name].js.map'
     },
-    devtool: 'source-map',
+    devtool: 'eval-source-map',
     optimization: {
         minimize: false
     },
@@ -56,10 +56,13 @@ const config = {
 
 module.exports = (env, args) => {
 
+    if (args.mode === 'production') {
+        config.devtool = false;
+    }
+
     if (args.optimizationMinimize) {
-		config.devtool = false;
-		config.output.filename = 'js/[name].min.js';
-	}
-    
+        config.output.filename = 'js/[name].min.js';
+    }
+
     return config;
 };
