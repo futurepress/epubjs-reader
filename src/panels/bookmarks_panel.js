@@ -1,9 +1,12 @@
 import { UIPanel, UIRow, UIInput } from '../ui.js';
 
-export class BookmarksPanel {
+export class BookmarksPanel extends UIPanel {
 
     constructor(reader) {
         
+        super();
+        super.setId('bookmarks');
+
         const strings = reader.strings;
 
         const ctrlRow = new UIRow();
@@ -38,11 +41,10 @@ export class BookmarksPanel {
         ctrlRow.add([btn_a, btn_r, btn_c]);
 
         this.reader = reader;
-
-        this.panel = new UIPanel().setId('bookmarks');
         this.bookmarks = document.createElement('ul');
-        this.panel.add(ctrlRow);
-        this.panel.dom.appendChild(this.bookmarks);
+        
+        super.add(ctrlRow);
+        this.dom.appendChild(this.bookmarks);
 
         const update = () => {
 
