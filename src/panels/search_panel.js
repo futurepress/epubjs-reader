@@ -1,26 +1,25 @@
 import { UIPanel, UIRow, UIInput } from '../ui.js';
 
-export class SearchPanel {
+export class SearchPanel extends UIPanel {
 
     constructor(reader) {
 
-        const strings = reader.strings;
+        super();
+        super.setId('search');
         
-        this.panel = new UIPanel().setId('search');
-        this.query = undefined;
-        this.pages = [];
-        this.searchBox = new UIInput('search');
-        this.searchBox.dom.placeholder = strings.get('sidebar/search/placeholder');
-        this.searchBox.dom.addEventListener('search', () => {
+        const strings = reader.strings;
 
-            const value = this.searchBox.getValue();
+        let searchQuery = undefined;
+        const searchBox = new UIInput('search');
+        searchBox.dom.placeholder = strings.get('sidebar/search/placeholder');
+        searchBox.dom.onsearch = () => {
+
+            const value = searchBox.getValue();
             
             if (value.length === 0) {
                 this.clear();
-                this.query = value;
-            } else if (this.query !== value) {
+            } else if (searchQuery !== value) {
                 this.clear();
-                this.query = value;
                 this.doSearch(value).then(results => {
 
                     results.forEach(item => {
@@ -28,14 +27,15 @@ export class SearchPanel {
                     });
                 });
             }
-        });
-        this.searchResult = document.createElement('ul');
+            searchQuery = value;
+        };
 
         const ctrlRow = new UIRow();
-        ctrlRow.add(this.searchBox);
+        ctrlRow.add(searchBox);
+        super.add(ctrlRow);
 
-        this.panel.add(ctrlRow);
-        this.panel.dom.appendChild(this.searchResult);
+        this.items = document.createElement('ul');
+        this.dom.appendChild(this.items);
         this.reader = reader;
         //
         // improvement of the highlighting of keywords is required...
@@ -70,13 +70,13 @@ export class SearchPanel {
         };
 
         item.appendChild(link);
-        this.searchResult.appendChild(item);
+        this.items.appendChild(item);
     }
 
     clear() {
 
-        while (this.searchResult.hasChildNodes()) {
-            this.searchResult.removeChild(this.searchResult.lastChild);
+        while (this.items.hasChildNodes()) {
+            this.items.removeChild(this.items.lastChild);
         }
     }
 }

@@ -29,7 +29,7 @@ export class Sidebar {
         this.container.addTab('tab-t', tabs[0], this.toc);
         this.container.addTab('tab-b', tabs[1], this.bookmarks);
         this.container.addTab('tab-n', tabs[2], this.annotations);
-        this.container.addTab('tab-s', tabs[3], this.search.panel);
+        this.container.addTab('tab-s', tabs[3], this.search);
         this.container.addTab('tab-c', tabs[4], this.settings.panel);
 
         this.container.select('tab-t');
