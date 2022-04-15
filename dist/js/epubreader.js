@@ -1830,19 +1830,21 @@ class UITreeViewItem extends UIElement {
 
 
 
-;// CONCATENATED MODULE: ./src/controllers/panels/metadata_panel.js
+;// CONCATENATED MODULE: ./src/panels/metadata_panel.js
 
 
-class MetadataPanel {
+class MetadataPanel extends UIPanel {
 	
 	constructor(reader) {
 		
-		this.panel = new UIPanel().setId('metadata');
+		super();
+		super.setId('metadata');
+
 		this.title = new UIText().setId('book-title');
 		this.creator = new UIText().setId('book-creator');
 		this.separator = new UIText().setId('book-title-separator');
 
-		this.panel.add([this.title, this.separator, this.creator]);
+		super.add([this.title, this.separator, this.creator]);
 
 		//-- events --//
 
@@ -1862,7 +1864,7 @@ class MetadataPanel {
 	}
 }
 
-;// CONCATENATED MODULE: ./src/controllers/toolbar.js
+;// CONCATENATED MODULE: ./src/toolbar.js
 
 
 
@@ -1976,7 +1978,7 @@ class Toolbar {
             end.add(fullscreen);
         }
 
-        container.add([start, center.panel, end]);
+        container.add([start, center, end]);
         document.body.appendChild(container.dom);
 
         //-- events --//
@@ -2014,14 +2016,16 @@ class Toolbar {
     }
 }
 
-;// CONCATENATED MODULE: ./src/controllers/panels/toc_panel.js
+;// CONCATENATED MODULE: ./src/panels/toc_panel.js
 
 
-class TocPanel {
+class TocPanel extends UIPanel {
     
     constructor(reader) {
         
-        this.panel = new UIPanel().setId('contents');
+        super();
+        super.setId('contents');
+
         this.reader = reader;
         this.selector = undefined; // save reference to selected tree item
 
@@ -2035,8 +2039,8 @@ class TocPanel {
 
     init(toc) {
 
-        this.panel.clear();
-        this.panel.add(this.generateToc(toc));
+        super.clear();
+        super.add(this.generateToc(toc));
     }
 
     generateToc(toc, parent) {
@@ -2077,13 +2081,16 @@ class TocPanel {
     }
 }
 
-;// CONCATENATED MODULE: ./src/controllers/panels/bookmarks_panel.js
+;// CONCATENATED MODULE: ./src/panels/bookmarks_panel.js
 
 
-class BookmarksPanel {
+class BookmarksPanel extends UIPanel {
 
     constructor(reader) {
         
+        super();
+        super.setId('bookmarks');
+
         const strings = reader.strings;
 
         const ctrlRow = new UIRow();
@@ -2118,11 +2125,10 @@ class BookmarksPanel {
         ctrlRow.add([btn_a, btn_r, btn_c]);
 
         this.reader = reader;
-
-        this.panel = new UIPanel().setId('bookmarks');
         this.bookmarks = document.createElement('ul');
-        this.panel.add(ctrlRow);
-        this.panel.dom.appendChild(this.bookmarks);
+        
+        super.add(ctrlRow);
+        this.dom.appendChild(this.bookmarks);
 
         const update = () => {
 
@@ -2223,16 +2229,23 @@ class BookmarksPanel {
     }
 }
 
-;// CONCATENATED MODULE: ./src/controllers/panels/annotations_panel.js
+;// CONCATENATED MODULE: ./src/panels/annotations_panel.js
 
 
-class AnnotationsPanel {
+class AnnotationsPanel extends UIPanel {
 
 	constructor(reader) {
 		
-		const strings = reader.strings;
+		super();
+		super.setId('annotations');
 
-		this.panel = new UIPanel().setId('annotations');
+		const strings = reader.strings;
+		const ctrlStr = [
+			strings.get('sidebar/annotations/add'),
+			strings.get('sidebar/annotations/clear')
+		];
+
+		this.reader = reader;
 		this.notes = document.createElement('ul');
 
 		const textBox = new UITextArea();
@@ -2245,14 +2258,10 @@ class AnnotationsPanel {
 			}
 		});
 
-		this.reader = reader;
-		this.range;
-		this.cfiRange;
-
-		const ctrlStr = [
-			strings.get('sidebar/annotations/add'),
-			strings.get('sidebar/annotations/clear')
-		];
+		const selector = {
+			range: undefined,
+			cfiRange: undefined
+		};
 
 		const textRow = new UIRow();
 		const ctrlRow = new UIRow();
@@ -2264,7 +2273,7 @@ class AnnotationsPanel {
 			const note = {
 				date: new Date(),
 				text: textBox.getValue(),
-				href: this.cfiRange,
+				href: selector.cfiRange,
 				uuid: reader.uuid()
 			};
 
@@ -2288,8 +2297,8 @@ class AnnotationsPanel {
 		textRow.add(textBox);
 		ctrlRow.add([btn_a, btn_c]);
 
-		this.panel.add([textRow, ctrlRow]);
-		this.panel.dom.appendChild(this.notes);
+		super.add([textRow, ctrlRow]);
+		this.dom.appendChild(this.notes);
 
 		this.update = () => {
 
@@ -2298,7 +2307,7 @@ class AnnotationsPanel {
 
 		const isSelected = () => {
 
-			return this.range && this.range.startOffset !== this.range.endOffset;
+			return selector.range && selector.range.startOffset !== selector.range.endOffset;
 		};
 
 		//-- events --//
@@ -2313,8 +2322,8 @@ class AnnotationsPanel {
 
 		reader.on('selected', (cfiRange, contents) => {
 
-			this.range = contents.range(cfiRange);
-			this.cfiRange = cfiRange;
+			selector.range = contents.range(cfiRange);
+			selector.cfiRange = cfiRange;
 
 			if (isSelected() && textBox.getValue().length > 0) {
 				btn_a.dom.disabled = false;
@@ -2384,30 +2393,29 @@ class AnnotationsPanel {
 	}
 }
 
-;// CONCATENATED MODULE: ./src/controllers/panels/search_panel.js
+;// CONCATENATED MODULE: ./src/panels/search_panel.js
 
 
-class SearchPanel {
+class SearchPanel extends UIPanel {
 
     constructor(reader) {
 
-        const strings = reader.strings;
+        super();
+        super.setId('search');
         
-        this.panel = new UIPanel().setId('search');
-        this.query = undefined;
-        this.pages = [];
-        this.searchBox = new UIInput('search');
-        this.searchBox.dom.placeholder = strings.get('sidebar/search/placeholder');
-        this.searchBox.dom.addEventListener('search', () => {
+        const strings = reader.strings;
 
-            const value = this.searchBox.getValue();
+        let searchQuery = undefined;
+        const searchBox = new UIInput('search');
+        searchBox.dom.placeholder = strings.get('sidebar/search/placeholder');
+        searchBox.dom.onsearch = () => {
+
+            const value = searchBox.getValue();
             
             if (value.length === 0) {
                 this.clear();
-                this.query = value;
-            } else if (this.query !== value) {
+            } else if (searchQuery !== value) {
                 this.clear();
-                this.query = value;
                 this.doSearch(value).then(results => {
 
                     results.forEach(item => {
@@ -2415,14 +2423,15 @@ class SearchPanel {
                     });
                 });
             }
-        });
-        this.searchResult = document.createElement('ul');
+            searchQuery = value;
+        };
 
         const ctrlRow = new UIRow();
-        ctrlRow.add(this.searchBox);
+        ctrlRow.add(searchBox);
+        super.add(ctrlRow);
 
-        this.panel.add(ctrlRow);
-        this.panel.dom.appendChild(this.searchResult);
+        this.items = document.createElement('ul');
+        this.dom.appendChild(this.items);
         this.reader = reader;
         //
         // improvement of the highlighting of keywords is required...
@@ -2457,30 +2466,36 @@ class SearchPanel {
         };
 
         item.appendChild(link);
-        this.searchResult.appendChild(item);
+        this.items.appendChild(item);
     }
 
     clear() {
 
-        while (this.searchResult.hasChildNodes()) {
-            this.searchResult.removeChild(this.searchResult.lastChild);
+        while (this.items.hasChildNodes()) {
+            this.items.removeChild(this.items.lastChild);
         }
     }
 }
-;// CONCATENATED MODULE: ./src/controllers/panels/settings_panel.js
+;// CONCATENATED MODULE: ./src/panels/settings_panel.js
 
 
-class SettingsPanel {
+class SettingsPanel extends UIPanel {
 
 	constructor(reader) {
 
+		super();
+		super.setId('settings');
+		
 		const strings = reader.strings;
-
-		this.panel = new UIPanel().setId('settings');
 
 		const languageStr = strings.get('sidebar/settings/language');
 		const languageRow = new UIRow();
-		const language = new UISelect().setOptions({ en: 'English', fr: 'French', ja: 'Japanese', ru: 'Russian' });
+		const language = new UISelect().setOptions({
+			en: 'English', 
+			fr: 'French', 
+			ja: 'Japanese', 
+			ru: 'Russian'
+		});
 		language.dom.addEventListener('change', (e) => {
 
 			reader.settings.language = e.target.value;
@@ -2526,7 +2541,7 @@ class SettingsPanel {
 		paginationRow.add(new UILabel(paginationStr[0], 'pagination'));
 		paginationRow.add(pagination);
 
-		this.panel.add([
+		super.add([
 			languageRow,
 			fontSizeRow,
 			//reflowTextRow,
@@ -2549,7 +2564,7 @@ class SettingsPanel {
 	}
 }
 
-;// CONCATENATED MODULE: ./src/controllers/sidebar.js
+;// CONCATENATED MODULE: ./src/sidebar.js
 
 
 
@@ -2578,18 +2593,18 @@ class Sidebar {
 
         this.container = new UITabbedPanel('vertical').setId('sidebar');
 
-        this.container.addTab('tab-t', tabs[0], this.toc.panel);
-        this.container.addTab('tab-b', tabs[1], this.bookmarks.panel);
-        this.container.addTab('tab-n', tabs[2], this.annotations.panel);
-        this.container.addTab('tab-s', tabs[3], this.search.panel);
-        this.container.addTab('tab-c', tabs[4], this.settings.panel);
+        this.container.addTab('tab-t', tabs[0], this.toc);
+        this.container.addTab('tab-b', tabs[1], this.bookmarks);
+        this.container.addTab('tab-n', tabs[2], this.annotations);
+        this.container.addTab('tab-s', tabs[3], this.search);
+        this.container.addTab('tab-c', tabs[4], this.settings);
 
         this.container.select('tab-t');
 
         document.body.appendChild(this.container.dom);
     }
 }
-;// CONCATENATED MODULE: ./src/controllers/content.js
+;// CONCATENATED MODULE: ./src/content.js
 
 
 class Content {
