@@ -1,4 +1,4 @@
-import { UIPanel, UIRow, UIInput } from '../../ui.js';
+import { UIPanel, UIRow, UIInput } from '../ui.js';
 
 export class BookmarksPanel {
 

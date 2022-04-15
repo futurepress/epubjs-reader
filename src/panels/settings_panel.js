@@ -1,4 +1,4 @@
-import { UIPanel, UIRow, UISelect, UIInput, UILabel, UIInteger } from '../../ui.js';
+import { UIPanel, UIRow, UISelect, UIInput, UILabel, UIInteger } from '../ui.js';
 
 export class SettingsPanel {
 

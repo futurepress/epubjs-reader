@@ -1,4 +1,4 @@
-import { UIPanel, UIDiv, UIInput } from '../ui.js';
+import { UIPanel, UIDiv, UIInput } from './ui.js';
 import { MetadataPanel } from './panels/metadata_panel.js';
 
 export class Toolbar {

@@ -1,4 +1,4 @@
-import { UIPanel, UIText } from '../../ui.js';
+import { UIPanel, UIText } from '../ui.js';
 
 export class MetadataPanel {
 	

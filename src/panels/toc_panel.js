@@ -1,4 +1,4 @@
-import { UIPanel, UITreeView, UITreeViewItem, UILink } from '../../ui.js';
+import { UIPanel, UITreeView, UITreeViewItem, UILink } from '../ui.js';
 
 export class TocPanel {
     

@@ -1,4 +1,4 @@
-import { UIDiv, UILabel } from '../ui.js';
+import { UIDiv, UILabel } from './ui.js';
 
 export class Content {
 

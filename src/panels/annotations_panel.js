@@ -1,4 +1,4 @@
-import { UIPanel, UIRow, UITextArea, UIInput } from '../../ui.js';
+import { UIPanel, UIRow, UITextArea, UIInput } from '../ui.js';
 
 export class AnnotationsPanel {
 

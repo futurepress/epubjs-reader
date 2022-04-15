@@ -1,8 +1,8 @@
 import EventEmitter from "event-emitter";
 
-import { Toolbar } from './controllers/toolbar.js';
-import { Sidebar } from './controllers/sidebar.js';
-import { Content } from './controllers/content.js';
+import { Toolbar } from './toolbar.js';
+import { Sidebar } from './sidebar.js';
+import { Content } from './content.js';
 import { Strings } from './strings.js';
 
 export class Reader {

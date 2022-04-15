@@ -1,4 +1,4 @@
-import { UITabbedPanel } from '../ui.js';
+import { UITabbedPanel } from './ui.js';
 import { TocPanel } from './panels/toc_panel.js';
 import { BookmarksPanel } from './panels/bookmarks_panel.js';
 import { AnnotationsPanel } from './panels/annotations_panel.js';
