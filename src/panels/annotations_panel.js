@@ -1,12 +1,19 @@
 import { UIPanel, UIRow, UITextArea, UIInput } from '../ui.js';
 
-export class AnnotationsPanel {
+export class AnnotationsPanel extends UIPanel {
 
 	constructor(reader) {
 		
-		const strings = reader.strings;
+		super();
+		super.setId('annotations');
 
-		this.panel = new UIPanel().setId('annotations');
+		const strings = reader.strings;
+		const ctrlStr = [
+			strings.get('sidebar/annotations/add'),
+			strings.get('sidebar/annotations/clear')
+		];
+
+		this.reader = reader;
 		this.notes = document.createElement('ul');
 
 		const textBox = new UITextArea();
@@ -19,14 +26,10 @@ export class AnnotationsPanel {
 			}
 		});
 
-		this.reader = reader;
-		this.range;
-		this.cfiRange;
-
-		const ctrlStr = [
-			strings.get('sidebar/annotations/add'),
-			strings.get('sidebar/annotations/clear')
-		];
+		const selector = {
+			range: undefined,
+			cfiRange: undefined
+		};
 
 		const textRow = new UIRow();
 		const ctrlRow = new UIRow();
@@ -38,7 +41,7 @@ export class AnnotationsPanel {
 			const note = {
 				date: new Date(),
 				text: textBox.getValue(),
-				href: this.cfiRange,
+				href: selector.cfiRange,
 				uuid: reader.uuid()
 			};
 
@@ -62,8 +65,8 @@ export class AnnotationsPanel {
 		textRow.add(textBox);
 		ctrlRow.add([btn_a, btn_c]);
 
-		this.panel.add([textRow, ctrlRow]);
-		this.panel.dom.appendChild(this.notes);
+		super.add([textRow, ctrlRow]);
+		this.dom.appendChild(this.notes);
 
 		this.update = () => {
 
@@ -72,7 +75,7 @@ export class AnnotationsPanel {
 
 		const isSelected = () => {
 
-			return this.range && this.range.startOffset !== this.range.endOffset;
+			return selector.range && selector.range.startOffset !== selector.range.endOffset;
 		};
 
 		//-- events --//
@@ -87,8 +90,8 @@ export class AnnotationsPanel {
 
 		reader.on('selected', (cfiRange, contents) => {
 
-			this.range = contents.range(cfiRange);
-			this.cfiRange = cfiRange;
+			selector.range = contents.range(cfiRange);
+			selector.cfiRange = cfiRange;
 
 			if (isSelected() && textBox.getValue().length > 0) {
 				btn_a.dom.disabled = false;
