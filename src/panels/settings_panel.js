@@ -1,16 +1,22 @@
 import { UIPanel, UIRow, UISelect, UIInput, UILabel, UIInteger } from '../ui.js';
 
-export class SettingsPanel {
+export class SettingsPanel extends UIPanel {
 
 	constructor(reader) {
 
+		super();
+		super.setId('settings');
+		
 		const strings = reader.strings;
-
-		this.panel = new UIPanel().setId('settings');
 
 		const languageStr = strings.get('sidebar/settings/language');
 		const languageRow = new UIRow();
-		const language = new UISelect().setOptions({ en: 'English', fr: 'French', ja: 'Japanese', ru: 'Russian' });
+		const language = new UISelect().setOptions({
+			en: 'English', 
+			fr: 'French', 
+			ja: 'Japanese', 
+			ru: 'Russian'
+		});
 		language.dom.addEventListener('change', (e) => {
 
 			reader.settings.language = e.target.value;
@@ -56,7 +62,7 @@ export class SettingsPanel {
 		paginationRow.add(new UILabel(paginationStr[0], 'pagination'));
 		paginationRow.add(pagination);
 
-		this.panel.add([
+		super.add([
 			languageRow,
 			fontSizeRow,
 			//reflowTextRow,
