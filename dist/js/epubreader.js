@@ -3404,4 +3404,3 @@ window.onload = function () {
 
 /******/ })()
 ;
-//# sourceMappingURL=epubreader.js.map
