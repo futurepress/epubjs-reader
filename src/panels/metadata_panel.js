@@ -1,15 +1,17 @@
 import { UIPanel, UIText } from '../ui.js';
 
-export class MetadataPanel {
+export class MetadataPanel extends UIPanel {
 	
 	constructor(reader) {
 		
-		this.panel = new UIPanel().setId('metadata');
+		super();
+		super.setId('metadata');
+
 		this.title = new UIText().setId('book-title');
 		this.creator = new UIText().setId('book-creator');
 		this.separator = new UIText().setId('book-title-separator');
 
-		this.panel.add([this.title, this.separator, this.creator]);
+		super.add([this.title, this.separator, this.creator]);
 
 		//-- events --//
 

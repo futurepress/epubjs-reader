@@ -111,7 +111,7 @@ export class Toolbar {
             end.add(fullscreen);
         }
 
-        container.add([start, center.panel, end]);
+        container.add([start, center, end]);
         document.body.appendChild(container.dom);
 
         //-- events --//
