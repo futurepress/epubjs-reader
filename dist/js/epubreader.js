@@ -3172,9 +3172,9 @@ class Reader {
     saveSettings() {
 
         if (this.book) {
-            
-            const curLocation = this.rendition.currentLocation();
-            if (curLocation.start) {
+
+            if (this.rendition.location) {
+                const curLocation = this.rendition.currentLocation();
                 this.settings.previousLocationCfi = curLocation.start.cfi;
             }
         }
@@ -3404,3 +3404,4 @@ window.onload = function () {
 
 /******/ })()
 ;
+//# sourceMappingURL=epubreader.js.map
