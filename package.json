@@ -32,7 +32,7 @@
   "dependencies": {
     "epubjs": "latest",
     "jquery": "^3.3.1",
-    "jszip": "^3.1.5",
+    "jszip": "^3.7.0",
     "localforage": "^1.2.10",
     "rsvp": "^4.8.2",
     "screenfull": "^3.3.2"
