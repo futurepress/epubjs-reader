@@ -57,27 +57,19 @@
     opacity: 1;
 }
 
+[id^="tab-"].tab input {
+    filter: grayscale(100%);
+}
+
+[id^="tab-"].tab.selected input {
+    filter: grayscale(0%);
+}
+
 #tab-t.tab input { background-image: url('../img/toc.svg'); }
 #tab-b.tab input { background-image: url('../img/bookmarks.svg'); }
 #tab-n.tab input { background-image: url('../img/annotations.svg'); }
 #tab-s.tab input { background-image: url('../img/search.svg'); }
 #tab-c.tab input { background-image: url('../img/settings.svg'); }
-
-#tab-t.tab.selected input {
-    background-image: url('../img/toc-selected.svg');
-}
-#tab-b.tab.selected input {
-    background-image: url('../img/bookmarks-selected.svg');
-}
-#tab-n.tab.selected input {
-    background-image: url('../img/annotations-selected.svg');
-}
-#tab-s.tab.selected input {
-    background-image: url('../img/search-selected.svg');
-}
-#tab-c.tab.selected input {
-    background-image: url('../img/settings-selected.svg');
-}
 
 /* sidebar panels */
 
