@@ -83,6 +83,9 @@
 #btn-u {
     background-image: url('../img/upload.svg');
 }
+#btn-o {
+    background-image: url('../img/open-book.svg');
+}
 #btn-b {
     background-image: url('../img/bookmark-empty.svg');
 }

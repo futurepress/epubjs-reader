@@ -31,12 +31,12 @@ export class Toolbar {
         const center = new MetadataPanel(reader);
 
         const end = new UIPanel().setId('end');
-        const upload = new UIInput('file').setId('btn-u');
-        const uploadStr = strings.get('toolbar/upload');
+        const open = new UIInput('file').setId('btn-o');
+        const uploadStr = strings.get('toolbar/openbook');
         const storage = window.storage;
-        upload.dom.title = uploadStr;
-        upload.dom.accept = 'application/epub+zip';
-        upload.dom.addEventListener('change', function (e) {
+        open.dom.title = uploadStr;
+        open.dom.accept = 'application/epub+zip';
+        open.dom.addEventListener('change', function (e) {
 
             if (e.target.files.length === 0)
                 return;
@@ -61,11 +61,11 @@ export class Toolbar {
                 }
 
             } else {
-                alert(strings.get('toolbar/upload/error'));
+                alert(strings.get('toolbar/openbook/error'));
             }
         }, false);
 
-        end.add(upload);
+        end.add(open);
 
         const bookmark = new UIInput('button').setId('btn-b');
         const bookmarkStr = strings.get('toolbar/bookmark');

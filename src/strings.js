@@ -6,8 +6,8 @@ export class Strings {
         this.values = {
             en: {
                 'toolbar/opener': 'Sidebar',
-                'toolbar/upload': 'Upload book',
-                'toolbar/upload/error': 'Your browser does not support the required features.\nPlease use a modern browser such as Google Chrome, or Mozilla Firefox.',
+                'toolbar/openbook': 'Open book',
+                'toolbar/openbook/error': 'Your browser does not support the required features.\nPlease use a modern browser such as Google Chrome, or Mozilla Firefox.',
                 'toolbar/bookmark': 'Add this page to bookmarks',
                 'toolbar/fullsceen': 'Fullscreen',
 
@@ -31,8 +31,8 @@ export class Strings {
             },
             fr: {
                 'toolbar/opener': 'Barre latérale',
-                'toolbar/upload': 'Ouvrir un livre local',
-                'toolbar/upload/error': 'Votre navigateur ne prend pas en charge les fonctions nécessaires.\nVeuillez utiliser un navigateur moderne tel que Google Chrome ou Mozilla Firefox.',
+                'toolbar/openbook': 'Ouvrir un livre local',
+                'toolbar/openbook/error': 'Votre navigateur ne prend pas en charge les fonctions nécessaires.\nVeuillez utiliser un navigateur moderne tel que Google Chrome ou Mozilla Firefox.',
                 'toolbar/bookmark': 'Insérer un marque page ici',
                 'toolbar/fullsceen': 'Plein écran',
 
@@ -56,8 +56,8 @@ export class Strings {
             },
             ja: {
                 'toolbar/opener': 'サイドバー',
-                'toolbar/upload': '本を開く',
-                'toolbar/upload/error': 'ご利用のブラウザは必要な機能をサポートしていません。\nGoogle Chrome、Mozilla Firefox、その他のモダンなブラウザでご利用ください。',
+                'toolbar/openbook': '本を開く',
+                'toolbar/openbook/error': 'ご利用のブラウザは必要な機能をサポートしていません。\nGoogle Chrome、Mozilla Firefox、その他のモダンなブラウザでご利用ください。',
                 'toolbar/bookmark': 'このページに栞を設定する',
                 'toolbar/fullsceen': 'フルスクリーン',
 
@@ -81,8 +81,8 @@ export class Strings {
             },
             ru: {
                 'toolbar/opener': 'Боковая панель',
-                'toolbar/upload': 'Загрузить книгу',
-                'toolbar/upload/error': 'Ваш браузер не поддерживает необходимые функции.\nПожалуйста, используйте современный браузер, такой как Google Chrome или Mozilla Firefox.',
+                'toolbar/openbook': 'Открыть книгу',
+                'toolbar/openbook/error': 'Ваш браузер не поддерживает необходимые функции.\nПожалуйста, используйте современный браузер, такой как Google Chrome или Mozilla Firefox.',
                 'toolbar/bookmark': 'Добавить эту страницу в закладки',
                 'toolbar/fullsceen': 'Полноэкранный режим',
 
