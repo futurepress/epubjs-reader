@@ -14,7 +14,7 @@
     "license": "MIT",
     "devDependencies": {
         "copy-webpack-plugin": "^8.1.1",
-        "webpack": "^5.74.0",
+        "webpack": "^5.75.0",
         "webpack-cli": "^4.10.0",
         "webpack-concat-files-plugin": "^0.5.2",
         "webpack-dev-server": "^4.11.1"
