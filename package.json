@@ -11,23 +11,23 @@
   "author": "bdr@brown.edu",
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "colors": "~1.2.5",
-    "connect": "~3.6.6",
-    "grunt": "^1.1.0",
-    "grunt-concat-sourcemap": "~0.4.1",
-    "grunt-contrib-concat": "~1.0.1",
-    "grunt-contrib-connect": "~1.0.2",
+    "colors": "~1.4.0",
+    "connect": "~3.7.0",
+    "grunt": "^1.5.3",
+    "grunt-concat-sourcemap": "~0.4.3",
+    "grunt-contrib-concat": "~2.1.0",
+    "grunt-contrib-connect": "~3.0.0",
     "grunt-contrib-copy": "~1.0.0",
-    "grunt-contrib-jshint": "~1.1.0",
-    "grunt-contrib-uglify": "~3.3.0",
+    "grunt-contrib-jshint": "~3.2.0",
+    "grunt-contrib-uglify": "~5.2.2",
     "grunt-contrib-watch": "^1.1.0"
   },
   "dependencies": {
-    "epubjs": "latest",
-    "jquery": "^3.5.1",
-    "jszip": "^3.1.5",
-    "localforage": "^1.2.10",
-    "rsvp": "^4.8.2",
-    "screenfull": "^3.3.2"
+    "epubjs": "^0.3.93",
+    "jquery": "^3.6.3",
+    "jszip": "^3.10.1",
+    "localforage": "^1.10.0",
+    "rsvp": "^4.8.5",
+    "screenfull": "^6.0.2"
   }
 }
